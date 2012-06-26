@@ -1,0 +1,173 @@
+netcdf atm_basin_cdl {
+
+dimensions:
+	strlen = 64;
+	nl = 3;
+	nlm1 = 2;
+	out = 7;
+	narea = 5;
+
+variables:
+	char name(strlen);
+
+	integer nx, ny;
+	integer ndx, ndy;
+	integer nx1, ny1;
+	double hm, h(nl);
+
+	char topog(strlen);
+
+	double rho;
+
+	integer use_aml;
+	integer flux_n, flux_s;
+	double st2d, st4d, ahmd;
+	double cp;
+	double hmamin, hmadmp, xcexp;
+
+	double T_abs(nl);
+	double fsbar, fspamp;
+	double zopt_m, zopt(nl);
+	double gamma, xlamda;
+	char aml_state(strlen);
+
+	integer use_qg;
+	double bcco;
+	double delek;
+	double ah2(nl), ah4(nl);
+	double gp(nlm1);
+	char qg_state(strlen);
+
+	char sst_cpl(strlen);
+	char ekman_cpl(strlen);
+	char p1_cpl(strlen);
+	char eta_cpl(strlen);
+	char ent_cpl(strlen);
+
+	integer compute_covar;
+
+	integer compute_avges;
+	double dtav;
+	char avg_out(strlen);
+
+	integer compute_subsample;
+	double dtsubsamp;
+	char p_file(strlen);
+	char t_file(strlen);
+	integer nsk;
+	integer outfl(out);
+
+	integer check_valids;
+	double dtvalid;
+	double max_tau;
+	double max_wt;
+	double max_st;
+	double max_p;
+	double max_q;
+
+	integer print_summary;
+	double dtprint;
+
+	integer area_avg;
+	double xhi(narea);
+	double xlo(narea);
+	double yhi(narea);
+	double ylo(narea);
+	char area_filename(strlen);
+
+	integer monitor_qg;
+	char qg_mon_out(strlen);
+
+	integer monitor_ml;
+	char ml_mon_out(strlen);
+
+	double dtdiag;
+data:
+	name = "southern_atmos";
+
+	nx = 288;
+	ny = 108;
+	ndx = 1;
+	ndy = 1;
+	nx1 = 1;
+	ny1 = 1;
+	hm = 1000.0;
+	h = 2000.0, 3000.0, 4000.0;
+	
+	topog = "flat";
+
+	rho = 1.0;
+
+	use_aml = 1;
+	flux_n = 0;
+	flux_s = 0;
+	st2d = 5.0e4;
+	st4d = 3.0e14;
+	ahmd = 2.0e5;
+	cp = 1.0e3;
+	hmamin = 100.0;
+	hmadmp = 0.15;
+	xcexp = 1.0;
+
+	T_abs = 330.0,  340.0,  350.0;
+	fsbar = -210.0;
+	fspamp = 150.0;
+	zopt_m = 200.0;
+	zopt = 2.0e4,  2.0e4,  3.0e4;
+	gamma = 1.0e-2;
+	xlamda = 35.0;
+	aml_state = "lastday_so_aml.nc";
+
+	use_qg = 1;
+	bcco  = 1.0;
+	delek = 0.0;
+	ah2 = 0.0,    0.0,    0.0;
+	ah4 = 4.0e13, 4.0e13, 4.0e13;
+	gp  =       1.2,    0.4;
+	qg_state = "lastday_so_atm.nc";
+
+	sst_cpl = "coupled";
+	ekman_cpl = "coupled";
+	p1_cpl = "coupled";
+	eta_cpl = "coupled";
+	ent_cpl = "coupled";
+
+	compute_covar = 0;
+
+	compute_avges = 0;
+	dtav = 0.25;
+	avg_out = "avges_atm.nc";
+
+	compute_subsample = 1;
+	dtsubsamp = 5.0;
+	p_file = "atpa.nc";
+	t_file = "atast.nc";
+	nsk = 2;
+	outfl = 1, 1, 1, 1, 1, 1, 1;
+
+	check_valids = 1;
+	dtvalid = 0.25;
+	max_tau = 10.0e0;
+	max_wt = 1.0;
+	max_st = 90.0e0;
+	max_p = 1.0e7;
+	max_q = 0.05e0;
+
+	print_summary = 1;
+	dtprint = 1.0;
+
+	area_avg = 1;
+	xlo =    0.0e3, 4620.0e3,  9240.0e3, 13860.0e3, 18480.0e3;
+	xhi = 4610.0e3, 9230.0e3, 13850.0e3, 18470.0e3, 23040.0e3;
+	ylo = 2880.0e3, 2880.0e3,  2880.0e3,  2880.0e3,  2880.0e3;
+	yhi = 5760.0e3, 5760.0e3,  5760.0e3,  5760.0e3,  5760.0e3;
+	area_filename = "atm_areas.nc";
+
+	monitor_qg = 1;
+	qg_mon_out = "qga_mon.nc";
+
+	monitor_ml = 1;
+	ml_mon_out = "aml_mon.nc";
+
+	dtdiag = 1.0;
+}

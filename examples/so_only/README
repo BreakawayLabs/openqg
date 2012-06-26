@@ -1,0 +1,41 @@
+HOW TO COMPILE AND RUN THE SOUTHERN OCEAN ONLY EXAMPLE CASE.
+
+This describes how to run a Southern Ocean case with prescribed wind forcing. 
+There is no thermal forcing of the mixed layer, and initial conditions are zero 
+everywhere so that, while the mixed layer is computed (a little wasteful) it 
+remains zero at all times. Thus, this version only computes the ocean QG evolution.
+
+1. You should note that Q-GCM was not really designed to run without the mixed layer. 
+For this reason, the default omlsubs.F routine will allow some diabatic exchange 
+between the mixed layer and layer 1. Therefore to get a perfectly adiabatic mixed 
+layer you will need to copy the omlsubs.F file in this directory to the src file 
+before compiling. The changes are clearly flagged in omlsubs.F.
+
+2. Prepare the Makefile by copying Makefile.generic to Makefile (within src/).
+You should set the following preprocessor options:
+	OCOPT = -Docean_only
+	AROPT = -Dget_areav  (optional)
+	NCOPT = -Duse_netcdf
+	CYCLIC = -Dcyclic_ocean
+You will also need to un-comment the Makefile variables relevant to your system. 
+As a guide, you will need FC, FFLAGS, LAPACK, NCDIR, NCLIB, IDIR and NCLINK defined.
+
+3. Either link or copy the relevant parameter.src file to the src directory. 
+For example:
+> ln -s ../examples/southern_ocean/parameter.src parameter.src
+
+4. Make the code:
+> make q-gcm
+
+5. You will need to download the topography file soctopog.26deg.10km.nc and put it in 
+this directory. This file is available on the Q-GCM downloads webpage on www.q-gcm.org.
+
+6. You will also need a netcdf file (called avges.nc and placed in the local 
+directory structure) with wind stress values included. We recommend using the 
+avges.nc file located on the Q-GCM downloads webpage on www.q-gcm.org.
+
+7. Move to this directory and run the code. 
+The included qgrun_pbs shell script show an example of how to do this, but you 
+will need to configure this script for your system. Note that this script aims 
+to do the first run in a batch as restarting from nothing, and use lastday.nc 
+files from then on.

@@ -1,0 +1,33 @@
+netcdf so_coupled_topog_glam {
+
+dimensions:
+	strlen = 64;
+	oc_nl = 3;
+	at_nl = 3;
+
+variables:
+	integer nxt, nyt;
+	double dx, dy;
+	double x0, y0;
+	integer cyclic;
+	double lat, x1;
+
+	integer use_ocean;
+
+	integer use_atmos;
+data:
+	nxt = 128;
+	nyt = 64;
+	dx = 120.0e3;
+	dy = 120.0e3;
+	x0 = 0.0;
+	y0 = 0.0;
+
+	cyclic = 0;
+	lat = 43.29;
+	x1 = 0.0;
+
+	use_atmos = 1;
+
+	use_ocean = 1;
+}

@@ -1,0 +1,14 @@
+netcdf windstress {
+dimensions:
+	strlen = 64;
+       
+variables:
+	integer coupled;
+	char ocn_stress(strlen);
+	char atm_stress(strlen);
+
+data:
+	coupled = 0;
+	ocn_stress = "avges.nc";
+	atm_stress = "";
+}

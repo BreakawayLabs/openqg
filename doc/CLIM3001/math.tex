@@ -1,0 +1,289 @@
+\documentclass[a4paper]{beamer}
+\usepackage{hyperref}
+
+\title{Idealised GFD Models}
+\author{Tim Leslie}\institute{Breakaway Consulting Pty. Ltd.\\Climate Change Research Centre}
+
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\begin{columns}
+    \begin{column}{0.25\textwidth}
+      \includegraphics[keepaspectratio]{CC-BY-SA.png}
+    \end{column}
+    \begin{column}{0.75\textwidth}
+      This work is licensed under a \href{http://creativecommons.org/licenses/by-sa/3.0/}{Creative Commons Attribution-ShareAlike 3.0 Unported License}. Copyright 2012 Tim Leslie.
+    \end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Overview}
+Idealised GFD models let us investigate planetary physics.
+\begin{itemize}
+\item What kinds of things can we calculate?
+\item How do we map physical processes to mathematical statements?
+\item What do equations of a GFD model look like?
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Equations of Planetary Fluid Dynamics}
+\begin{eqnarray}
+\mathbf{u}_t + \mathbf{u}\cdot\nabla\mathbf{u} - f(\mathbf{u}\times\mathbf{\hat{z}}) & = & -\nabla p -g\mathbf{\hat{z}} + A_2\nabla^2\mathbf{u}\\
+\nabla\cdot\mathbf{u} & = & 0
+%\rho_t + \mathbf{u}\cdot\rho & = & \mathbf{K}\cdot\nabla^2\rho
+\end{eqnarray}
+\begin{itemize}
+\item 2nd order differential equations $\implies$ difficult to solve.
+\item Make simplifications based on physical assumptions.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Key assumptions}
+\begin{itemize}
+\item Vertical velocity is small (compared to horiz. vel.)
+\item Fixed beta plane: $f(y) = f_0 + \beta(y - y_0)$
+\item Momentum diffusion is small (compare to pressure gradients)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Zeroth order approximations, QG balance}
+Pressure balances rotation:
+\begin{eqnarray}
+f_0v & = &  p_x\\
+f_0u & = & -p_y
+\end{eqnarray}
+Hydrostatic assumption holds:
+\begin{eqnarray}
+-g & = & p_z
+\end{eqnarray}
+These equations maintain continuity, as
+\begin{eqnarray}
+u_x + v_y & = & 0.
+\end{eqnarray}
+\end{frame}
+
+\begin{frame}{Relative Vorticity}
+\begin{eqnarray}
+\zeta & \equiv & v_x - u_y\\
+    & = & \frac{\nabla^2_Hp}{f_0}
+\end{eqnarray}
+\begin{itemize}
+\item A measure of the local rotation of the fluid.
+\item Relative to the earth.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{First order equations}
+We wish to solve for $u^*$, $v^*$, using zero order values.
+\begin{eqnarray}
+u_t + uu_x + vu_y - f_0v^* - \beta(y - y_0)v & = & -p_x^* + A_2\nabla^2u\\
+v_t + uv_x + vv_y + f_0u^* + \beta(y - y_0)u & = & -p_y^* + A_2\nabla^2v\\
+\nabla\cdot\mathbf{u}^* & = & 0
+\end{eqnarray}
+Cross differentiate and subtract:
+\begin{eqnarray}
+%(u_y - v_x)_t + \left[uu_x + vu_y\right]_y - \left[uv_x + vv_y\right]_x - f_0(v^*_y + u^*_x) - [\beta(y - y_0)v]_y - [\beta(y - y_0)u]_x & = & A_2\nabla^2(u_y - v_x)\\
+%-\zeta_t + (uu_x)_y + (vu_y)_y - (yv_x)_x + (vv_y)_x + f_0w_z^* - [\beta(y - y_0)v]_y - [\beta(y - y_0)u]_x & = & - A_2\nabla^2\zeta\\
+%-\zeta_t - (u\zeta)_x - (v\zeta)_y + f_0w_z^* - [\beta(y - y_0)v]_y - [\beta(y - y_0)u]_x & = & - A_2\nabla^2\zeta\\
+\zeta_t + \left[u\left(\zeta + \beta(y - y_0)\right)\right]_x + \left[v\left(\zeta + \beta(y - y_0)\right)\right]_y  & = & f_0w_z^* + A_2\nabla^2\zeta\nonumber\\
+ & &
+\end{eqnarray}
+Include planetary rotation:
+\begin{eqnarray}
+%\left(\zeta +\beta(y - y0)\right)_t + \left[u\left(\zeta + \beta(y - y_0)\right)\right]_x + \left[v\left(\zeta + \beta(y - y_0)\right)\right]_y  & = & f_0w_z^* + A_2\nabla^2\zeta - A_4\nabla^4\zeta\\
+q^* & \equiv & \zeta + \beta(y - y_0)\\
+q^*_t + \left(uq^*\right)_x + \left(vq^*\right)_y  & = & f_0w_z^* + A_2\nabla^2\zeta
+\end{eqnarray}
+\end{frame}
+
+\begin{frame}{Layer integral}
+Assume pressure and horizontal velocity are layer-averaged quantities.
+\begin{eqnarray}
+q^*_t + \left(uq^*\right)_x + \left(vq^*\right)_y  & = & \frac{f_0}{H}(w_+^* - w_-^*) + A_2\nabla^2\zeta
+\end{eqnarray}
+Vertical velocity is a function of entrainment and variable layer thickness.
+\begin{eqnarray}
+w^* & = &  h_t + (uh)_x + (vh)_y + e\\
+    & = & \eta_t + (u\eta)_x + (v\eta)_y + e
+\end{eqnarray}
+where
+\begin{eqnarray}
+\eta & \equiv & h - H.
+\end{eqnarray}
+\end{frame}
+
+\begin{frame}{Pertubation Interface Height}
+\begin{eqnarray}
+\eta & \equiv & h - H\\
+     & = & \frac{(p_- - p_+)}{g^\prime}
+\end{eqnarray}
+Reduced gravity is a constant,
+\begin{eqnarray}
+g & = & g\left(\frac{\rho_- - \rho_+}{\rho_0}\right)
+\end{eqnarray}
+\begin{itemize}
+\item $\eta = 0$ at top of atmosphere.
+\item $\eta = 0$ at atmosphere/ocean interface.
+\item $\eta = D$ at atmosphere/topography, ocean/bathymetry interface.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Put it all together...}
+\begin{eqnarray}
+q^*_t + \left(uq^*\right)_x + \left(vq^*\right)_y  & = & -\frac{f_0}{H}\delta_z(w^*)+ A_2\nabla^2\zeta\\
+ & = & -\frac{f_0}{H}\delta_z(\eta_t + (u\eta)_x + (v\eta)_y + e)+ A_2\nabla^2\zeta\nonumber\\
+ &   &
+\end{eqnarray}
+\begin{eqnarray}
+\left(q^*  + \frac{f_0}{H}\delta_z(\eta)\right)_t + \left(u \left(q^* + \frac{f_0}{H}\delta_z(\eta)\right)\right)_x + \left(v\left(q^* + \frac{f_0}{H}\delta_z(\eta)\right)\right)_y&&\nonumber\\
+=\, -\frac{f_0}{H}\delta_z(e)+ A_2\nabla^2\zeta&&\nonumber\\
+&&
+\end{eqnarray}
+\end{frame}
+
+\begin{frame}{Final QG Layer Equations}
+\begin{eqnarray}
+q & \equiv & q^* + \frac{f_0}{H}\delta_z(\eta)\\
+  &    =   & \frac{\nabla^2_Hp}{f_0} + \beta(y - y_0) + \frac{f_0}{H}\delta_z(\eta)\\
+q_t & = & - \left(uq\right)_x - \left(vq\right)_y  -\frac{f_0}{H}\delta_z(e)+ A_2\frac{\nabla^4_Hp}{f_0}
+\end{eqnarray}
+\end{frame}
+
+\begin{frame}{Sources of Entrainment}
+\begin{itemize}
+\item Interior convection (thermal entrainment)
+\item Ekman pumping in mixed layers.
+\begin{itemize}
+ \item Surface windstress
+ \item Bottom drag
+ \item $w_{ek} = -\int_{ek} \frac{\partial u}{\partial x} + \frac{\partial v}{\partial y}\,dz$
+ \item Geostrophic velocity + stress induced velocity
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Bottom Drag}
+\begin{itemize}
+\item Prescribed Ekman layer thickness $\delta_{ek} = \sqrt{K/|f_0|}$.
+\end{itemize}
+Velocities
+\begin{eqnarray}
+(u, v) = \left(-\frac{p_y}{f_0} - \frac{\tau^y}{\delta_{ek}f_0}, \frac{p_x}{f_0} + \frac{\tau^x}{\delta_{ek}f_0}\right)
+\end{eqnarray}
+Linear stress
+\begin{eqnarray}
+(\tau^x, \tau^y) = \frac{K}{\delta_{ek}}\left(u, v\right)
+\end{eqnarray}
+Solve for $u$, $v$
+\begin{eqnarray}
+(u, v) & = & \left(-\frac{p_y}{2f_0} - \frac{p_x}{2|f_0|}, \frac{p_x}{2f_0} - \frac{p_y}{2|f_0|}\right)
+\end{eqnarray}
+\end{frame}
+
+\begin{frame}{Bottom Drag (2)}
+Derivatives of velocity
+\begin{eqnarray}
+\frac{du}{dx} & = & -\frac{p_{xy}}{2f_0} - \frac{p_{xx}}{2|f_0|}\\
+\frac{dv}{dy} & = &  \frac{p_{xy}}{2f_0} - \frac{p_{yy}}{2|f_0|}
+\end{eqnarray}
+Integrate over ekman layer
+\begin{eqnarray}
+w_{ek} & = & -\int_{ek} \frac{\partial u}{\partial x} + \frac{\partial v}{\partial y}\,dz\\
+       & = & \delta_{ek}\left(\frac{p_{xx}}{2|f_0|} + \frac{p_{yy}}{2|f_0|}\right)\\
+       & = & \frac{\delta_{ek}}{2|f_0|}\nabla^2_Hp
+\end{eqnarray}
+\end{frame}
+
+\begin{frame}{Ocean Ekman Pumping}
+For a prescribed windstress vector $\hat\tau$, the induced mixed layer velocity is
+\begin{eqnarray}
+(u, v) & = & \left(-\frac{p_y}{f_0} - \frac{\tau^y}{Hf_0}, \frac{p_x}{f_0} + \frac{\tau^x}{Hf_0}\right)
+\end{eqnarray}
+\begin{eqnarray}
+w_{ek} & = & -\int_{ek} \frac{\partial u}{\partial x} + \frac{\partial v}{\partial y}\,dz\\
+       & = &  \int_{ek} \frac{\tau_x^y}{Hf_0} - \frac{\tau_y^x}{Hf_0}\,dz\\
+       & = & \frac{\tau_x^y - \tau_y^x}{f_0}\\
+       & = & \frac{\nabla \times \hat\tau}{f_0}
+\end{eqnarray}
+\end{frame}
+
+\begin{frame}{Computing Windstress}
+\begin{eqnarray}
+\left({}^au, {}^av\right) & = & \left(-{}^ap_y - \frac{{}^a\tau^y}{{}^aHf_0}, {}^ap_x + \frac{{}^a\tau^x}{{}^aHf_0}\right)\\
+\left({}^ou, {}^ov\right) & = & \left(-{}^op_y - \frac{{}^o\tau^y}{{}^oHf_0}, {}^op_x + \frac{{}^o\tau^x}{{}^oHf_0}\right)\\
+\left({}^a\tau^x, {}^a\tau^y\right) & = & C_D\left|{}^a\mathbf{u} - {}^o\mathbf{u}\right|\left({}^au - {}^ou, {}^av - {}^ov \right)\\
+{}^o\tau & = & \frac{{}^a\rho}{{}^o\rho}{}^a\tau
+\end{eqnarray}
+\begin{itemize}
+\item We need to solve this quadratic(ish) equation
+\item A few pages of algebra later...
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Windstress Equations}
+\begin{eqnarray}
+{}^a\tau^x & = & C_DM\left[\frac{({}^av^* - {}^ov^*) + (a + b)M({}^au^* - {}^ou^*)}{1 + (a + b)^2M^2}\right]\\
+{}^a\tau^y & = & C_DM\left[\frac{({}^au^* - {}^ou^*) - (a + b)M({}^av^* - {}^ov^*)}{1 + (a + b)^2M^2}\right]
+\end{eqnarray}
+where
+\begin{eqnarray}
+a & = & \frac{C_D}{{}^aHf_0}\\
+b & = & \frac{{}^a\rho}{{}^o\rho}\frac{C_D}{{}^oHf_0}\\
+M & = & \frac{1}{\sqrt{2}|a + b|}\sqrt{-1 + \sqrt{1 + 4(a + b)^2|{}^a\mathbf{u^*} - {}^o\mathbf{u^*}|^2}}
+\end{eqnarray}
+and we use geostrophic velocities
+\begin{eqnarray}
+(u^*, v^*) & = & (-p_y, p_x)
+\end{eqnarray}
+\end{frame}
+
+\begin{frame}{Oceanic Thermal Balance}
+\begin{itemize}
+\item Introduce a mixed layer at the surface.
+\item Assume no deep ocean heat flux.
+\item Need to balance heat flux due to ekman pumping.
+\end{itemize}
+\begin{eqnarray}
+e\Delta T_{12} & = & -\frac{1}{2}\Delta T_{m1}w_{ek}
+\end{eqnarray}
+\end{frame}
+
+\begin{frame}{Ocean Mixed Layer Temperature Evolution}
+Advection (geostrophic + stress) + diffusion +  external forcing.
+\begin{eqnarray}
+T_t + \nabla\cdot(\mathbf{u}T)            & = & K_2\nabla^2_HT - K_4\nabla^4_HT - \frac{F_0 - F_e}{\rho C_pH}\nonumber\\
+&&\\
+T_t + (uT)_x + (vT)_y - \frac{w_{ek}T}{H} & = & K_2\nabla^2_HT - K_4\nabla^4_HT - \frac{F_0 - F_e}{\rho C_pH}\nonumber\\
+&&
+\end{eqnarray}
+\begin{eqnarray}
+  &&T_t + (uT)_x + (vT)_y  \nonumber\\
+= & & K_2\nabla^2_HT - K_4\nabla^4_HT - \frac{F_0}{\rho C_pH} + \frac{w_{ek}}{H}\left(T - \frac{T_{1m}}{2}\right)\nonumber\\
+\end{eqnarray}
+and $F_0$ is yet to be found.
+\end{frame}
+
+\begin{frame}{Ocean convection}
+\begin{itemize}
+\item If $T_m < T_1$ we get convection
+\item Need to determine a convective velocity $w_{c}$
+\item Need to balance convective heat flux with entrainment
+\item Need to adjust heat flux in temperature evolution equation.
+\end{itemize}
+\begin{eqnarray}
+e_{c}\Delta T_{12} & = & -\Delta T_{m1}w_{c}\\
+(T_t)_c & = & \rho C_p\Delta T_{m1}w_{c}
+\end{eqnarray}
+\end{frame}
+
+\begin{frame}{Next Lecture...}
+\begin{itemize}
+\item Moving from equations to a well defined system
+\item Knobs, dials and switches: controlling a system
+\item Using a system to answer scientific questions
+\end{itemize}
+\end{frame}
+
+\end{document}

@@ -1,0 +1,8 @@
+{
+    "project_title": "OpenQG",
+    "tags": [],
+    "project_desc": "FIXME",
+    "google_groups": "openqg-users",
+    "docs": [{"file": "quickstart", "title": "Quickstart"}, 
+    	     {"file": "user_guide", "title": "User Guide"}]
+}

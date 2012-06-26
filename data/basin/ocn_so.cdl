@@ -1,0 +1,157 @@
+netcdf ocn_basin_cdl {
+
+dimensions:
+	strlen = 64;
+	nl = 3;
+	nlm1 = 2;
+	out = 7;
+	narea = 5;
+
+variables:
+	char name(strlen);
+
+	integer nx, ny;
+	integer ndx, ndy;
+	integer nx1, ny1;
+	double hm, h(nl);
+
+	char topog(strlen);
+
+	double rho;
+
+	integer use_oml;
+	integer flux_n, flux_s;
+	double st2d, st4d, ycexp;
+	double cp;
+	integer use_rad_temp;
+	double T1_abs, T2_abs;
+	char oml_state(strlen);
+
+	integer use_qg;
+	double bcco;
+	double delek;
+	double ah2(nl), ah4(nl);
+	double gp(nlm1);
+	char qg_state(strlen);
+
+	char fnet_cpl(strlen);
+	char p1_cpl(strlen);
+	char ent_cpl(strlen);
+
+	integer compute_covar;
+
+	integer compute_avges;
+	double dtav;
+	char avg_out(strlen);
+
+	integer compute_subsample;
+	double dtsubsamp;
+	char p_file(strlen);
+	char t_file(strlen);
+	integer nsk;
+	integer outfl(out);
+
+	integer check_valids;
+	double dtvalid;
+	double max_tau;
+	double max_wt;
+	double max_st;
+	double max_p;
+	double max_q;
+
+	integer print_summary;
+	double dtprint;
+
+	integer area_avg;
+	double xhi(narea);
+	double xlo(narea);
+	double yhi(narea);
+	double ylo(narea);
+	char area_filename(strlen);
+
+	integer monitor_qg;
+	char qg_mon_out(strlen);
+
+	integer monitor_ml;
+	char ml_mon_out(strlen);
+
+	double dtdiag;
+data:
+	name = "southern_ocean";
+
+	nx = 288;
+	ny = 36;
+	ndx = 8;
+	ndy = 8;
+	nx1 = 1;
+	ny1 = 37;
+	hm = 100.0;
+	h = 300.0,  1100.0, 2600.0;
+
+	topog = "soctopog.26deg.10km.new.nc";
+
+	rho = 1.0e3;
+
+	use_oml = 1;
+	flux_n = 1;
+	flux_s = 0;
+	st2d = 380.0;
+	st4d = 4.0e10;
+	ycexp = 1.0;
+	cp = 4.0e3;
+	use_rad_temp = 1;
+	T1_abs = 278.0;
+	T2_abs = 268.0;
+	oml_state = "lastday_so_oml.nc";
+
+	use_qg = 1;
+	bcco  = 5.0;
+	delek = 2.0;
+	ah2 = 0.0,    0.0,    0.0;
+	ah4 = 3.0e10, 3.0e10, 3.0e10;
+	gp  =     5.0e-2,  2.5e-2;
+	qg_state = "lastday_so_ocn.nc";
+
+	fnet_cpl = "coupled";
+	p1_cpl = "coupled";
+	ent_cpl = "coupled";
+
+	compute_covar = 0;
+
+	compute_avges = 0;
+	dtav = 1.0;
+	avg_out = "avges_ocn.nc";
+
+	compute_subsample = 1;
+	dtsubsamp = 15.0;
+	p_file = "ocpo.nc";
+	t_file = "ocsst.nc";
+	nsk = 4;
+	outfl = 1, 1, 1, 1, 1, 1, 1;
+
+	check_valids = 1;
+	dtvalid = 0.25;
+	max_tau = 10.0e0;
+	max_wt = 1.0e-3;
+	max_st = 90.0e0;
+	max_p = 1.0e4;
+	max_q = 0.05e0;
+
+	print_summary = 1;
+	dtprint = 1.0;
+
+	area_avg = 1;
+	xlo =    0.0e3, 4620.0e3,  9240.0e3, 13860.0e3, 18480.0e3;
+	xhi = 4610.0e3, 9230.0e3, 13850.0e3, 18470.0e3, 23040.0e3;
+	ylo =    0.0e3,    0.0e3,     0.0e3,     0.0e3,     0.0e3;
+	yhi = 2880.0e3, 2880.0e3,  2880.0e3,  2880.0e3,  2880.0e3;
+	area_filename = "ocn_areas.nc";
+
+	monitor_qg = 1;
+	qg_mon_out = "qgo_mon.nc";
+
+	monitor_ml = 1;
+	ml_mon_out = "oml_mon.nc";
+
+	dtdiag = 1.0;
+}

@@ -1,0 +1,16 @@
+netcdf clock {
+
+variables:
+	double dta;
+	double tini;
+	double trun;
+	integer nstr;
+	double resday;
+
+data:
+	dta = 300.0;
+	tini = 0.0;
+	trun = 5.0;
+	nstr = 3;
+	resday = 365.0;
+}

@@ -1,0 +1,133 @@
+\begin{thebibliography}{}
+
+\bibitem[Arakawa and Lamb, 1977]{arakawa:77}
+Arakawa, A. and Lamb, V.~R. (1977).
+\newblock Computational design of the basic dynamical processes of the {UCLA}
+  general circulation model.
+\newblock {\em Meth. Comp. Phys.}, 17:173--365.
+
+\bibitem[Arakawa and Lamb, 1981]{arakawa:81}
+Arakawa, A. and Lamb, V.~R. (1981).
+\newblock A potential enstrophy and energy conserving scheme for the shallow
+  water equations.
+\newblock {\em Mon. Wea. Rev.}, 109:18--36.
+
+\bibitem[Duhaut and Straub, 2006]{duhaut:06}
+Duhaut, T. H.~A. and Straub, D.~N. (2006).
+\newblock Wind stress dependence on ocean surface velocity: Implications for
+  mechanical energy input to ocean circulation.
+\newblock {\em J. Phys. Oceanogr.}, 36:202--211.
+
+\bibitem[Golub and van Loan, 1983]{golub:83}
+Golub, G.~H. and van Loan, C.~F. (1983).
+\newblock {\em Matrix Computations}.
+\newblock John Hopkins University Press, Baltimore.
+
+\bibitem[Haidvogel et~al., 1992]{haidvogel:92}
+Haidvogel, D.~B., McWilliams, J.~C., and Gent, P.~R. (1992).
+\newblock Boundary current separation in a quasigeostrophic, eddy-resolving
+  ocean circulation model.
+\newblock {\em J. Phys. Oceanogr.}, 22:882--902.
+
+\bibitem[Hogg and Blundell, 2006]{hogg:06c}
+Hogg, A.~M. and Blundell, J.~R. (2006).
+\newblock Interdecadal variability of the {S}outhern {O}cean.
+\newblock {\em J. Phys. Oceanogr.}, 36:1626--1645.
+
+\bibitem[Hogg et~al., 2003a]{hogg:03c}
+Hogg, A.~M., Blundell, J.~R., Dewar, W.~K., and Killworth, P.~D. (2003a).
+\newblock {\em Formulation and users' guide for {Q-GCM} (version 1.0)}.
+\newblock Southampton Oceanography Centre.
+\newblock {I}nternal {D}ocument {N}o. 88. Most recent version available from
+  http://www.noc.soton.ac.uk/JRD/PROC/Q-GCM/.
+
+\bibitem[Hogg et~al., 2009]{hogg:09}
+Hogg, A.~M., Dewar, W.~K., Berloff, P.~S., Kravtsov, S., and Hutchinson, D.~K.
+  (2009).
+\newblock The effects of mesoscale ocean-atmosphere coupling on the large-scale
+  ocean circulation.
+\newblock {\em J. Climate}, 22:4066--4082.
+
+\bibitem[Hogg et~al., 2003b]{hogg:03b}
+Hogg, A.~M., Dewar, W.~K., Killworth, P.~D., and Blundell, J.~R. (2003b).
+\newblock A quasi-geostrophic coupled model: {Q-GCM}.
+\newblock {\em Mon. Wea. Rev.}, 131(10):2261--2278.
+
+\bibitem[Hogg et~al., 2006]{hogg:06a}
+Hogg, A.~M., Dewar, W.~K., Killworth, P.~D., and Blundell, J.~R. (2006).
+\newblock Decadal variability of the midlatitude climate system driven by the
+  ocean circulation.
+\newblock {\em J. Climate}, 19:1149--1166.
+
+\bibitem[Hogg et~al., 2005]{hogg:05a}
+Hogg, A.~M., Killworth, P.~D., Blundell, J.~R., and Dewar, W.~K. (2005).
+\newblock Mechanisms of decadal variability of the wind-driven ocean
+  circulation.
+\newblock {\em J. Phys. Oceanogr.}, 35:512--531.
+
+\bibitem[Hogg et~al., 2007]{hogg:07}
+Hogg, A.~M., Killworth, P.~D., Blundell, J.~R., and Dewar, W.~K. (2007).
+\newblock Low frequency ocean variability: Feedbacks between eddies and the
+  mean flow.
+\newblock In Fredriksen, J. and Denier, J., editors, {\em Turbulence and
+  Coherent Structures in Fluids, Plasmas and Granular Flows}, pages 171--185.
+  World Scientific.
+
+\bibitem[Hogg et~al., 2008]{hogg:08b}
+Hogg, A.~M., Meredith, M.~P., Blundell, J.~R., and Wilson, C. (2008).
+\newblock Eddy heat flux in the {S}outhern {O}cean: {R}esponse to variable wind
+  forcing.
+\newblock {\em J. Climate}, 21:608--620.
+
+\bibitem[Holland, 1978]{holland:78}
+Holland, W. (1978).
+\newblock The role of mesoscale eddies in the general circulation of the ocean:
+  numerical experiments using a wind-driven quasi-geostrophic model.
+\newblock {\em J. Phys. Oceanogr.}, 8:363--392.
+
+\bibitem[Hutchinson et~al., 2010]{hutchinson:10}
+Hutchinson, D.~K., Hogg, A.~M., and Blundell, J.~R. (2010).
+\newblock Southern ocean response to relative velocity wind stress forcing.
+\newblock {\em J. Phys. Oceanogr.}, 40:323--339.
+
+\bibitem[Kravtsov and Robertson, 2002]{kravtsov:02}
+Kravtsov, S. and Robertson, A.~W. (2002).
+\newblock Midlatitude ocean-atmosphere interaction in an idealized coupled
+  model.
+\newblock {\em Climate Dyn.}, 19:693--711.
+
+\bibitem[McDougall and Dewar, 1998]{mcdougall:98}
+McDougall, T. and Dewar, W. (1998).
+\newblock Vertical mixing and cabbeling in layered models.
+\newblock {\em J. Phys. Oceanogr.}, 28:1458--1480.
+
+\bibitem[McWilliams, 1977]{mcwilliams:77}
+McWilliams, J.~C. (1977).
+\newblock A note on a consistent quasigeostrophic model in a multiply connected
+  domain.
+\newblock {\em Dyn. Atmos. Oceans}, 1:427--441.
+
+\bibitem[Meredith and Hogg, 2006]{meredith:06}
+Meredith, M.~P. and Hogg, A.~M. (2006).
+\newblock Circumpolar response of {S}outhern {O}cean eddy activity to a change
+  in the {S}outhern {A}nnular {M}ode.
+\newblock {\em Geophys. Res. Lett.}, 33:doi:10.1029/2006GL026499.
+
+\bibitem[Opsteegh et~al., 1998]{opsteegh:98}
+Opsteegh, J.~D., Haarsma, R.~J., Selten, F.~M., and Kattenberg, A. (1998).
+\newblock {ECB}ilt: a dynamic alternative to mixed boundary conditions in ocean
+  models.
+\newblock {\em Tellus}, 50A:348--367.
+
+\bibitem[Peixoto and Oort, 1992]{peixoto:92}
+Peixoto, J.~P. and Oort, A.~H. (1992).
+\newblock {\em Physics of Climate}.
+\newblock Springer-Verlag.
+
+\bibitem[Press et~al., 1992]{press:92}
+Press, W.~H., Teukolsky, S.~A., Vetterling, W.~T., and Flannery, B.~P. (1992).
+\newblock {\em Numerical Recipes in Fortran 77: The Art of Scientific Computing
+  (2nd ed.)}.
+\newblock Cambridge University Press.
+
+\end{thebibliography}

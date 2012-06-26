@@ -1,0 +1,22 @@
+HOW TO COMPILE AND RUN THE SOUTHERN OCEAN EXAMPLE CASE.
+
+1. Prepare the Makefile by copying Makefile.generic to Makefile (within src/).
+You should set the following preprocessor options:
+	AROPT = -Dget_areav  (optional)
+	NCOPT = -Duse_netcdf
+	CYCLIC = -Dcyclic_ocean
+	HFLUX = -Dnb_hflux
+You will also need to un-comment the Makefile variables relevant to your system. As a guide, you will need FC, FFLAGS, LAPACK, NCDIR, NCLIB, IDIR and NCLINK defined.
+
+2. Either link or copy the relevant parameter.src file to the src directory. For example:
+> ln -s ../examples/southern_ocean/parameter.src parameter.src
+
+3. Make the code:
+> make q-gcm
+
+4. You will need to download the topography file soctopog.26deg.10km.nc and put it in this directory. This file is available on the Q-GCM downloads webpage on www.q-gcm.org.
+
+5. This configuration struggles with the shock of sudden startup. The best way to get around this is to download a restart file from a spun up state (lastday.nc) from year 100 from the Q-GCM downloads webpage on www.q-gcm.org. Alternatively, if you want to start a southern ocean case from scratch, we recommend a gentle start for the first 30 or so years, using the reduced radiative forcing parameters given in the alternative parameters file, input.param.spinup.
+
+6. Move to this directory and run the code. 
+The included qgrun_pbs shell script show an example of how to do this, but you will need to configure this script for your system.

@@ -1,0 +1,11 @@
+netcdf windstress {
+
+variables:
+	integer coupled;
+	double cdat;
+	integer tau_udiff;
+data:
+	coupled = 1;
+	cdat = 1.5e-3;
+	tau_udiff = 0;
+}

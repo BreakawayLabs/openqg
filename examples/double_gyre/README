@@ -1,0 +1,22 @@
+HOW TO COMPILE AND RUN THE DOUBLE GYRE EXAMPLE CASE.
+
+1. Prepare the Makefile by copying Makefile.generic to Makefile (within src/).
+You should set the following preprocessor options:
+	AROPT = -Dget_areav  (optional)
+	NCOPT = -Duse_netcdf
+	HFLUX = -Dsb_hflux
+You will also need to un-comment the Makefile variables relevant to your 
+system. As a guide, you will need FC, FFLAGS, LAPACK, NCDIR, NCLIB, IDIR, 
+NCDINC and NCLINK defined.
+
+2. Either link or copy the relevant parameter.src file to the src directory. 
+For example:
+> ln -s ../examples/double_gyre/parameter.src parameter.src
+
+3. Make the code:
+> make q-gcm
+
+4. Move to this directory and run the code. 
+You shouldn't need any specific input files.
+The included qgrun and qgrun_pbs shell scripts show examples of how to run 
+a sequence of end-to-end simulations.
