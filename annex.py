@@ -14,7 +14,7 @@ import sys
 
 def main():
     filename = sys.argv[-1]
-    project = "qgcm"
+    project = "openqg"
 
     ## Add a file to the local annex
     cmd = "git annex add %s --backend=WORM" % filename
