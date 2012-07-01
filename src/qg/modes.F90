@@ -68,7 +68,7 @@ contains
 
     call compute_eigs(mod, prtval, b%nl, wre, evecl, evecr, elder)
 
-    call derive_qgcm_modes(b, wre, evecl, evecr, elder, mod)
+    call derive_qg_modes(b, wre, evecl, evecr, elder, mod)
 
   end subroutine eigmod
 
@@ -215,7 +215,7 @@ contains
 
     end subroutine
 
-  subroutine derive_qgcm_modes(b, wre, evecl, evecr, elder, mod)
+  subroutine derive_qg_modes(b, wre, evecl, evecr, elder, mod)
     
     type(box_type), intent(in) :: b
     double precision, intent(in) :: wre(:)
@@ -234,7 +234,7 @@ contains
     logical :: eigchk
     parameter ( eigchk=.true. )
 
-    ! Derive quantities required for Q-GCM
+    ! Derive quantities required for OpenQG
     ! ------------------------------------
     ! Eigenvalues are 1/c^2; we want these in increasing order
     ! Barotropic mode is then first in list
@@ -382,7 +382,7 @@ contains
     ! *     Confirms that the matrix triple product is a diagonal
     ! *     matrix whose entries are the eigenvalues Lambda
 
-  end subroutine derive_qgcm_modes
+  end subroutine derive_qg_modes
 
   pure subroutine compute_A(b, gpr, mod)
 

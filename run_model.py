@@ -1,5 +1,5 @@
 """
-Main script for running Q-GCM models. Run
+Main script for running OpenQG models. Run
 
   python run_model.py --help
 
@@ -163,7 +163,7 @@ def run_single(input_dir, stage_dir, out_dir, exe, num_threads):
     # ncgen stage_dir/*cdl -> stage_dir/*nc
     ncgen_all(stage_dir)
 
-    # q-gcm stage_dir -> out_dir
+    # openqg stage_dir -> out_dir
     run_model(stage_dir, out_dir, exe, num_threads)
 
 
@@ -273,10 +273,10 @@ def _strip_slash(dirname):
 
 def parse_args():
 
-    parser = argparse.ArgumentParser(description='Run a Q-GCM experiment.',
+    parser = argparse.ArgumentParser(description='Run an OpenQG experiment.',
                                      epilog="One of the -e or -i options must be provided.")
-    parser.add_argument('-x', '--exe', dest="exe", type=str, default="src/q-gcm", required=True,
-                        help='Q-GCM executable to use')
+    parser.add_argument('-x', '--exe', dest="exe", type=str, default="src/openqg", required=True,
+                        help='OpenQG executable to use')
     parser.add_argument("-o", "--output", dest="output_dir", type=str, required=True,
                         help='Output directory')
 

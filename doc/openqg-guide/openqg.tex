@@ -12,7 +12,7 @@
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhead{}
-\fancyhead[RO]{\textit{Q-GCM (version 1.4.0)}}
+\fancyhead[RO]{\textit{OpenQG (version 1.4.0)}}
 \fancyhead[LE]{\textsc{Hogg, Blundell, Dewar \& Killworth}}
 \cfoot{\thepage}
 
@@ -87,7 +87,7 @@
 % ----------------------------------------------------------------
 \begin{document}
 
-\title{Formulation and users' guide for Q-GCM.\\ Version 1.4.0}%
+\title{Formulation and users' guide for OpenQG.\\ Version 1.4.0}%
 \author{A. McC. Hogg, J. R. Blundell, W. K. Dewar and P. D. Killworth}
 
 \maketitle
@@ -113,7 +113,7 @@ We extend this concept by including mixed layers in both ocean and atmosphere co
 The mixed layers allow the communication of stress and the flux of heat between ocean and atmosphere.
 The coupling of an atmosphere QG model to an ocean QG model then involves the connection of two symmetric models which use the same equations but different governing parameters.
 In this way we can model a channel atmosphere coupled to a box or channel ocean, and use this model to simulate a mid-latitude climate system driven by latitudinal variation of incoming radiation.
-A two layer version of the Quasi-Geostrophic Coupled Model (Q-GCM) is shown schematically in figure \ref{fig:sketch}.
+A two layer version of the Quasi-Geostrophic Coupled Model (OpenQG) is shown schematically in figure \ref{fig:sketch}.
 
 \begin{figure}[!t]
 \includegraphics[width=\hsize]{sketch}
@@ -126,7 +126,7 @@ varying solar forcing, and by redistribution of heat by longwave radiation
 in the atmosphere.\label{fig:sketch}}
 \end{figure}
 
-This document describes version 1.4.0 of Q-GCM. 
+This document describes version 1.4.0 of OpenQG. 
 The first version of the code was outlined in \citet{hogg:03b} and \citet{hogg:03c}.
 Version 1.2 of Q-GCM was used for systematic ocean-only \citep{hogg:05a} and coupled climate \citep{hogg:06a,hogg:07} studies.
 Version 1.3 was used primarily for studies on the variability of the southern ocean climate system \citep{hogg:06c,meredith:06,hogg:08b}.
@@ -317,7 +317,7 @@ The cyclic ocean case is handled in the same way as the atmosphere. For the fini
 
 \section{Mixed layers}\label{sec:mixed}
 Quasi-geostrophy describes, to first order, the dynamics of both ocean and atmosphere, but cannot handle the fluxes of heat and momentum between these two domains which are required for a coupled model.
-Q-GCM addresses this difficulty by embedding mixed layers within layer 1 of both ocean and atmosphere.
+OpenQG addresses this difficulty by embedding mixed layers within layer 1 of both ocean and atmosphere.
 In its current form the mixed layers do not include parameterisation of humidity in the atmosphere or salinity in the ocean, and therefore exchanges of these quantities are not modelled.
 Nonetheless, the most fundamental processes -- transfer of momentum from atmosphere to ocean, and flux of heat in both directions -- are included.
 
@@ -549,7 +549,7 @@ This condition is necessary because advection and diffusion of warm tropical wat
 A similar boundary condition is not required on the poleward meridional boundary because convection is active there.
 
 \section{Flux between layers}\label{sec:flux}
-Q-GCM includes flux of heat between each layer due to a number of different processes.
+OpenQG includes flux of heat between each layer due to a number of different processes.
 We derive each case below, and write heat flux as the superposition of a mean and a first order perturbation quantity, so that fluxes are linearised about a mean state in which the model is in radiative balance.
 
 \subsection{Incoming solar flux}
@@ -875,7 +875,7 @@ $\sigma$ & \multicolumn{2}{c}{$5.6704 \times 10^{-8}$ W/m$^2$/K$^4$} & Stefan--B
 \hline
     \end{tabular}
   \end{center}
-\caption{\small Standard Q-GCM global parameters for the double\_gyre and southern\_ocean example cases provided in the distribution (see \S\ref{sec:examples}). \label{tab:standard}}
+\caption{\small Standard OpenQG global parameters for the double\_gyre and southern\_ocean example cases provided in the distribution (see \S\ref{sec:examples}). \label{tab:standard}}
 \end{table}
 
 
@@ -1327,13 +1327,13 @@ Each of the example directories contains a \verb=README= file outlining how to r
 \begin{enumerate}
 \item Modify the \verb=Makefile= (in \verb=src=) to suit your system;
 \item Link to (or copy) a version of the \verb=parameter.src= file from the \verb=examples= directory; 
-\item Compile using \verb=make q-gcm=;
+\item Compile using \verb=make openqg=;
 \item Move to the relevant \verb=examples/*= directory to run the code. Example shell scripts are available to help running.
 \end{enumerate}
 
 
 \subsection{Components of the code}
-The code for Q-GCM consists of a number of Fortran source files (\verb=*.f/*.F=), various common block files (\verb=*.cmn=), a file called \verb=parameter.src= and a generic \verb=Makefile=.
+The code for OpenQG consists of a number of Fortran source files (\verb=*.f/*.F=), various common block files (\verb=*.cmn=), a file called \verb=parameter.src= and a generic \verb=Makefile=.
 The code uses three public domain software packages:
 \begin{description}
 \item[FFTPACK] This is a free, portable library of Fortran routines for computing 1-D fast Fourier transforms, originally written by Paul N. Swarztrauber of NCAR, Boulder. There is an FFTPACK webpage at NCAR:\\ \verb=http://www.scd.ucar.edu/softlib/FFTPACK.html=\\
@@ -1357,7 +1357,7 @@ Source code for the entire library can be downloaded from Netlib at:\\
 \verb=http://www.unidata.ucar.edu/packages/netcdf/=\\
 NetCDF (network Common Data Format) is a machine-independent, self-documenting format for representing scientific data, and a library of routines for reading and writing data in this format.
 You will need to have installed the netCDF libraries on your system, and to edit the \verb=Makefile= to indicate where they are.
-A version of the include file \verb=netcdf.inc= (edited to eliminate some compiler warnings) is included in the Q-GCM distribution.
+A version of the include file \verb=netcdf.inc= (edited to eliminate some compiler warnings) is included in the OpenQG distribution.
 Our original development and testing used version 3.5.0 of netCDF; we would now recommend using version 3.6.3.
 
 A new version 4 of netCDF has been released, which offers the option of using compression within the datafiles, and thus saving diskspace. 
@@ -1383,7 +1383,7 @@ Ferret is a powerful data visualisation package that comes with built-in netCDF 
 \end{description}
 
 
-It is our policy to use public domain packages where possible, so that anyone may use Q-GCM without having to pay for package licences.
+It is our policy to use public domain packages where possible, so that anyone may use OpenQG without having to pay for package licences.
 
 
 \subsection{Compiling the code}\label{sub:compiling}
@@ -1415,14 +1415,14 @@ This will be the current directory if you are using the version of this file inc
 \item[NCLINK] Linker option to pick up netCDF library. 
 \end{description}
 Compilation has been tested on several systems, and the \verb=Makefile= contains some example options (commented out) from each of these systems, along with information on the operating system and compiler used.
-Simply type \verb=make q-gcm= to compile, once you have edited the \verb=Makefile= to suit your system.
+Simply type \verb=make openqg= to compile, once you have edited the \verb=Makefile= to suit your system.
 
 The model requires an \verb=f90/f95= (or later) compiler, and can run in  parallel; instructions using the standard OpenMP API are included in the code.
 You will need to set a compiler flag to enable these directives.
 We do not recommend the use of an auto-paralleliser in addition to the OpenMP parallelisation in the code; this degrades the parallel performance on some systems.
 
 \subsection{Structure of the code}
-The Q-GCM model consists of a main program and 69 subroutines, 8 of which remain with the main program in the file \verb=q-gcm.F=, the remainder having been separated out into other \verb=*.f/*.F= files.
+The OpenQG model consists of a main program and 69 subroutines, 8 of which remain with the main program in the file \verb=openqg.F=, the remainder having been separated out into other \verb=*.f/*.F= files.
 Below is a list showing where to find subroutines in the \verb=*.f/*.F= files:\\
 
 \noindent
@@ -1431,7 +1431,7 @@ Below is a list showing where to find subroutines in the \verb=*.f/*.F= files:\\
 Filename & subroutines contained within & number of \\
 & & subroutines\\
 \hline
-\verb=q-gcm.F= &     \verb=inpget=, \verb=zeroin*=, \verb=rbalin*=, \verb=prsamp*=, \verb=cfltry*=, \verb=resave=,&(8)\\
+\verb=openqg.F= &     \verb=inpget=, \verb=zeroin*=, \verb=rbalin*=, \verb=prsamp*=, \verb=cfltry*=, \verb=resave=,&(8)\\
 &  \verb=memreq=, \verb=diffts=     &\\
 \verb=amlsubs.F= & \verb=aml*=, \verb=amladf*=               &  (2)\\
 \verb=areasubs.F= & \verb=areavg=, \verb=areint*=            &     (2)\\
@@ -1476,7 +1476,7 @@ The file includes brief comments explaining the meaning of each parameter, inclu
 Changes to this file do not require recompilation.
 The values contained in this file are read via formatted \verb=READ= statements in the included file \verb=in_param.f=.
 \item[outdata.dat] A separate text file with a single line containing the name of the directory to which output files are written.
-This file is read from the main program file \verb=q-gcm.F= using a formatted read statement (and so changes do not require recompilation).
+This file is read from the main program file \verb=openqg.F= using a formatted read statement (and so changes do not require recompilation).
 \item[areas.limits]   A file defining the boundaries over which area averages of temperature timeseries are recorded. Data is stored in \verb=areas.nc=.
 \end{description}
 All these parameters (and many derived quantities) are written to standard output by the main program at the start of a run.
@@ -1551,7 +1551,7 @@ Time averaged quantities are accumulated by subroutines \verb=tavatm= and \verb=
 
 \subsubsection{Test programs}
 The code distribution includes three test programs.
-They were originally written to independently test particular routines, but can also be used to test the effects of changing certain input parameters, without needing to run the full Q-GCM model.
+They were originally written to independently test particular routines, but can also be used to test the effects of changing certain input parameters, without needing to run the full OpenQG model.
 \begin{description}
 \item[eigtest.f]  Tests subroutine \verb=eigmod=, and thus the dependence of phase speeds, Rossby radii, damping timescales etc. on layer  thicknesses, reduced gravities, diffusivities etc., as specified via \verb=input.params=.
 \item[radtest.f]  Tests \verb=radsubs.f=, and thus the dependence of the mean state radiative balance and the linearised radiation coefficients on the optical properties and radiative forcing, as specified via \verb=input.params=.
@@ -1563,7 +1563,7 @@ These programs are compiled using the \verb=Makefile= in the usual way, except t
 \subsubsection{Example cases}\label{sec:examples}
 The input files are supplied set to run some standard cases. 
 These are supplied in the \verb=examples= subdirectory.
-Of these, we suggest that the best case to test your installation of Q-GCM is the double\_gyre case (it is computationally smaller and requires fewer input files).
+Of these, we suggest that the best case to test your installation of OpenQG is the double\_gyre case (it is computationally smaller and requires fewer input files).
 \begin{itemize}
   \item \textbf{double\_gyre --} A finite box ocean of $384 \times 480$ gridcells and resolution 10 km, and an atmosphere of $128 \times 64$ gridcells and resolution 120 km.
 This case requires 110 MB of static memory, or 340 MB if the covariance is computed.
@@ -1642,7 +1642,7 @@ Please report any compilation or runtime problems, with details of the operating
 \item Modified format statements to allow up to 9 layers.
 \item More checking of input netCDF topography.
 \item Better output from validity checking routine.
-\item Additional memory diagnostics in \verb=q-gcm.F=.
+\item Additional memory diagnostics in \verb=openqg.F=.
 \end{itemize}
   
 \subsubsection{Changes from v1.2 to v1.3}
@@ -1668,7 +1668,7 @@ Please report any compilation or runtime problems, with details of the operating
 \item Addition of topography to both atmosphere and ocean  components of the model.
 \item More explicit parallelisation for improved performance.
 \item More use of \verb=#ifdef=s to reduce wasted data output in uncoupled simulations.
-\item Alterations to the structure which move more subroutines into separate \verb=*.f/*.F= files, and shorten the main \verb=q-gcm.F= file.
+\item Alterations to the structure which move more subroutines into separate \verb=*.f/*.F= files, and shorten the main \verb=openqg.F= file.
 \item Addition of \verb=#ifdef small_local= flag to fix problems which arise on machines with a small predefined stacklimit.
 \end{itemize}
 
@@ -2084,7 +2084,7 @@ Although we have posed the constraints quite generally, we in practice make a ve
 We choose entrainment in the ocean to act only on the uppermost interface, so that $\e{o}{k}\equiv0$ for $k=2,N-1$ (see \ref{eq:eok1}).
 At interface 1, entrainment is nonzero.
 However (\ref{eq:occon2}), as well as ensuring conservation of mass, also determines the amount of heat entering the deep ocean.
-As Q-GCM has no overturning circulation or vertical diffusion, there is no mechanism for heat to be transferred from the deep ocean back to the surface layer.
+As OpenQG has no overturning circulation or vertical diffusion, there is no mechanism for heat to be transferred from the deep ocean back to the surface layer.
 Therefore, we adjust (in subroutine \verb=oml=) the entrainment $\e{o}{1}$ to satisfy 
 \begin{equation}\label{eq:occon2alt}
 \iint \e{o}{1} \, dA =  0.

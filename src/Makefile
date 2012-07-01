@@ -41,7 +41,7 @@ FFTW = -L/usr/local/lib -lfftw3
 
 MAKEFILE = Makefile
 
-OBJS =	q-gcm.o radsubs.o valsubs.o subsampling.o forcing.o \
+OBJS =	openqg.o radsubs.o valsubs.o subsampling.o forcing.o \
 	tavsubs.o areasubs.o covsubs.o vorsubs.o \
 	omlsubs.o core.o state.o print.o ml_monitor.o \
 	amlsubs.o coupler.o windstress.o driver.o basin.o \
@@ -49,7 +49,7 @@ OBJS =	q-gcm.o radsubs.o valsubs.o subsampling.o forcing.o \
 	util.o intsubs.o mixed.o qg.o modes.o homog.o inhomog.o \
 	ekman.o clock.o vorticity.o mixed_layer.o constraint.o pressure.o
 
-EXEC := q-gcm
+EXEC := openqg
 
 
 default: parallel
@@ -223,17 +223,17 @@ state.o: state.F90 ${MAKEFILE} qg.o mixed.o box.o radsubs.o util.o ncutils.o vor
 driver.o: driver.F90 ${MAKEFILE} coupler.o windstress.o omlsubs.o amlsubs.o core.o forcing.o basin.o
 	${FC} ${FFLAGS} -c driver.F90
 
-q-gcm.o: q-gcm.F90 ${MAKEFILE} ${NCDINC} \
+openqg.o: openqg.F90 ${MAKEFILE} ${NCDINC} \
 	ncutils.o glam.o omlsubs.o forcing.o mixed.o \
 	qg.o modes.o homog.o inhomog.o subsampling.o clock.o vorsubs.o tavsubs.o qg_monitor.o \
 	valsubs.o covsubs.o areasubs.o vorticity.o radsubs.o constraint.o pressure.o covsubs.o \
 	amlsubs.o core.o state.o coupler.o windstress.o driver.o basin.o print.o ml_monitor.o
-	${FC} ${FFLAGS} -c q-gcm.F90
+	${FC} ${FFLAGS} -c openqg.F90
 
 
 ##
 nuke: clean
-	rm -f q-gcm q-gcm-single q-gcm-profile-single q-gcm-debug-single q-gcm-debug-parallel q-gcm-debug-profile
+	rm -f openqg openqg-single openqg-profile-single openqg-debug-single openqg-debug-parallel openqg-debug-profile
 
 
 clean:

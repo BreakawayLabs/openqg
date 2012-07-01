@@ -2,9 +2,9 @@
 
 To build the documentation run the following command:
 
-    pdflatex q-gcm.tex; pdflatex q-gcm.tex
+    pdflatex openqg.tex; pdflatex openqg.tex
 
-This will generate a file called q-gcm.pdf in the current directory. You need to run pdflatex twice so as to correctly generate the table of contents.
+This will generate a file called openqg.pdf in the current directory. You need to run pdflatex twice so as to correctly generate the table of contents.
 
 ## Dependencies
 

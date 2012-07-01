@@ -1,4 +1,4 @@
-program qgcm
+program openqg
 
   use util, only: s2s, streq
   ! GLAM
