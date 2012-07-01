@@ -12,8 +12,8 @@
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhead{}
-\fancyhead[RO]{\textit{OpenQG (version 1.4.0)}}
-\fancyhead[LE]{\textsc{Hogg, Blundell, Dewar \& Killworth}}
+\fancyhead[RO]{\textit{OpenQG (version 1.0.0)}}
+\fancyhead[LE]{\textsc{Hogg, Blundell, Dewar, Killworth \& Leslie}}
 \cfoot{\thepage}
 
 
@@ -87,8 +87,8 @@
 % ----------------------------------------------------------------
 \begin{document}
 
-\title{Formulation and users' guide for OpenQG.\\ Version 1.4.0}%
-\author{A. McC. Hogg, J. R. Blundell, W. K. Dewar and P. D. Killworth}
+\title{Formulation and users' guide for OpenQG.\\ Version 1.0.0}%
+\author{A. McC. Hogg, J. R. Blundell, W. K. Dewar, P. D. Killworth and T. B. Leslie}
 
 \maketitle
 
@@ -126,11 +126,13 @@ varying solar forcing, and by redistribution of heat by longwave radiation
 in the atmosphere.\label{fig:sketch}}
 \end{figure}
 
-This document describes version 1.4.0 of OpenQG. 
-The first version of the code was outlined in \citet{hogg:03b} and \citet{hogg:03c}.
+This document describes version 1.0.0 of OpenQG.
+OpenQG is a fork of version 1.4.0 of the Q-GCM project.
+The first version of the Q-GCM code was outlined in \citet{hogg:03b} and \citet{hogg:03c}.
 Version 1.2 of Q-GCM was used for systematic ocean-only \citep{hogg:05a} and coupled climate \citep{hogg:06a,hogg:07} studies.
 Version 1.3 was used primarily for studies on the variability of the southern ocean climate system \citep{hogg:06c,meredith:06,hogg:08b}.
-The current version has been designed to incorporate different wind stress algorithms and has been used to investigate the effects of ocean-atmosphere velocity differences upon stress \citep{hutchinson:10} and, with further modifications, temperature feedback upon oceanic wind stress \citep{hogg:09}.
+Version 1.4 was designed to incorporate different wind stress algorithms and has been used to investigate the effects of ocean-atmosphere velocity differences upon stress \citep{hutchinson:10} and, with further modifications, temperature feedback upon oceanic wind stress \citep{hogg:09}.
+The current version of OpenQG is designed to port the code from Fortran 77 to Fortran 90 and to introduce an open source development model.
 
 \section{Quasi-Geostrophic equations}\label{sec:qg}
 Begin with the equations for conservation of momentum in a rotating fluid,
@@ -1382,85 +1384,11 @@ Ferret is a powerful data visualisation package that comes with built-in netCDF 
 
 \end{description}
 
-
 It is our policy to use public domain packages where possible, so that anyone may use OpenQG without having to pay for package licences.
 
-
 \subsection{Compiling the code}\label{sub:compiling}
-The \verb=Makefile= will take care of the compiling and linking, but it contains preprocessor options and a few flags specific to your system which must be set before it will work:
-\begin{description}
-\item[atmos\_only, ocean\_only] Flags which, if set, restrict the model to run in atmosphere/ocean only mode. At most one of these flags should be set.
-\item[get\_areav]  Flag to determine whether area averages should be computed.
-The relevant routines are in \verb=areasubs.F=; the areas are defined in \verb=areas.limits=.
-\item[get\_covar] Flag to determine whether the covariance matrices should be computed.
-If set, this option turns on routines which accumulate the corrected sums of squares and products, which enable the covariance matrix and hence time-independent EOFS and principal components to be found in post-processing.
-This option significantly increases the memory requirement of the program.
-\item[use\_netcdf] Flag to make use of the netCDF output facility (see below). Turn this flag off to run the model without netCDF output.
-\item[small\_local] Flag to activate Fortran \verb=SAVE= statements in those subroutines with significant internal storage. Needed on systems which have a small kernel limit on the amount of temporary (stack) storage which can be allocated.
-
-Ideally this flag should not need to be set: try using it if your system (linux only?) gives a \verb=Segmentation Fault= error message which is not fixed by setting environment stack size limits as described in section \ref{sub:probs}.
-This flag also turns on diagnostics (in subroutine \verb=memreq=) indicating the approximate amount of stack storage allocated by those subroutines with significant local arrays.
-\item[cyclic\_ocean] Flag to switch between the box ocean and channel ocean configurations. 
-\item[tau\_udiff] Flag to switch on the \citet{duhaut:06} stress formulation based on the difference between atmospheric and oceanic velocities (the default is to calculate stress assuming ocean velocity does not affect stress).
-\item[nb\_hflux, sb\_hflux] Flags to switch on northern or southern boundary heat fluxes. When turned on, the ocean mixed layer temperature boundary condition on the relevant boundary becomes constant temperature (the default is no flux), the boundary temperature being the radiative equilibrium temperature at that latitude. This flag is designed to allow advection and diffusion of tropical water into the domain, and therefore the southern boundary flag may only be used when the model is on northern hemisphere mode ($f_0 > 0$, $F_s' > 0$). Likewise the northern boundary flag may only be used when the model is in southern hemisphere mode ($f_0 < 0$, $F_s' < 0$).\end{description}
-The above items control the treatment of \verb=*.F= files by the Fortran preprocessor.
-\begin{description}
-\item[FC] The command which invokes your Fortran 90 (or later) compiler (e.g. \verb=f90=,  \verb=ifort=, \verb=pgf90=, \verb=xlf=, \verb=gfortran=, \ldots)
-\item[FFLAGS] List of flags for your Fortran compiler (to control optimisation/debugging/profiling etc.). See your Fortran compiler's \verb=man= pages for details.
-\item[LAPACK] Linker option to pick up the LAPACK library
-\item[NCDIR] The top directory of your netCDF installation
-\item[NCLIB] The flag showing where to find the library of your netCDF installation
-\item[IDIR] Directory containing the netCDF include file \verb=netcdf.inc=.
-This will be the current directory if you are using the version of this file included in the distribution.
-\item[NCLINK] Linker option to pick up netCDF library. 
-\end{description}
-Compilation has been tested on several systems, and the \verb=Makefile= contains some example options (commented out) from each of these systems, along with information on the operating system and compiler used.
-Simply type \verb=make openqg= to compile, once you have edited the \verb=Makefile= to suit your system.
-
-The model requires an \verb=f90/f95= (or later) compiler, and can run in  parallel; instructions using the standard OpenMP API are included in the code.
-You will need to set a compiler flag to enable these directives.
-We do not recommend the use of an auto-paralleliser in addition to the OpenMP parallelisation in the code; this degrades the parallel performance on some systems.
 
 \subsection{Structure of the code}
-The OpenQG model consists of a main program and 69 subroutines, 8 of which remain with the main program in the file \verb=openqg.F=, the remainder having been separated out into other \verb=*.f/*.F= files.
-Below is a list showing where to find subroutines in the \verb=*.f/*.F= files:\\
-
-\noindent
-\begin{tabular}{llc}
-\hline
-Filename & subroutines contained within & number of \\
-& & subroutines\\
-\hline
-\verb=openqg.F= &     \verb=inpget=, \verb=zeroin*=, \verb=rbalin*=, \verb=prsamp*=, \verb=cfltry*=, \verb=resave=,&(8)\\
-&  \verb=memreq=, \verb=diffts=     &\\
-\verb=amlsubs.F= & \verb=aml*=, \verb=amladf*=               &  (2)\\
-\verb=areasubs.F= & \verb=areavg=, \verb=areint*=            &     (2)\\
-\verb=atisubs.F= & \verb=atinvq*=, \verb=hscyat*=                   &   (2)\\
-\verb=conhoms.F= & \verb=constr*=, \verb=homsol*=               &       (2)\\
-\verb=covsubs.F= & \verb=covini*=, \verb=covatm=, \verb=covocn=, \verb=covout=, \verb=tsampl*= , \verb=psampl*= ,                 & (7)\\
-&  \verb=dssp*=   & \\
-\verb=diasubs.F= & \verb=diagno*=, \verb=del4bx*=, \verb=del4ch*=, \verb=genint*=          &       (4)\\
-\verb=intsubs.f= & \verb=xintt*=, \verb=xintp*=             &      (2)\\
-\verb=nc_subs.F= & \verb=handle_err=, \verb=ocnc_init=, \verb=atnc_init=, \verb=ocnc_out*=, \verb=atnc_out*= ,&  (9)\\
-& \verb=monnc_init=, \verb=monnc_out=, \verb=resave_nc=, \verb=restart_nc=                   \\
-\verb=ocisubs.F= & \verb=ocinvq*=, \verb=hsbxoc*=, \verb=hscyoc*=               &         (3)\\
-\verb=omlsubs.F= & \verb=oml*=, \verb=omladf*=                & (2)\\
-\verb=qgasubs.F= & \verb=qgastep*=, \verb=atadif*=            &(2)\\
-\verb=qgosubs.F=&  \verb=qgostep*=, \verb=ocadif*=           &  (2)\\
-\verb=radsubs.f=&  \verb=radiat*=, \verb=trapin*=             & (2)\\
-\verb=tavsubs.F= & \verb=tavini*=, \verb=tavatm*=, \verb=tavocn*=, \verb=tavout=     & (4)\\
-\verb=topsubs.F=  & \verb=topset=, \verb=topout_nc=                            &  (2) \\
-\verb=valsubs.F=  & \verb=valids*=, \verb=scan2D=, \verb=scan3D= & (3)\\
-\verb=vorsubs.F=  &  \verb=qcomp*=, \verb=merqcy*=, \verb=ocqbdy*=, \verb=atqzbd*=   & (4)\\
-\verb=xfosubs.F= & \verb=xforc*=, \verb=function fsprim=, \verb=bilint*=, \verb=auvbcu*=, \verb=bcuini=, \verb=wts2bb=     & (6)\\
-\verb=eigmod.f= & is a single routine     & (1)\\
-\hline
-\end{tabular} \\
-
-In addition there are linear algebra library routines from LAPACK and Fourier transform library routines from FFTPACK (see \verb=fftpack.f=) not counted above.
-Two additional code fragments \verb=in_param.f= and \verb=out_param.f= are also added to the main program by \verb=INCLUDE= statements.
-All real variables are explicitly of Fortran type ``double precision'' (64 bit), giving a precision of 15 significant figures.
-Routines marked here with a \verb=*= are those which have been explicitly parallelised using OpenMP.
 
 \subsubsection{Input files}
 Variables governing the model run are contained in three input files.
@@ -1510,36 +1438,6 @@ This can be useful for restarting the run if the model crashes part-way through.
 \end{description}
 
 \subsubsection{Location of variables}
-Where possible variables are held in common blocks, rather than being passed as arguments to subroutines.
-Each common block is defined in a separate \verb=*.cmn= file, which contains comments describing the meaning of each variable, and its units.
-Each of the 18 common blocks contains a set of related variables thus:\vspace{2mm}\\
-\vspace{2mm}\begin{tabular}{ll}
-\verb=atconst.cmn= & Time independent atmospheric parameters\\
-\verb=athomog.cmn= & Homogeneous atmospheric solutions and their coefficients\\
-\verb=atmfft.cmn=  & Atmospheric Fourier transform coefficients\\
-\verb=atnc.cmn =   & Identifiers for netCDF dumps of atmospheric variables\\
-\verb=atstate.cmn= & Time varying atmospheric state\\
- &             (pressure, vorticity, entrainment and Ekman velocity)\\
-\verb=covarat.cmn= & Atmospheric variables needed for the covariance routines in \verb=covsubs.F=\\
-\verb=covaroc.cmn= & Oceanic variables needed for the covariance routines in \verb=covsubs.F=\\
-\verb=intrfac.cmn= & All mixed layer parameters and variables, for\\
-&              both atmosphere and ocean, including dynamic stresses\\
-\verb=monitor.cmn= & Diagnostic quantities for monitoring model\\
-\verb=monnc.cmn=  & Identifiers for netCDF dumps of diagnostic variables\\
-\verb=occonst.cmn= & Time independent oceanic parameters\\
-\verb=ochomog.cmn= & Homogeneous oceanic solutions and their coefficients\\
-\verb=ocnc.cmn=    & Identifiers for netCDF dumps of oceanic variables\\
-\verb=ocnfft.cmn=  & Oceanic Fourier transform coefficients\\
-\verb=ocstate.cmn= & Time varying oceanic state\\
-&              (pressure, vorticity, entrainment and Ekman velocity)\\
-\verb=radiate.cmn= & Input radiative parameters, and the derived coefficients needed for the \\
-&radiation scheme\\
-\verb=timavat.cmn= & Used for averaging atmospheric fields over the course of a run\\
-\verb=timavoc.cmn= & Used for averaging oceanic fields over the course of a run\\
-\end{tabular}\\
-These files are included at the start of those subroutines where they are required.
-They are all included in the main program, to ensure that the values of their contents remain defined at all times.
-Variables declared within subroutines are purely local, so ``stack'' storage can be used to save memory.
 
 \subsubsection{Diagnostics}
 Where possible, instantaneous diagnostic quantities are computed by subroutine \verb=diagno=, whose calling frequency is determined by the variable \verb=dgnday=, set in \verb=input.params=.
@@ -1548,17 +1446,6 @@ Another exception is that convection-related quantities need to be computed in t
 These diagnostic quantities are all stored in the common block \verb=monitor.cmn=, and output in netCDF format by subroutine \verb=monnc_out=.
 Time averaged quantities are accumulated by subroutines \verb=tavatm= and \verb=tavocn= in the common blocks \verb=timavat.cmn= and \verb=timavoc.cmn= respectively, and finally computed and output by subroutine \verb=tavout=.
 
-
-\subsubsection{Test programs}
-The code distribution includes three test programs.
-They were originally written to independently test particular routines, but can also be used to test the effects of changing certain input parameters, without needing to run the full OpenQG model.
-\begin{description}
-\item[eigtest.f]  Tests subroutine \verb=eigmod=, and thus the dependence of phase speeds, Rossby radii, damping timescales etc. on layer  thicknesses, reduced gravities, diffusivities etc., as specified via \verb=input.params=.
-\item[radtest.f]  Tests \verb=radsubs.f=, and thus the dependence of the mean state radiative balance and the linearised radiation coefficients on the optical properties and radiative forcing, as specified via \verb=input.params=.
-\item[toptest.F]  Tests \verb=topsubs.F=, and thus enables the user to experiment with defining suitable topographies for the ocean and atmosphere.
-Creates a \verb=topog.nc= file in the current directory.
-\end{description}
-These programs are compiled using the \verb=Makefile= in the usual way, except that they don't use the optimisation and possible parallelisation options used for the full model.
 
 \subsubsection{Example cases}\label{sec:examples}
 The input files are supplied set to run some standard cases. 
