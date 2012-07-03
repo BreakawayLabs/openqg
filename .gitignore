@@ -1,0 +1,47 @@
+# Object/module files from compiling
+src/*.o
+src/*.mod
+
+# Executable files
+src/openqg
+src/openqg-parallel
+src/openqg-single
+src/openqg-debug-parallel
+src/openqg-debug-single
+src/openqg-profile-parallel
+src/openqg-profile-single
+
+# Emacs backup files
+*~
+
+# Quickstart output directory
+output/
+
+# Document build artifacts
+doc/openqg-guide/openqg.aux
+doc/openqg-guide/openqg.log
+doc/openqg-guide/openqg.out
+doc/openqg-guide/openqg.pdf
+doc/openqg-guide/openqg.pdfsync
+doc/openqg-guide/openqg.toc
+doc/CLIM3001/math.aux
+doc/CLIM3001/math.log
+doc/CLIM3001/math.nav
+doc/CLIM3001/math.out
+doc/CLIM3001/math.pdf
+doc/CLIM3001/math.snm
+doc/CLIM3001/math.toc
+doc/CLIM3001/model.aux
+doc/CLIM3001/model.log
+doc/CLIM3001/model.nav
+doc/CLIM3001/model.out
+doc/CLIM3001/model.pdf
+doc/CLIM3001/model.snm
+doc/CLIM3001/model.toc
+doc/CLIM3001/numerical.aux
+doc/CLIM3001/numerical.log
+doc/CLIM3001/numerical.nav
+doc/CLIM3001/numerical.out
+doc/CLIM3001/numerical.pdf
+doc/CLIM3001/numerical.snm
+doc/CLIM3001/numerical.toc
