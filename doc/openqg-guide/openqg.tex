@@ -113,11 +113,11 @@ We extend this concept by including mixed layers in both ocean and atmosphere co
 The mixed layers allow the communication of stress and the flux of heat between ocean and atmosphere.
 The coupling of an atmosphere QG model to an ocean QG model then involves the connection of two symmetric models which use the same equations but different governing parameters.
 In this way we can model a channel atmosphere coupled to a box or channel ocean, and use this model to simulate a mid-latitude climate system driven by latitudinal variation of incoming radiation.
-A two layer version of the Quasi-Geostrophic Coupled Model (OpenQG) is shown schematically in figure \ref{fig:sketch}.
+A two layer version of the Open Quasi-Geostrophic Model (OpenQG) is shown schematically in figure \ref{fig:sketch}.
 
 \begin{figure}[!t]
 \includegraphics[width=\hsize]{sketch}
-\caption{\small Schematic of (a two-layer version of) the Quasi-Geostrophic Coupled Model. This
+\caption{\small Schematic of (a two-layer version of) the Open Quasi-Geostrophic Model. This
 meridional slice through the model shows the interface dividing the two QG
 dynamical layers in both the ocean and the atmosphere. The mixed layers,
 shown by the shading which represents temperature, act to distribute heat
@@ -1324,36 +1324,16 @@ Subroutine \verb=diffts= evaluates these timescales for two special cases:
 
 \section{ Users' guide}
 Having described the numerical formulation of the model, we now outline the practicalities of using the code.
-The code is available in gzipped tar format, which expands to three primary directories: \verb=src= (which includes all source code), \verb=examples= (which includes the input files needed for each case) and \verb=matlab= (some helpful files for post-processing data).
-Each of the example directories contains a \verb=README= file outlining how to run the case, but the basic sequence is to:
-\begin{enumerate}
-\item Modify the \verb=Makefile= (in \verb=src=) to suit your system;
-\item Link to (or copy) a version of the \verb=parameter.src= file from the \verb=examples= directory; 
-\item Compile using \verb=make openqg=;
-\item Move to the relevant \verb=examples/*= directory to run the code. Example shell scripts are available to help running.
-\end{enumerate}
-
 
 \subsection{Components of the code}
-The code for OpenQG consists of a number of Fortran source files (\verb=*.f/*.F=), various common block files (\verb=*.cmn=), a file called \verb=parameter.src= and a generic \verb=Makefile=.
+The code for OpenQG consists of a number of Fortran source files (\verb=*.F90=) and a generic \verb=Makefile=.
 The code uses three public domain software packages:
 \begin{description}
-\item[FFTPACK] This is a free, portable library of Fortran routines for computing 1-D fast Fourier transforms, originally written by Paul N. Swarztrauber of NCAR, Boulder. There is an FFTPACK webpage at NCAR:\\ \verb=http://www.scd.ucar.edu/softlib/FFTPACK.html=\\
- but the package is also distributed as part of the Netlib software repository: \\
-\verb=http://www.netlib.org/=\\
- in Tennessee, USA, and its various mirror sites, which include:\\ \verb=http://www.mirror.ac.uk/sites/netlib.bell-labs.com/netlib/  =   (UK)  \\
-\verb=http://netlib.uow.edu.au/  =                            (Australia).
 
-We use the double precision version of the library, which can usually be found in the subdirectory \verb=bihar=.
-Alternatively we also distribute our own versions of the necessary routines, modified to remove some programming constructs such as ``arithmetic IFs'' which are deprecated in Fortran90, and which cause compiler warnings (directory \verb=src/fftpack/newbihar=).
-The FFTPACK routines are included via the file \verb=fftpack.f= .
+\item[FFTW3]
 
 \item[LAPACK] This is a free, public domain linear algebra package.
 It is included in the scientific software libraries provided with most commercial Fortran compilers, and we recommend you access it in this way, to get the best optimisation.
-Failing that, we now distribute the necessary subset of LAPACK and underlying BLAS routines with the model, in directory \verb=src/lapack=, and subdirectory \verb=blas=.
-The file \verb=lasubs.f= lists the LAPACK and BLAS routines that are required.
-Source code for the entire library can be downloaded from Netlib at:\\
-\verb=http://www.netlib.org/lapack/=.\\
 
 \item[netCDF] available from\\
 \verb=http://www.unidata.ucar.edu/packages/netcdf/=\\
@@ -1440,12 +1420,6 @@ This can be useful for restarting the run if the model crashes part-way through.
 \subsubsection{Location of variables}
 
 \subsubsection{Diagnostics}
-Where possible, instantaneous diagnostic quantities are computed by subroutine \verb=diagno=, whose calling frequency is determined by the variable \verb=dgnday=, set in \verb=input.params=.
-One exception to this is that some quantities which would require inconvenient duplication of code are computed by the timestepping routines.
-Another exception is that convection-related quantities need to be computed in the timestepping subroutines, before convective adjustment is finally applied.
-These diagnostic quantities are all stored in the common block \verb=monitor.cmn=, and output in netCDF format by subroutine \verb=monnc_out=.
-Time averaged quantities are accumulated by subroutines \verb=tavatm= and \verb=tavocn= in the common blocks \verb=timavat.cmn= and \verb=timavoc.cmn= respectively, and finally computed and output by subroutine \verb=tavout=.
-
 
 \subsubsection{Example cases}\label{sec:examples}
 The input files are supplied set to run some standard cases. 
@@ -1491,10 +1465,6 @@ Remember to set the number of threads required; syntax for this depends only on 
 \item Some systems (linux only?) seem to have an additional limit (typically a few Mbytes, and perhaps set by the kernel) on the allocation of stack storage, which we don't yet know how to reset.
 As a workaround, we have provided the \verb=small_local= preprocessor option which causes the main temporary arrays in subroutines to be allocated as static rather than stack storage, by using the Fortran \verb=SAVE= statement.
 If the environment settings described above do not fix any segmentation problems you encounter, try using \verb=small_local= as described in section \ref{sub:compiling}.
-\item When running in parallel on systems using Itanium 2 processors, some ``reduction'' operations, summing variables to compute integrals, incorrectly return a value of zero. 
-This has been observed using both v8.1 and v9.0 of the Intel Fortran compiler, and the problem is currently under investigation. 
-This problem mainly affects diagnostic variables. 
-The only known impact on model evolution, caused by a failure to correctly apply the entrainment constraint (\ref{eq:occon2alt}), has been dealt with by a temporary fix to the code (clearly commented as such) in subroutine \verb=oml= in the file \verb=omlsubs.F=, pending a complete understanding of the problem.
 \end{itemize}
 
 \subsubsection{Feedback}
@@ -1954,7 +1924,7 @@ where we have chosen $P_b = 1-\tfrac{y}{{}^aY}$, and thus can explicitly write
 
 We perform a consistency check on the conservation of mass in the baroclinic solutions.
 The change in mean interface height between timesteps can be explicitly calculated from the integral of entrainment.
-This is compared with the change computed by applying the constaints  derived above, and the absolute and fractional errors are stored in the monitoring variables \verb=ermasa= and \verb=emfrat=.
+This is compared with the change computed by applying the constaints  derived above, and the absolute and fractional errors are stored in the monitoring variables \verb=ermas= and \verb=emfr=.
 
 
 \subsection{Ocean constraints}\label{app:occon}
