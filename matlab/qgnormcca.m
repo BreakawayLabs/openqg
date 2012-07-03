@@ -2,7 +2,7 @@ function qgnormcca(base_dir,run,printflag,frecut,lvar,rvar)
 % QGNORMCCA  Find and plot Canonical Correlation Analysis between
 % LVAR and RVAR.
 %   QGNORMCCA(BASE_DIR,RUN,PRINTFLAG,FRECUT) takes filtered, 
-%  normalised data from Q-GCM (filtered by QGFFTFILT) held in the
+%  normalised data from OpenQG (filtered by QGFFTFILT) held in the
 %  BASE_DIR and finds EOFS. 
 %   RUN is the subdirectory for the data.
 %   PRINTFLAG should be 1 if 

@@ -1,7 +1,7 @@
 function qgfiltcpclags(file_dir,run,printflag,halfw)
-% QGFILTcPCLAGS  Find and plot filtered CEOFS from Q-GCM run
+% QGFILTcPCLAGS  Find and plot filtered CEOFS from OpenQG run
 %   QGFILTPCLAGS(FILE_DIR,RUN,PRINTFLAG,HALFW) takes filtered 
-%  CPCs from Q-GCM (calculated by QGFILTCEOFS) held in the
+%  CPCs from OpenQG (calculated by QGFILTCEOFS) held in the
 %  FILE_DIR and does a lagged cross correlation between a 
 %  number of quantities. Uses lagcorrceof.m.
 %   RUN is the subdirectory for the data.

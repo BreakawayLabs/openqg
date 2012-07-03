@@ -2,7 +2,7 @@ function qgjointsvd(base_dir,run,printflag,frecut,lvar,rvar)
 % QGJOINTSVD  Find and plot joint Singular Value Decomposition 
 % between LVAR and RVAR.
 %   QGJOINTSVD(BASE_DIR,RUN,PRINTFLAG,FRECUT,LVAR,RVAR) takes filtered, 
-%  normalised data from Q-GCM (filtered by QGFFTFILT) held in the
+%  normalised data from OpenQG (filtered by QGFFTFILT) held in the
 %  BASE_DIR and finds EOFS. 
 %   RUN is the subdirectory for the data.
 %   PRINTFLAG should be 1 if 

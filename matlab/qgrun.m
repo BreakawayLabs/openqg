@@ -1,4 +1,4 @@
-%% Matlab script which calls routines to process Q-GCM model data
+%% Matlab script which calls routines to process OpenQG model data
 %% Updated to cope with all latest Q-GCM_V1.3 scripts - AH 3/9/04
 %% Updated from NetCDF Toolbox to SNCTools - MW 17/7/09
 %%
@@ -8,8 +8,8 @@ close all
 
 %% The run base directory:
 %
-% base_dir is the home location of all Q-GCM data files
-% file_dir is the output location of all Q-GCM plots and other output
+% base_dir is the home location of all OpenQG data files
+% file_dir is the output location of all OpenQG plots and other output
 % run_name is the name given for the folder of a particular run within
 %           these locations
 %
@@ -18,7 +18,7 @@ close all
 % file_dir = '/Users/andy/Data/'
 % run_name = 'SO-winds/SO_winds_udiff_lovis_40km/'
 %
-% Raw Q-GCM data is stored in base_dir/run_name/
+% Raw OpenQG data is stored in base_dir/run_name/
 % Processed data is placed in file_dir/run_name/
 
 base_dir = '../examples/double_gyre_vayu/'

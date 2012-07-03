@@ -1,7 +1,7 @@
 function qgmonit(base_dir,file_dir,run,fileflag,printflag,frecut)
-% QGMONIT  Plot monitoring data from Q-GCM output
+% QGMONIT  Plot monitoring data from OpenQG output
 %   QGMONIT(BASE_DIR,FILE_DIR,RUN,FILEFLAG,PRINTFLAG,FRECUT) takes
-%  data from either the 'monit.nc' files of a Q-GCM
+%  data from either the 'monit.nc' files of a OpenQG
 %  run, or else from the 'allvars.mat' file, plots, 
 %  and prints all the data. 
 %   BASE_DIR is the directory where data is held. 

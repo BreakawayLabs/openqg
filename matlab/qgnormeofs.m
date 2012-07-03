@@ -1,7 +1,7 @@
 function qgnormeofs(base_dir,run,printflag,frecut)
-% QGNORMEOFS  Find and plot filtered EOFS from Q-GCM run
+% QGNORMEOFS  Find and plot filtered EOFS from OpenQG run
 %   QGNORMEOFS(BASE_DIR,RUN,PRINTFLAG,FRECUT) takes filtered data
-%  from Q-GCM (filtered by QGFFTFILT) held in the
+%  from OpenQG (filtered by QGFFTFILT) held in the
 %  BASE_DIR and finds EOFS. 
 %   RUN is the subdirectory for the data.
 %   PRINTFLAG should be 1 if 

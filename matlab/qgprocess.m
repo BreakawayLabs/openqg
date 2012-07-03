@@ -1,7 +1,7 @@
 function qgprocess(base_dir,file_dir,run_name,files,numfiles)
-% QGPROCESS   Post-process data from Q-GCM.
+% QGPROCESS   Post-process data from OpenQG.
 %   QGPROCESS(BASE_DIR,FILE_DIR,RUN_NAME,FILES,NUMFILES) takes data from
-%  a sequence of Q-GCM simulations.
+%  a sequence of OpenQG simulations.
 %   BASE_DIR is the directory where data is held. 
 %   FILE_DIR is the directory where processed data is written. 
 %   RUN_NAME is the subdirectory for the data.

@@ -1,7 +1,7 @@
 function qgfiltceofs(base_dir,run,printflag,frecut)
-% QGFILTCEOFS  Find and plot filtered COMPLEX EOFS from Q-GCM run
+% QGFILTCEOFS  Find and plot filtered COMPLEX EOFS from OpenQG run
 %   QGFILTCEOFS(BASE_DIR,RUN,PRINTFLAG,FRECUT) takes filtered data
-%   from Q-GCM (filtered by QGFFTFILT) held in the
+%   from OpenQG (filtered by QGFFTFILT) held in the
 %   BASE_DIR and finds CEOFS. 
 %   RUN is the subdirectory for the data.
 %   PRINTFLAG should be 1 if 

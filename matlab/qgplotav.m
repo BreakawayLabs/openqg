@@ -1,7 +1,7 @@
 function qgplotav(base_dir,file_dir,run_name,fileflag,printflag)
-% QGPLOTAV  Plot monitoring data from Q-GCM output
+% QGPLOTAV  Plot monitoring data from OpenQG output
 %   QGPLOTAV(BASE_DIR,FILE_DIR,RUN_NAME,FILEFLAG,PRINTFLAG) takes
-%   data from either the 'avges.nc' files of a Q-GCM
+%   data from either the 'avges.nc' files of a OpenQG
 %   run, or else from the 'allvars.mat' file, plots, 
 %   and prints important fields. 
 %   BASE_DIR is the directory where data is held. 

@@ -1,7 +1,7 @@
 function qgjointeofs(base_dir,run,printflag,frecut)
-% QGJOINTEOFS  Find and plot filtered EOFS from Q-GCM run
+% QGJOINTEOFS  Find and plot filtered EOFS from OpenQG run
 %   QGJOINTEOFS(BASE_DIR,RUN,PRINTFLAG,FRECUT) takes filtered data
-%  from Q-GCM (filtered by QGFFTFILT) held in the
+%  from OpenQG (filtered by QGFFTFILT) held in the
 %  BASE_DIR and finds joint EOFS -- uses pa1, ast, sst and po1. 
 %   RUN is the subdirectory for the data.
 %   PRINTFLAG should be 1 if 

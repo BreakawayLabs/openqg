@@ -1,6 +1,6 @@
-MATLAB SCRIPTS FOR Q-GCM
+MATLAB SCRIPTS FOR OpenQG
 
-These matlab scripts are designed to read and analyse Q-GCM output.
+These matlab scripts are designed to read and analyse OpenQG output.
 You will need SNCTools installed to run these scripts.
 Note that most files are written as functions, called by qgrun.m - best to read that file to get an idea of how to run things.
 We have assumed that your data is saved within folders called, for example yrs000-005. If you have separate spinup runs which you want excluded from averaging but would still like monitoring data, rename those cases to spinup_yrs000-005.

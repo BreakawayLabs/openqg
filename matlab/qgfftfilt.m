@@ -1,7 +1,7 @@
 function qgfftfilt(base_dir,file_dir,run,files,numfiles,frecut,nsa,nso)
-% QGFFTFILT  Filter data from Q-GCM run
+% QGFFTFILT  Filter data from OpenQG run
 %   QGFFTFILT(BASE_DIR,FILE_DIR,RUN,FILES,NUMFILES,FRECUT,NSA,NSO) takes data
-%  from a Q-GCM run, and
+%  from a OpenQG run, and
 %     (a) combines segments of data into 1 file;
 %     (b) applies an fft filter to the full data set;
 %     (c) subsamples the data,subtracts the mean and 
