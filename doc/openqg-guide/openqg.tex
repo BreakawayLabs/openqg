@@ -136,27 +136,19 @@ The current version of OpenQG is designed to port the code from Fortran 77 to Fo
 
 \section{Quasi-Geostrophic equations}\label{sec:qg}
 Begin with the equations for conservation of momentum in a rotating fluid,
-\begin{subequations}\label{eq:mom}
-\begin{equation}\label{eq:momx}
-u_t + u u_x + v u_y + w u_z - f v = -p_x + K u_{xx} + K u_{yy} + K u_{zz},
+\begin{equation}\label{eq:mom}
+\vc{u}_t + \vc{u}\cdot\nabla\vc{u} - f(\vc{u}\times\vc{\hat{z}}) = -\nabla p -g\vc{\hat{z}} + K\nabla^2\vc{u},
 \end{equation}
-\begin{equation}\label{eq:momy}
-v_t + u v_x + v v_y + w v_z + f u = -p_y + K v_{xx} + K v_{yy} + K v_{zz},
-\end{equation}
-\begin{equation}\label{eq:momz}
-w_t + u w_x + v w_y + w w_z = -p_z - g  + K w_{xx} + K w_{yy} + K w_{zz},
-\end{equation}
-\end{subequations}
 where we have used $\vc{u}=(u,v,w)$ for velocity, and subscripts to represent partial derivatives.
 The pressure $p$ has been rescaled by mean density $\rho$ and we represent viscosity using a constant diffusion coefficient $K$.
 The Coriolis parameter has been represented by $f$ and gravitational acceleration by $g$.
 The other equations required here are the continuity equation
 \begin{equation}\label{eq:cont}
-u_x + v_y + w_z = 0,
+\nabla\cdot\vc{u} = 0,
 \end{equation}
 and the mass conservation equation which we write as
 \begin{equation}\label{eq:temp}
-\rho_t + u \rho_x + v \rho_y + w \rho_z  =  K_H \rho_{xx} + K_H \rho_{yy} + K_V \rho_{zz}.
+\rho_t + \vc{u}\cdot\nabla\rho = K_H\nabla^2\rho.
 \end{equation}
 
 To derive the quasi-geostrophic equations which govern the model dynamics, we simplify (\ref{eq:mom})--(\ref{eq:temp}).
@@ -170,70 +162,140 @@ We begin by assuming, for the purposes of finding the zeroth order equations, th
 The zeroth order equations in which pressure balances rotation are then
 \begin{subequations}
 \begin{equation}\label{eq:momxa}
-f_0 \vv{a}{1} = \p{a}{1}_x,
+f_0v = p_x,
 \end{equation}
 \begin{equation}\label{eq:momya}
-f_0 \uu{a}{1}= -\p{a}{1}_y,
+f_0 u = -p_y,
 \end{equation}
 \begin{equation}\label{eq:momza}
-\p{a}{1}_z = - g,
+p_z = - g,
 \end{equation}
 \end{subequations}
 and the continuity equation is
 \begin{equation}\label{eq:conta}
-\uu{a}{1}_x + \vv{a}{1}_y = 0
+u_x + v_y = 0
 \end{equation}
 which is automatically satisfied by (\ref{eq:momxa}) and (\ref{eq:momya}).
-Vorticity is given by
+Relative Vorticity is given by
 \begin{equation}\label{eq:vort}
-\vv{a}{1}_x - \uu{a}{1}_y = \frac{\nabla_H^2 \p{a}{1}}{f_0}.
-\end{equation}The notation used here indicates that we are referring to layer 1 (subscript 1) in the atmosphere (superscript $a$).
-Subscript $m$ is used to represent the mixed layer.
-The same notation is used for quantities which refer to interface properties, with the ocean-atmosphere boundary defined as interface 0.
+\zeta \equiv v_x - u_y = \frac{\nabla_H^2 p}{f_0}.
+\end{equation}
 In the atmosphere (ocean), interface $k$ is defined to be on the upper (lower) boundary of layer $k$ (that is, in both domains we number away from the ocean-atmosphere boundary).
 The $H$ subscript on the $\nabla$ operator denotes purely horizontal derivatives.
 
 We can now compute the first order quantities (signified by ${}^*$ in the equations below) for the horizontal momentum and continuity equations which include zeroth order horizontal velocity terms and first order pressure and rotation terms,
 \begin{subequations}
 \begin{equation}\label{eq:momxb}
-\uu{a}{1}_t + \uu{a}{1} \uu{a}{1}_x + \vv{a}{1} \uu{a}{1}_y  - f_0 \vv{a}{1}^* - \beta(y-y_0) \vv{a}{1} = -\p{a}{1}_x^* - \ah{a} \nabla_H^4 \uu{a}{1},
+u_t + uu_x + vu_y  - f_0 v^* - \beta(y-y_0) v = -p_x^* - A_4 \nabla_H^4 u,
 \end{equation}
 \begin{equation}\label{eq:momyb}
-\vv{a}{1}_t + \uu{a}{1} \vv{a}{1}_x + \vv{a}{1} \vv{a}{1}_y + f_0 \uu{a}{1}^* + \beta(y-y_0) \uu{a}{1} = -\p{a}{1}_y^* - \ah{a} \nabla_H^4 \vv{a}{1},
+v_t + uv_x + vv_y + f_0 u^* + \beta(y-y_0) u = -p_y^* - A_4 \nabla_H^4 v,
 \end{equation}
 \end{subequations}
 \begin{equation}\label{eq:contb}
-\uu{a}{1}_x^* + \vv{a}{1}_y^* + \ww{a}{1}_z^* = 0,
+\nabla\cdot\vc{u}^* = 0,
 \end{equation}
-where we have introduced a fourth-order horizontal viscosity scheme (the coefficient $\ah{a}$ is positive for energy dissipation).
+where we have introduced a fourth-order horizontal viscosity scheme (the coefficient $A_4$ is positive for energy dissipation).
 First order pressure terms can be eliminated by cross-differentiating (\ref{eq:momxb}) and (\ref{eq:momyb}), giving
 \begin{multline}
-\uu{a}{1}_{ty} + (\uu{a}{1} \uu{a}{1}_x)_y + (\vv{a}{1} \uu{a}{1}_y)_y  - f_0 \vv{a}{1}^*_y - [\beta(y-y_0) \vv{a}{1}]_y + \ah{a}\nabla_H^4 \uu{a}{1}_y\\
-= \vv{a}{1}_{tx} + (\uu{a}{1} \vv{a}{1}_x)_x + (\vv{a}{1} \vv{a}{1}_y)_x + f_0 \uu{a}{1}^*_x + [\beta(y-y_0) \uu{a}{1}]_x + \ah{a}\nabla_H^4 \vv{a}{1}_x,
+u_{ty} + (uu_x)_y + (vu_y)_y  - f_0 v^*_y - [\beta(y-y_0) v]_y + A_4\nabla_H^4 u_y\\
+= v_{tx} + (uv_x)_x + (vv_y)_x + f_0 u^*_x + [\beta(y-y_0) u]_x + A_4\nabla_H^4 v_x,
 \end{multline}
 and rearranging:
 \begin{multline}
-\left[\frac{\nabla_H^2 \p{a}{1}}{f_0} + \beta(y-y_0)\right]_t +\left(\uu{a}{1}\left[\frac{\nabla_H^2 \p{a}{1}}{f_0} + \beta(y-y_0)\right]\right)_x +\left(\vv{a}{1}\left[\frac{\nabla_H^2 \p{a}{1}}{f_0} + \beta(y-y_0)\right]\right)_y + \\
-(\uu{a}{1}_x +\vv{a}{1}_y)\left[\frac{\nabla_H^2 \p{a}{1}}{f_0}+ \beta(y-y_0)\right] + f_0 (\uu{a}{1}^*_x + \vv{a}{1}^*_y)  = - \ah{a}\nabla_H^4 \left(\frac{\nabla_H^2 \p{a}{1}}{f_0}\right)
+\zeta_t +\left(u\left[\zeta + \beta(y-y_0)\right]\right)_x +\left(v\left[\zeta + \beta(y-y_0)\right]\right)_y + \\
+(u_x + v_y)\left[\zeta + \beta(y-y_0)\right] + f_0 (u^*_x + v^*_y)  = - A_4\nabla_H^4\zeta
 \end{multline}
 Insert (\ref{eq:conta}) and (\ref{eq:contb}) to eliminate zeroth order divergence terms and first order velocities, leaving an equation which depends only upon zeroth order terms
 \begin{multline}\label{eq:momxi}
-\left[\frac{\nabla_H^2 \p{a}{1}}{f_0} + \beta(y-y_0)\right]_t +\left(\uu{a}{1}\left[\frac{\nabla_H^2 \p{a}{1}}{f_0} + \beta(y-y_0)\right]\right)_x +\left(\vv{a}{1}\left[\frac{\nabla_H^2 \p{a}{1}}{f_0} + \beta(y-y_0)\right]\right)_y   =\\
- f_0 \ww{a}{1}^*_z - \frac{\ah{a}}{f_0}\nabla_H^6 \p{a}{1}.
+\left[\zeta + \beta(y-y_0)\right]_t +\left(u\left[\zeta + \beta(y-y_0)\right]\right)_x +\left(v\left[\zeta + \beta(y-y_0)\right]\right)_y = f_0 w^*_z - A_4\nabla_H^4 \zeta.
 \end{multline}
-
-We now integrate (\ref{eq:momxi}) over the layer depth.
-Note that it is assumed that $\p{a}{1}$, $\uu{a}{1}$ and $\vv{a}{1}$ are effectively layer-averaged quantities, so that integration between zero and $\HH{a}{1}$ simply gives
-\begin{multline}
-\left(\frac{\nabla_H^2 \p{a}{1}}{f_0}\right)_t  + \left(\uu{a}{1} \frac{\nabla_H^2 \p{a}{1}}{f_0} \right)_x  + \left(\vv{a}{1}\left[\frac{\nabla_H^2 \p{a}{1}}{f_0} + \beta(y-y_0)\right]\right)_y  = \\
-\frac{f_0 (\ww{a}{1}^* -\ww{a}{m}^*)}{\HH{a}{1}} - \frac{\ah{a}}{f_0}\nabla_H^6 \p{a}{1},
-\end{multline}
-which is an equation for the evolution of potential vorticity in the layer.
-Evaluation of vertical velocity at the layer boundaries ($\ww{a}{1}^*$ and $\ww{a}{m}^*$) requires knowledge of the flux between layers (which we call $e$ for net entrainment velocity through the boundary of the layer).
-Vertical velocity is a first order quantity and thus incorporates variable layer thickness $\h{a}{1}$, giving
-\begin{equation}\label{eq:w1}
-\ww{a}{1}^* =  \h{a}{1}_t + (\uu{a}{1} \h{a}{1})_x + (\vv{a}{1} \h{a}{1})_y + \e{a}{1}.
+Relative vorticity is given by
+\begin{equation}\label{eq:relvort}
+q^* \equiv \zeta + \beta(y - y_0),
 \end{equation}
+which lets us write (\ref{eq:momxi}) as
+\begin{equation}\label{eq:momxi2}
+q^*_t +\left(uq^*)\right)_x +\left(vq^*\right)_y = f_0 w^*_z - A_4\nabla_H^4 \zeta.
+\end{equation}
+
+\subsection{Layer equations}
+We now integrate (\ref{eq:momxi2}) over the layer depth.
+Note that it is assumed that $p_k$, $u_k$ and $v_k$ are effectively layer-averaged quantities, so that integration between $H_{k-1}$ and $H_{k}$ simply gives
+\begin{equation}\label{eq:momq}
+\left(q^*_k\right)_t  + \left(u_k q^*_k \right)_x  + \left(v_kq^*_k\right)_y  = \frac{f_0 (w_{k+}^* -w_{k-}^*)}{\delta\left(H_{k}\right)} - A_4\nabla_H^4\zeta_k,
+\end{equation}
+which is an equation for the evolution of potential vorticity in the layer.
+We use the following notation for the difference of a variable at the upper and lower boundary of a layer:
+\begin{equation}
+\delta\left(w^*_k\right) = w_{k+}^* - w_{k-}^*.
+\end{equation}
+Evaluation of vertical velocity at the layer boundaries ($w_{k+}^*$ and $w_{k-}^*$) requires knowledge of the flux between layers (which we call $e$ for net entrainment velocity through the boundary of the layer).
+Vertical velocity is a first order quantity and thus incorporates variable layer thickness $h_k$, giving
+\begin{equation}\label{eq:w1}
+w_{k\pm}^* =  (h_{k\pm})_t + (u_{k} h_{k\pm})_x + (v_{k} h_{k\pm})_y + e_{k\pm}.
+\end{equation}
+This leads to
+\begin{equation}\label{eq:w2}
+\delta\left(w_k^*\right) =  \delta\left(h_{k}\right)_t + \left(u_{k} \delta\left(h_{k}\right)\right)_x + \left(v_{k} \delta\left(h_k\right)\right)_y + \delta\left(e_k\right).
+\end{equation}
+Combining (\ref{eq:momq}) and (\ref{eq:w2}) gives
+\begin{equation}
+\left(q^*_k - \frac{f_0\delta\left(h_k\right)}{H_k}\right)_t  + \left(u_k \left(q^*_k - \frac{f_0\delta\left(h_k\right)}{H_k}\right)\right)_x  + \left(v_k\left(q^*_k -\frac{f_0\delta\left(h_k\right)}{H_k}\right)\right)_y  = \frac{f_0 \delta\left(e_k\right)}{\delta\left(H_{k}\right)} - A_4\nabla_H^4\zeta_k.
+\end{equation}
+We now define the layer potential vorticity as
+\begin{equation}\label{eq:layerpv}
+q_k \equiv \frac{\nabla_H^2 p_k}{f_0} + \beta(y - y_0) - \frac{f_0\delta\left(h_k\right)}{\delta\left(H_k\right)},
+\end{equation}
+which lets us write
+\begin{equation}\label{eq:dynamic}
+\left(q_k\right)_t  + \left(u_kq_k\right)_x  + \left(v_kq_k\right)_y  = \frac{f_0 \delta\left(e_k\right)}{\delta\left(H_{k}\right)} - A_4\nabla_H^4\zeta_k.
+\end{equation}
+
+\subsection{Pertubation interface height}
+We now focus on the term $\delta(h_k)$ in (\ref{eq:layerpv}). We define the pertubation interface height
+\begin{eqnarray}
+\eta_{k+} & \equiv & h_{k+} - H_{k+} = \frac{p_k - p_{k+1}}{g^\prime_{k+}} \quad \quad \textrm{for } k=1,N-1\label{eq:eta1}\\
+\eta_{k-} & \equiv & h_{k-} - H_{k-} = \frac{p_{k-1} - p_{k}}{g^\prime_{k-}}  \quad \quad \textrm{for } k=2,N.\label{eq:eta2}
+\end{eqnarray}
+Here we have introduced $\gp{a}{k\pm}$, the reduced gravity across the $k\pm$ interface, given by
+\begin{eqnarray}
+\gp{a}{k+} & = & \frac{g(\rhb{a}_k - \rhb{a}_{k+1})}{\rhb{a}_0} \quad \quad \textrm{for } k=1,N-1\\
+\gp{a}{k-} & = & \frac{g(\rhb{a}_{k-1} - \rhb{a}_{k})}{\rhb{a}_0} \quad \quad \textrm{for } k=2,N.
+\end{eqnarray}
+The value of $\eta$ at the upper and lower boundaries of the domain depend on the defined boundary conditions.
+At the atmosphere-ocean interface, and at the top of the highest atmosphere layer, the pertubation interface height is defined to be zero.
+At the ocean bottom, the pertubation interface height is based on the bathymetry, whilst at the top of the atmosphere the pertubation interface height is defined to be zero, so
+\begin{eqnarray}
+\textrm{ocean: } \quad \eta_{N+} & = & D - H_N \\
+\textrm{atmos: } \quad \eta_{N+} & = & 0,
+\end{eqnarray}
+where D is the ocean depth.
+At the ocean-atmosphere interface the pertubation interface height is defined to be zero. At the atmosphere-land interface the pertubation interface height is defined by the topography, so
+\begin{eqnarray}
+\textrm{ocean: } \quad \eta_{1-} & = & 0 \\
+\textrm{atmos: } \quad \eta_{1-} & = & T,
+\end{eqnarray}
+where the topography $T$ is zero over the ocean.
+
+Combining (\ref{eq:eta1}) and (\ref{eq:eta2}) lets us write
+\begin{equation}
+\delta(h_k) = \delta(\eta_k),
+\end{equation}
+where $\delta(\eta_k) = \eta_{k+} - \eta_{k-}$ is a linear function of pressure.
+
+\subsection{Vector equations}
+
+So far we have written all equations with respect to a particular layer. We now write down the equations in terms of length $N$ vectors. Equation (\ref{eq:dynamic}) can be written
+\begin{equation}
+\vc{q}_t  + \left(\vc{u}\vc{q}\right)_x  + \left(\vc{v}\vc{q}\right)_y  = B\vc{e} + \frac{A_2}{f_0}\nabla_H^4\vc{p} - \frac{A_4}{f_0}\nabla_H^6\vc{p},
+\end{equation}
+where an additional laplacian diffusion term is included. The matrix $B$ has dimension $N \times N+1$. Likewise, (\ref{eq:layerpv}) can be written
+\begin{equation}
+\vc{q} = \frac{\nabla_H^2 \vc{p}}{f_0} + \beta(y - y_0) - f_0A\vc{p} + \vc{D}.
+\end{equation}
+
+\subsection{}
 The lower boundary of the atmosphere is fixed; however vertical velocity due to Ekman pumping (derived below) makes a contribution; $\ww{a}{m}^* = \ek{a}$.
 We can now write an equation for the lowest atmospheric layer dynamics,
 \begin{equation}\label{eq:momxl}
@@ -290,6 +352,7 @@ f_0 \vc{q} - f_0 \beta(y-y_0)  =  \nabla_H^2 \vc{p}  - f_0^2 \mtx{A}\vc{p} + f_0
 where $\Dt{}$ is the dynamic topography which is rescaled by $f_0$ and the inverse of layer thickness (see \ref{eq:matda}, \ref{eq:matdo}), $\at{a} \equiv 0$, $\mtx{A}$ is an $N \times N$ matrix containing the coefficients of the $\eta$ contribution to vorticity, which has the same structure for the ocean and atmosphere, while $\mtx{B}$ is an $N \times N+1$ matrix containing the coefficients of the forcing terms, which differs only by a sign between the two cases (see \S\ref{sub:qglayers} for details of the matrices and vectors).
 Note that $\vc{e}$ is a vector of length $N+1$ which is yet to be determined.
 
+\subsection{Boundary conditions}
 The boundary conditions in the model are applied to the pressure field.
 In the case of the finite box ocean the boundary pressure is given by
 \begin{equation}\label{eq:bc1}
@@ -1570,7 +1633,7 @@ and require that there is no net advection over the basin, giving
 \end{equation}
 This equation can be simplified by writing
 \begin{equation}
-\iint \nabla_H.(\nabla_H\p{a}{1}_t) \, dA =  - \frac{f_0}{\HH{a}{1}}\iint \nabla_H \times \mathbf{\tau} \, dA - \ah{a} \iint \nabla_H . \nabla_H(\nabla_H^4 \p{a}{1}) \, dA
+\iint \nabla_H.(\nabla_H\p{a}{1}_t) \, dA =  - \frac{f_0}{\HH{a}{1}}\iint \nabla_H \times \vc{\tau} \, dA - \ah{a} \iint \nabla_H . \nabla_H(\nabla_H^4 \p{a}{1}) \, dA
 \end{equation}
 so that application of Gauss' and Stokes' theorems in a periodic channel gives
 \begin{equation}  \label{eq:momintd}
