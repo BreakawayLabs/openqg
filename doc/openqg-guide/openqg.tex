@@ -87,7 +87,7 @@
 % ----------------------------------------------------------------
 \begin{document}
 
-\title{Formulation and users' guide for OpenQG.\\ Version 1.0.0}%
+\title{Model Formulation for OpenQG.\\ Version 1.0.0}%
 \author{A. McC. Hogg, J. R. Blundell, W. K. Dewar, P. D. Killworth and T. B. Leslie}
 
 \maketitle
@@ -445,9 +445,6 @@ which, in combination with (\ref{eq:stress2}) gives
 \tx{a}{y} =  C_D M \frac{(\uu{a}{1} - \uu{o}{1}) - (a + b) M  (\vv{a}{1} - \vv{o}{1})} {1 +  (a + b)^2 M^2},
 \end{equation}
 \end{subequations}
-Note that the full stress formulation shown here is activated only when the ``tau\_udiff'' compiler flag is switched on (see \S\ref{sub:compiling}). 
-The (simpler) default configuration (used in all versions of the model prior to v1.4.0)
-can be obtained by setting $\uu{o}{1}=\vv{o}{1}=0$ and $b=0$ in the above equations.
 
 A second distinction between mixed layer and layer 1 velocities exists because the ageostrophic mixed layer velocities have a divergent component which produces vertical Ekman velocities.
 Ekman pumping is calculated using the continuity equation (\ref{eq:cont}) integrated from $0$ to $\HH{a}{m}$,
@@ -863,90 +860,7 @@ The value of $\lb{a}{m}$ is prescribed, and export heat fluxes are adjusted to s
 \section{Final equation set}
 The full set of equations is now written in the order in which they are solved in the model.
 The equation numbers used here are referred to in comments in the code.
-Specified parameters for two standard configurations (the double\_gyre and southern\_ocean cases) are shown in table \ref{tab:standard}, while tables \ref{tab:atm} and \ref{tab:oce} show atmospheric and oceanic parameters which are common to both of these configurations.
 
-\begin{table}[!t]
-  \begin{center}
-    \begin{tabular}{cccl}
-\hline
-Parameters  & \hspace{4mm}double\_gyre\hspace{4mm} &  \hspace{4mm}southern\_ocean\hspace{4mm} & Description\hspace{4mm} \\
-\hline
-$f_0$ & $1 \times 10^{-4} \textrm{ s}^{-1}$ & $-1.1947 \times 10^{-4} \textrm{ s}^{-1}$ &Mean Coriolis parameter \\
-$\beta$ & $2 \times 10^{-11} \textrm{ (ms)}^{-1}$& $1.313 \times 10^{-11} \textrm{ (ms)}^{-1}$& Coriolis parameter gradient\\
-$\sigma$ & \multicolumn{2}{c}{$5.6704 \times 10^{-8}$ W/m$^2$/K$^4$} & Stefan--Boltzmann constant\\
-\hline
-    \end{tabular}
-  \end{center}
-\caption{\small Standard OpenQG global parameters for the double\_gyre and southern\_ocean example cases provided in the distribution (see \S\ref{sec:examples}). \label{tab:standard}}
-\end{table}
-
-
-\begin{table}[!t]
-  \begin{center}
-    \begin{tabular}{cccl}
-\hline
-Parameters  & \hspace{4mm}double\_gyre\hspace{4mm} &  \hspace{4mm}southern\_ocean\hspace{4mm} & Description\hspace{4mm} \\
-\hline
-${}^a X \times{}^a Y$ & $15360 \times 7680$ km & $23040 \times 8640$ km &Domain size  \\
-$\Delta^ax$ & 120 km & 80 km &Horizontal grid spacing\\
-$\Delta^at$ & 5 min &  5 min&Timestep\\
-$\HH{a}{k}$ & (2, 3, 4) km &(2, 3, 4) km &  Layer thicknesses\\
-$\HH{a}{m}$ & 1000 m & 1000 m & Mean mixed layer thickness\\
-$\HH{a}{m}_{min}$ & 100 m &100 m & Minimum mixed layer thickness\\
-$\overline{F_s}$ & -210 W/m${}^2$ & -210 W/m${}^2$ & Mean incoming radiation\\
-$\lvert F_s' \rvert$& 80 W/m${}^2$ & 150 W/m${}^2$ & Amp. of variable incoming radiation\\
-$\T{a}{k}$ & (330, 340, 350) K & (330, 340, 350) K & Potential temperature structure\\
-$\rhb{a}$ & 1 kg/m${}^3$ &1 kg/m${}^3$ & Density\\
-$\cp{a}$ & 1000 J/kg/K &1000 J/kg/K & Specific heat capacity\\
-$\gp{a}{k}$ & (1.2, 0.4) m/s${}^2$& (1.2, 0.4) m/s${}^2$&Reduced gravity\\
-$C_D$ & $1.3 \times 10^{-3}$  &$1.5 \times 10^{-3}$  & Drag coefficient\\
-$\ah{a}$ & $2 \times 10^{14}$ m${}^4$/s &$3 \times 10^{13}$ m${}^4$/s & Biharmonic viscosity coefficient\\
-$\alphbc{a}$ & $1$ &$1$ & Mixed boundary condition coefficient\\
-$X_C $ & 1 &1 & Coupling coefficient (see appendix \ref{app:cexp})\\
-$\kh{a}$ & $2.7 \times 10^4$ m$^2$/s &  $5 \times 10^4$ m$^2$/s &Temperature diffusion coefficient\\
-$\kf{a}$ & $3 \times 10^{14}$ m$^4$/s & $3 \times 10^{14}$ m$^4$/s & 4th order diffusion coefficient\\
-$K_{\eta}$ & $2 \times 10^5$ m${}^2$/s & $2 \times 10^5$ m${}^2$/s & Diffusion coefficient for $\etb{a}{m}$\\
-$\lb{a}{m}$ & 0.15 W/m${}^3$&0.15 W/m${}^3$& Relaxation rate for mixed layer thickness\\
-$\gamma$ & 0.01 K/m &0.01 K/m & Adiabatic lapse rate\\
-$\lambda$ & 35 W/m${}^2$/K &35 W/m${}^2$/K & Sensible/latent heat flux coefficient\\
-$z_m$ & 200 m& 200 m& Optical depth in the mixed layer\\
-$z_k$ & (30, 30, 40) km&(20, 20, 30) km& Optical depths\\
-${}^a{r_d}_k$ & (465, 243) km & (388, 203) km &Baroclinic Rossby radii (derived)\\
-\hline
-    \end{tabular}
-  \end{center}
-\caption{\small Standard atmospheric parameters for the double\_gyre and southern\_ocean example cases provided in the distribution (see \S\ref{sec:examples}). \label{tab:atm}}
-\end{table}
-
-
-\begin{table}
-  \begin{center}
-    \begin{tabular}{cccl}
-\hline
-Parameters  & \hspace{4mm}double\_gyre\hspace{4mm} &  \hspace{4mm}southern\_ocean\hspace{4mm} & Description\hspace{4mm} \\
-\hline
-${}^o X \times {}^o Y$ & $3840 \times 4800$ km & $23040 \times 2880$ km &Domain size\\
-$\Delta^ox$ & 10 km & 10 km &Horizontal grid spacing\\
-$\Delta^ot$ & 30 min & 15 min & Timestep \\
-$\HH{o}{k}$& (300, 1100, 2600) m &(300, 1100, 2600) m & Layer thicknesses\\
-$\HH{o}{m}$ & 100 m &100 m & Mixed layer thickness (fixed)\\
-$\T{o}{k}$ & (278, 268, 258) K &(278, 268, 263) K & Potential temperature structure \\
-$\rhb{o}$ & 1000 kg/m${}^3$ &1000 kg/m${}^3$ & Density\\
-$\cp{o}$ & 4000 J/kg/K &4000 J/kg/K &  Specific heat capacity\\
-$\gp{o}{k}$ & (0.05, 0.025) m/s${}^2$ &(0.05, 0.025) m/s${}^2$ & Reduced gravity\\
-$\delek$ & 1 m & 2 m & Bottom Ekman layer thickness\\
-$\at{o}$ & 0 m${}^2$/s &0 m${}^2$/s & Laplacian viscosity coefficient\\
-$\ah{o}$ & $1.0 \times 10^{10}$ m${}^4$/s &$3.0 \times 10^{10}$ m${}^4$/s & Biharmonic viscosity coefficient\\
-$\alphbc{o}$ & $ 0.5$ & 5.0 & Ocean mixed BC coefficient\\
-$Y_C$ & 1 & 1 & Coupling coefficient (see appendix \ref{app:cexp})\\
-$\kh{o}$ & 380 m${}^2$/s &380 m${}^2$/s &Temperature diffusion coefficient\\
-$\kf{o}$ & $4 \times 10^{10}$ m${}^4$/s &$4 \times 10^{10}$ m${}^4$/s & 4th order diffusion coefficient\\
-${}^o{r_d}_k$ & (51, 32) km & (42, 26) km &Baroclinic Rossby radii (derived)\\
-\hline
-    \end{tabular}
-  \end{center}
-\caption{\small Standard oceanic parameters for the double\_gyre and southern\_ocean example cases provided in the distribution (see \S\ref{sec:examples}).  \label{tab:oce}}
-\end{table}
 
 At the start of each ocean timestep we find the atmospheric stress from (\ref{eq:stress4},b):
 
@@ -1260,7 +1174,7 @@ Thus we have solved the inhomogeneous Helmholtz equation (\ref{eq:helm}) in a zo
 
 In the case of a finite length (box) ocean, where we require $p$ to be constant around the entire boundary, we use Fourier sine transforms instead of the periodic Fourier transforms, to ensure that $p = 0$ on the meridional boundaries too.
 
-Note that the various Fourier transform routines use a significant fraction of the total CPU time (16\%--18\% for the double\_gyre example case, depending on the computer system used).
+Note that the various Fourier transform routines use a significant fraction of the total CPU time.
 It is therefore important that the parameters determining the transform lengths (\verb=nxta=, \verb=ndxr= and \verb=nxaooc=, all set in \verb=parameter.src=) should be chosen to have numerous small prime factors, so as to maximise the efficiency of the transform routines.
 
 We can also use this scheme to solve the homogeneous Helmholtz equation for baroclinic modes.
@@ -1322,160 +1236,6 @@ Subroutine \verb=diffts= evaluates these timescales for two special cases:
 \end{equation}
 \end{enumerate}
 
-\section{ Users' guide}
-Having described the numerical formulation of the model, we now outline the practicalities of using the code.
-
-\subsection{Components of the code}
-The code for OpenQG consists of a number of Fortran source files (\verb=*.F90=) and a generic \verb=Makefile=.
-The code uses three public domain software packages:
-\begin{description}
-
-\item[FFTW3]
-
-\item[LAPACK] This is a free, public domain linear algebra package.
-It is included in the scientific software libraries provided with most commercial Fortran compilers, and we recommend you access it in this way, to get the best optimisation.
-
-\item[netCDF] available from\\
-\verb=http://www.unidata.ucar.edu/packages/netcdf/=\\
-NetCDF (network Common Data Format) is a machine-independent, self-documenting format for representing scientific data, and a library of routines for reading and writing data in this format.
-You will need to have installed the netCDF libraries on your system, and to edit the \verb=Makefile= to indicate where they are.
-A version of the include file \verb=netcdf.inc= (edited to eliminate some compiler warnings) is included in the OpenQG distribution.
-Our original development and testing used version 3.5.0 of netCDF; we would now recommend using version 3.6.3.
-
-A new version 4 of netCDF has been released, which offers the option of using compression within the datafiles, and thus saving diskspace. 
-This benefit is obtained at the expense of making the package significantly harder to build, because it requires the HDF5 libraries to be installed first. 
-If you do wish to try netCDF 4, we recommend you use version 4.1.1 (or later, when released). 
-It is possible to simplify the build process by turning off the compression option at build time, which
-removes the need for additional libraries.
-Note that the C-based libraries underlying the netCDF library are not thread-safe, which means that it is not possible to use OpenMP ``parallel sections'' to speed up the writing out of multiple netCDF files which occurs at the end of a run.
-
-There are several easy ways to access the data in netCDF format.
-One way to view the data is with the browser package ncview written by David Pierce
-of Scripps Institution of Oceanography:\\
-\verb=meteora.ucsd.edu/~pierce/ncview_home_page.html=.\\
-NB. Please note that NetCDF 4 support is currently only available at beta test level.\\
-We currently use the  SNCtools package to read NetCDF data into Matlab :\\
-\verb=mexcdf.sourceforge.net=.\\
-You may like to try NCO as a way of manipulating NetCDF files:\\
-\verb=nco.sourceforge.net=.\\
-Ferret is a powerful data visualisation package that comes with built-in netCDF support and can be downloaded pre-built. The latest version handles NetCDF 3 and 4:\\
-\verb=www.ferret.noaa.gov=.
-
-
-\end{description}
-
-It is our policy to use public domain packages where possible, so that anyone may use OpenQG without having to pay for package licences.
-
-\subsection{Compiling the code}\label{sub:compiling}
-
-\subsection{Structure of the code}
-
-\subsubsection{Input files}
-Variables governing the model run are contained in three input files.
-These are the files to edit to change the model configuration from the standard cases.
-
-\begin{description}
-\item[parameter.src]  This file contains dimensioning information for the model arrays. It defines the location of the oceanic domain within the atmospheric, and the relative resolutions of the two grids.
-It also contains the rotation parameters which define the latitude of the domains, and an explanation of all the parameters defined therein.
-This file is picked up by most of the \verb=*.f=/\verb=*.F= files via \verb=INCLUDE= statements.
-Changes to this file therefore require recompilation.
-\item[input.params]   A file defining the values of all other model  parameters, both physical parameters, and control parameters for length of run, diagnostic intervals, etc.
-The file includes brief comments explaining the meaning of each parameter, including its units.
-Changes to this file do not require recompilation.
-The values contained in this file are read via formatted \verb=READ= statements in the included file \verb=in_param.f=.
-\item[outdata.dat] A separate text file with a single line containing the name of the directory to which output files are written.
-This file is read from the main program file \verb=openqg.F= using a formatted read statement (and so changes do not require recompilation).
-\item[areas.limits]   A file defining the boundaries over which area averages of temperature timeseries are recorded. Data is stored in \verb=areas.nc=.
-\end{description}
-All these parameters (and many derived quantities) are written to standard output by the main program at the start of a run.
-
-\subsubsection{Program structure}
-A general idea of the structure of the code can be seen in the flow chart in figure \ref{fig:code}.
-This shows the flow of control through the most important subroutines, and which equations they solve.
-Note that each \verb=*.f= or \verb=*.F= file may contain more than one subroutine (see the earlier list), but they are grouped logically, and well commented to describe their function.
-\begin{figure}[!ht]
-\includegraphics[width=\hsize]{code}
-\caption{\small Flow chart showing the major subroutines of the code.  \label{fig:code}}
-\end{figure}
-
-\subsubsection{Output files}
-Output files are stored in the directory specified in the variable \verb=outdir= read from  \verb=outdata.dat=.
-The filenames are hardwired into the code, and therefore can only be changed by altering the body of the code itself.
-Many of the files are in netCDF (\verb=*.nc=) format, so that a description of variable names and units is included in the data file.
-The files are listed as follows:
-\begin{description}
-\item[input\_parameters.m] A file which includes all the parameters as a Matlab script.  Simply run this script in Matlab, and variable names and values will be initialised.
-\item[restart.nc] A netCDF file written periodically which includes the model state variables.
-This can be useful for restarting the run if the model crashes part-way through.
-\item[lastday.nc] A netCDF file written at the end of the model run which includes the model state variables and can be used for continuing the run.
-\item[monit.nc] A netCDF format file which includes timeseries of some important quantities.
-\item[atast.nc, atpa.nc] Two netCDF data files which describe the atmospheric state.  The variables written to the files are controlled by the \verb=outflag= array in \verb=input.params=.
-\item[ocsst.nc, ocpo.nc] Two netCDF data files which describe the oceanic state.  The variables written to the files are controlled by the \verb=outflag= array in \verb=input.params=.
-\item[avges.nc] A netCDF data file which includes data averaged over the entire run.
-\item[areas.nc] A netCDF data file which includes timeseries data from selected regions.
-\item[covar.nc] A netCDF data file which includes the data needed to calculate the covariance matrix for particular fields.
-\item[topog.nc] A netCDF data file which includes the topography used for the run.
-\end{description}
-
-\subsubsection{Location of variables}
-
-\subsubsection{Diagnostics}
-
-\subsubsection{Example cases}\label{sec:examples}
-The input files are supplied set to run some standard cases. 
-These are supplied in the \verb=examples= subdirectory.
-Of these, we suggest that the best case to test your installation of OpenQG is the double\_gyre case (it is computationally smaller and requires fewer input files).
-\begin{itemize}
-  \item \textbf{double\_gyre --} A finite box ocean of $384 \times 480$ gridcells and resolution 10 km, and an atmosphere of $128 \times 64$ gridcells and resolution 120 km.
-This case requires 110 MB of static memory, or 340 MB if the covariance is computed.
-This is the case used in \citet{hogg:06a}. 
-  \item \textbf{southern\_ocean --} A channel representation of the Southern Ocean with $2304 \times 288 $ gridcells and resolution 10 km, and an atmosphere of $288 \times 108$ gridcells and resolution 80 km.
-  Note that this case has a large atmospheric meridional extent, to help increase wind stresses near the centre of the the channel.
-Topography and restart files may need to be downloaded separately.
-\item \textbf{so\_only --} An ocean-only version of the Southern Ocean channel. You will need to download an avges.nc forcing file to drive this simulation, as well as the topography file.
-This case uses a set of parameters similar to that in \citet{hogg:08b} and \citet{hutchinson:10}.
-\end{itemize}  
-Each case uses 3 QG layers in both atmosphere and ocean.
-
-\subsubsection{Possible problems}\label{sub:probs}
-\begin{itemize}
-\item The program uses significant "stack" memory which may exceed the default limit on your system causing a  \verb=Segmentation fault= error.
-You will need to reset the limit by doing e.g.
-\begin{description}
-\item[]  \verb=limit stacksize 96m=,  or even
-\item[]  \verb=limit stacksize unlimited=  (C shell)
-\item[]  \verb=ulimit -s 98304=       (bash or ksh; units are kbytes)
-\end{description}
-\item When running the program in parallel, you may need to increase the limit  on stack allocation by each separate thread.
-The name of the environment variable depends on the compiler being used; the syntax for setting it depends on the shell in the usual way.
-Examples are:
-\begin{description}
-\item[]  \verb= setenv MP_STACK_SIZE 40000000= (Csh, Compaq)
-\item[]  \verb- setenv XLSMPOPTS "stack=40000000"- (Csh, IBM)
-\item[]  \verb= setenv MP_SLAVE_STACKSIZE 40000000= (Csh, SGI)
-\item[]  \verb= setenv STACKSIZE 40000000=  (Csh, Sun)
-\item[]  \verb= setenv MPSTKZ 40000000= (linux/Csh, Portland Group Compiler)
-\item[]  \verb= setenv KMP_STACKSIZE 40000000= (linux/Csh, Intel compiler)
-\end{description}
-Remember to set the number of threads required; syntax for this depends only on the shell:
-\begin{description}
-\item[]  \verb= setenv OMP_NUM_THREADS 4= (Csh)
-\item[]  \verb+ export OMP_NUM_THREADS=4+ (bash)
-\end{description}
-\item Some systems (linux only?) seem to have an additional limit (typically a few Mbytes, and perhaps set by the kernel) on the allocation of stack storage, which we don't yet know how to reset.
-As a workaround, we have provided the \verb=small_local= preprocessor option which causes the main temporary arrays in subroutines to be allocated as static rather than stack storage, by using the Fortran \verb=SAVE= statement.
-If the environment settings described above do not fix any segmentation problems you encounter, try using \verb=small_local= as described in section \ref{sub:compiling}.
-\end{itemize}
-
-\subsubsection{Feedback}
-Earlier versions of the model conformed strictly to Fortran 77 standards.
-Some Fortran 90 features have now been introduced for convenience, but it should still be possible to verify the code using the public domain Fortran 77 analyser ``ftnchek'', which we highly recommend (much of the code still conforms to the Fortran77 standard).
-The home website is: \\
-\verb=http://dsm.dsm.fordham.edu/~ftnchek/=.\\
-This software is also available from the Netlib software repository and its many mirror sites.
-
-Please report any compilation or runtime problems, with details of the operating system and compiler used, and whether running in parallel or not.
-
 
 \subsection{Changes Log}
 \subsubsection{Changes from v1.3.1 to v1.4.0}
@@ -1484,9 +1244,6 @@ Please report any compilation or runtime problems, with details of the operating
 \item Improved warning messages in case of NetCDF problems.
 \item Revised directory structure in model distribution.
 \end{itemize}
-
-
-
 
 \subsubsection{Changes from v1.3 to v1.3.1}
 \begin{itemize}
