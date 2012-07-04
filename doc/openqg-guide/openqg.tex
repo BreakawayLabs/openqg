@@ -76,7 +76,7 @@
 \newcommand{\clm}[0]{\mtx{C}_{\mathrm{l2m}}}
 \newcommand{\alphbc}[1]{{}^{#1}\alpha_{bc}}
 \newcommand{\D}[1]{{}^{#1}D}
-\newcommand{\Dt}[1]{\vc{{}^{#1}\tilde{D}}}
+\newcommand{\Dt}[1]{\vc{{}^{#1}\vc{D}}}
 \newcommand{\delek}[0]{\delta_{ek}}
 
 
@@ -255,13 +255,13 @@ which lets us write
 \subsection{Pertubation interface height}
 We now focus on the term $\delta(h_k)$ in (\ref{eq:layerpv}). We define the pertubation interface height
 \begin{eqnarray}
-\eta_{k+} & \equiv & h_{k+} - H_{k+} = \frac{p_k - p_{k+1}}{g^\prime_{k+}} \quad \quad \textrm{for } k=1,N-1\label{eq:eta1}\\
-\eta_{k-} & \equiv & h_{k-} - H_{k-} = \frac{p_{k-1} - p_{k}}{g^\prime_{k-}}  \quad \quad \textrm{for } k=2,N.\label{eq:eta2}
+\eta_{k+} & \equiv & h_{k+} - H_{k+} = \frac{p_k - p_{k+1}}{\gp{}{k+}} \quad \quad \textrm{for } k=1,N-1\label{eq:eta1}\\
+\eta_{k-} & \equiv & h_{k-} - H_{k-} = \frac{p_{k-1} - p_{k}}{\gp{}{k-}}  \quad \quad \textrm{for } k=2,N.\label{eq:eta2}
 \end{eqnarray}
-Here we have introduced $\gp{a}{k\pm}$, the reduced gravity across the $k\pm$ interface, given by
+Here we have introduced $\gp{}{k\pm}$, the reduced gravity across the $k\pm$ interface, given by
 \begin{eqnarray}
-\gp{a}{k+} & = & \frac{g(\rhb{a}_k - \rhb{a}_{k+1})}{\rhb{a}_0} \quad \quad \textrm{for } k=1,N-1\\
-\gp{a}{k-} & = & \frac{g(\rhb{a}_{k-1} - \rhb{a}_{k})}{\rhb{a}_0} \quad \quad \textrm{for } k=2,N.
+\gp{}{k+} & = & \frac{g(\rhb{a}_k - \rhb{a}_{k+1})}{\rhb{a}_0} \quad \quad \textrm{for } k=1,N-1\\
+\gp{}{k-} & = & \frac{g(\rhb{a}_{k-1} - \rhb{a}_{k})}{\rhb{a}_0} \quad \quad \textrm{for } k=2,N.
 \end{eqnarray}
 The value of $\eta$ at the upper and lower boundaries of the domain depend on the defined boundary conditions.
 At the atmosphere-ocean interface, and at the top of the highest atmosphere layer, the pertubation interface height is defined to be zero.
@@ -287,70 +287,75 @@ where $\delta(\eta_k) = \eta_{k+} - \eta_{k-}$ is a linear function of pressure.
 \subsection{Vector equations}
 
 So far we have written all equations with respect to a particular layer. We now write down the equations in terms of length $N$ vectors. Equation (\ref{eq:dynamic}) can be written
+\begin{equation}\label{eq:qt}
+\vc{q}_t  + \left(\vc{u}\vc{q}\right)_x  + \left(\vc{v}\vc{q}\right)_y  = \mtx{B}\vc{e} + \frac{A_2}{f_0}\nabla_H^4\vc{p} - \frac{A_4}{f_0}\nabla_H^6\vc{p},
+\end{equation}
+where an additional laplacian diffusion term is included. The matrix $\mtx{B}$ differs from atmosphere to ocean. In the ocean case it is
 \begin{equation}
-\vc{q}_t  + \left(\vc{u}\vc{q}\right)_x  + \left(\vc{v}\vc{q}\right)_y  = B\vc{e} + \frac{A_2}{f_0}\nabla_H^4\vc{p} - \frac{A_4}{f_0}\nabla_H^6\vc{p},
+\mtx{{}^oB} = f_0
+\left[ \begin{array}{cccccc}
+\frac{1}{\delta(H_1)} & \frac{-1}{\delta(H_1)} & &\\
+ & \frac{1}{\delta(H_2)} & \frac{-1}{\delta(H_2)} &\\
+ & &  \cdot & \cdot \\
+ & &  & \cdot & \cdot \\
+ & &   & & \frac{1}{\delta(H_N)}& \frac{-1}{\delta(H_N)} \\
+ \end{array}\right]
 \end{equation}
-where an additional laplacian diffusion term is included. The matrix $B$ has dimension $N \times N+1$. Likewise, (\ref{eq:layerpv}) can be written
-\begin{equation}
-\vc{q} = \frac{\nabla_H^2 \vc{p}}{f_0} + \beta(y - y_0) - f_0A\vc{p} + \vc{D}.
-\end{equation}
-
-\subsection{}
-The lower boundary of the atmosphere is fixed; however vertical velocity due to Ekman pumping (derived below) makes a contribution; $\ww{a}{m}^* = \ek{a}$.
-We can now write an equation for the lowest atmospheric layer dynamics,
-\begin{equation}\label{eq:momxl}
-\q{a}{1}_t  + \left(\uu{a}{1}  \q{a}{1} \right)_x  + \left(\vv{a}{1}\q{a}{1} \right)_y  = \frac{f_0 (\e{a}{1} -\ek{a})}{\HH{a}{1}} - \frac{\ah{a}}{f_0}\nabla_H^6 \p{a}{1},
-\end{equation}
-where layer potential vorticity is defined as
-\begin{equation}\label{eq:qa1}
-\q{a}{1} \equiv \frac{\nabla_H^2 \p{a}{1}}{f_0} + \beta(y-y_0) - \frac{ f_0 \etb{a}{1} }{\HH{a}{1}} + \frac{f_0 \D{a}}{\HH{a}{1}},
-\end{equation}
-and the perturbation interface height, $\etb{a}{1} \equiv \h{a}{1} - \HH{a}{1} =  \frac{\p{a}{1}-\p{a}{2}}{\gp{a}{1}}$.
-Here we have introduced $\gp{a}{k}$, the reduced gravity across the $k$-th interface, given by
-\[\gp{a}{k} = \frac{g(\rhb{a}_k - \rhb{a}_{k+1})}{\rhb{a}_0},\quad \quad \textrm{for } k=1,N-1,\]
-as well as bottom topography $\D{a}(x,y)$ which is assumed to be small compared with the unperturbed layer thickness $\HH{a}{1}$, for consistency with the quasigeostrophic scaling.
-Equivalent equations can be derived for each layer in the model.
-For other layers in the $N$-layer atmosphere these are:
-\begin{equation}\label{eq:momxra}
-\q{a}{k}_t  + (\uu{a}{k} \q{a}{k})_x  + (\vv{a}{k} \q{a}{k})_y   = \frac{f_0}{\HH{a}{k}}( \e{a}{k}- \e{a}{k-1})  - \frac{\ah{a}}{f_0}\nabla_H^6 \p{a}{k},
-\end{equation}
-where $\e{a}{N} \equiv 0$, and
-\begin{equation}
-\q{a}{k} \equiv \frac{\nabla_H^2 \p{a}{k}}{f_0} + \beta(y-y_0) - \frac{ f_0  }{\HH{a}{k}}(\etb{a}{k} - \etb{a}{k-1}), \quad \quad \textrm{for } k=2,N,
-\end{equation}
-\begin{equation}
-\etb{a}{k} =   \frac{\p{a}{k}-\p{a}{k+1}}{\gp{a}{k}}, \quad \quad \textrm{for } k=1,N-1,
-\end{equation}
-\begin{equation}
-\etb{a}{N} \equiv  0.
-\end{equation}
-For an $N$-layer ocean, the equations are
-\begin{multline}\label{eq:momxn1}
-\q{o}{k}_t  + (\uu{o}{k} \q{o}{k})_x  + (\vv{o}{k} \q{o}{k})_y = \\
-\frac{f_0 }{\HH{o}{k}}(\e{o}{k-1} - \e{o}{k}) + \frac{\at{o}}{f_0}\nabla_H^4 \p{o}{k}  - \frac{\ah{o}}{f_0}\nabla_H^6 \p{o}{k}, \quad \quad \textrm{for } k=1,N
-\end{multline}
-where an additional Laplacian diffusion term is included, the vertical velocities at the top and bottom of the ocean are given by $\e{o}{0} \equiv \ek{o} $ and  $\e{o}{N} \equiv \frac{\delek}{2 \lvert f_0 \rvert} \nabla_H^2\p{o}{N}$ as will be discussed in \S\ref{sec:mix1}, and
-\begin{equation}
-\q{o}{k} \equiv \frac{\nabla_H^2 \p{o}{k}}{f_0} + \beta(y-y_0) + \frac{ f_0}{\HH{o}{k}}( \etb{o}{k} - \etb{o}{k-1}), \quad \quad \textrm{for } k=1,N-1,
-\end{equation}
-\begin{equation}
-\q{o}{N} \equiv \frac{\nabla_H^2 \p{o}{N}}{f_0} + \beta(y-y_0) - \frac{ f_0}{\HH{o}{N}} \etb{o}{N-1} + \frac{f_0 \D{o}}{\HH{o}{N}},
-\end{equation}
-\begin{equation}\label{eq:etbk}
-\etb{o}{k} =  - \frac{\p{o}{k}-\p{o}{k+1}}{\gp{o}{k}}, \quad \quad \textrm{for } k=1,N-1,
-\end{equation}
-\[\gp{o}{k} = \frac{g(\rhb{o}_{k+1} - \rhb{o}_{k})}{\rhb{o}_0},\quad \quad \textrm{for } k=1,N-1,\]
-\[\etb{o}{0} \equiv 0.\]
-
-All of the model equations can be written more generally in vector form
-\begin{equation}\label{eq:matr1}
-\vc{q}_t  + (\vc{u} \vc{q})_x  + (\vc{v} \vc{q})_y = \mtx{B}\vc{e}   +\frac{\at{}}{f_0}\nabla_H^4 \vc{p}- \frac{\ah{}}{f_0}\nabla_H^6 \vc{p},
-\end{equation}
-\begin{equation}\label{eq:matr2}
-f_0 \vc{q} - f_0 \beta(y-y_0)  =  \nabla_H^2 \vc{p}  - f_0^2 \mtx{A}\vc{p} + f_0 \Dt{},
-\end{equation}
-where $\Dt{}$ is the dynamic topography which is rescaled by $f_0$ and the inverse of layer thickness (see \ref{eq:matda}, \ref{eq:matdo}), $\at{a} \equiv 0$, $\mtx{A}$ is an $N \times N$ matrix containing the coefficients of the $\eta$ contribution to vorticity, which has the same structure for the ocean and atmosphere, while $\mtx{B}$ is an $N \times N+1$ matrix containing the coefficients of the forcing terms, which differs only by a sign between the two cases (see \S\ref{sub:qglayers} for details of the matrices and vectors).
+whilst in the atmosphere we have $\mtx{{}^aB} = - \mtx{{}^oB} $.
 Note that $\vc{e}$ is a vector of length $N+1$ which is yet to be determined.
+(\ref{eq:qt}) can also be written as
+\begin{equation}\label{eq:qt2}
+\vc{q}_t  = \frac{1}{f_0} J(\vc{q},\vc{p}) + \mtx{B}\vc{e}  + \frac{\at{}}{f_0}\nabla_H^4 \vc{p} - \frac{\ah{}}{f_0}\nabla_H^6 \vc{p},
+\end{equation}
+where $J$ is the Jacobian,
+\[J(\vc{q},\vc{p}) =\vc{q}_x\vc{p}_y - \vc{q}_y\vc{p}_x.\]
+Equation (\ref{eq:layerpv}) can be written
+\begin{equation}\label{eq:layerpv2}
+\vc{q} = \frac{\nabla_H^2 \vc{p}}{f_0} + \beta(y - y_0) - f_0\left(\mtx{A}\vc{p} + \vc{D}\right),
+\end{equation}
+where $\mtx{A}$ is an $N\times N$ matrix representing the linear coefficients of pressure in the pertubation interface height equations and $\vc{D}$ is a vector representing the topography/bathymetry boundary conditions.
+For both ocean and atmosphere we can write
+\begin{equation}\label{eq:mata}
+\mtx{A} =
+\left[ \begin{array}{cccccc}
+    \frac{1}{\delta(H_1) \gp{}{1+}} & \frac{-1}{\delta(H_1) \gp{}{1+}} &&\\
+\frac{-1}{\delta(H_2) \gp{}{2-}}  & \frac{1}{\delta(H_2)}\left(\frac{1}{\gp{}{2-}} + \frac{1}{\gp{}{2+}}\right) & \frac{-1}{\delta(H_2) \gp{}{2+}} &\\
+&  \cdot & \cdot& \cdot\\
+ &&  \cdot & \cdot& \cdot\\
+&  & &   \frac{-1}{\delta(H_N) \gp{}{N-}}& \frac{1}{\delta(H_N) \gp{}{N-}} \\
+ \end{array}\right].
+\end{equation}
+For the atmosphere we have
+\begin{equation}\label{eq:matda}
+\Dt{a} =
+\left[ \begin{array}{c}
+\frac{T}{\delta(H_1)}\\
+0\\
+\cdot\\
+\cdot\\
+0\\
+ \end{array}\right],
+\end{equation}
+and for the ocean
+and
+\begin{equation}\label{eq:matdo}
+\Dt{o} =
+\left[ \begin{array}{c}
+0\\
+0\\
+\cdot\\
+\cdot\\
+\frac{D}{\delta(H_N)}\\
+ \end{array}\right].
+\end{equation}
+We can write (\ref{eq:layerpv2}) in operator form as
+\begin{equation}\label{eq:layerpv3}
+\left(\nabla_H - f^2_0\mtx{A} \right)\vc{p}  = f_0\left(\vc{q} - \beta(y - y_0) - f_0\vc{D}\right).
+\end{equation}
+Given appropriate intial and boundary conditions, equations (\ref{eq:qt2}) and (\ref{eq:layerpv2}) allow us to solve for layer potential vorticity $\vc{q}$ and layer pressure $\vc{p}$ forced by entrainment $\vc{e}$.
+
+\subsection{FIXME: remove this subsection}
+bottom topography $\D{a}(x,y)$ which is assumed to be small compared with the unperturbed layer thickness $\HH{a}{1}$, for consistency with the quasigeostrophic scaling.
 
 \subsection{Boundary conditions}
 The boundary conditions in the model are applied to the pressure field.
@@ -379,6 +384,48 @@ For the north and south boundaries of the atmosphere, these are written as
 where the nondimensional coefficient $\alphbc{}$ is zero for free slip and infinite for no-slip boundary conditions (although, in practice, $\alphbc{}>2$ is a good approximation to no-slip), $\Delta$ is the horizontal grid spacing and subscript $n$ denotes the outward normal derivative.
 Again, the east and west boundaries are periodic. 
 The cyclic ocean case is handled in the same way as the atmosphere. For the finite box ocean, (\ref{eq:bc2}) and (\ref{eq:bc3}) are also applied to the west and east boundaries.
+
+\subsection{Ekman layer drag}
+It is relevant at this stage to note that momentum must be lost from the ocean, and that this occurs via drag due to a no-slip condition at the ocean floor.
+We calculate this by assuming an Ekman layer of prescribed thickness  $\delek= \sqrt{K/\lvert f_0\rvert}$ and calculate the Ekman pumping when a stress term is included.
+In this case there is no need to calculate stress explicitly, and so we determine the Ekman pumping directly from pressure.
+Velocity in the Ekman layer will be given by
+\begin{subequations}
+\begin{equation}
+\vv{o}{N} = \frac{\p{o}{N}_x}{f_0} + \frac{\tx{}{x}}{\delek f_0},
+\end{equation}
+\begin{equation}
+\uu{o}{N} = -\frac{\p{o}{N}_y}{f_0} - \frac{\tx{}{y}}{\delek f_0}.
+\end{equation}
+\end{subequations}
+We use linear stress,
+\begin{equation}
+(\tx{}{x},\tx{}{y}) = \frac{K}{\delek}(\uu{o}{N},\vv{o}{N}),
+\end{equation}
+so that
+\begin{subequations}
+\begin{equation}
+\vv{o}{N} = \frac{\p{o}{N}_x}{f_0} + \textrm{sgn}(f_0) \uu{o}{N},
+\end{equation}
+\begin{equation}
+\uu{o}{N} = -\frac{\p{o}{N}_y}{f_0} -  \textrm{sgn}(f_0) \vv{o}{N}.
+\end{equation}
+\end{subequations}
+Combining these two we can write separate equations for each component of velocity,
+\begin{subequations}
+\begin{equation}
+\vv{o}{N} = \frac{\p{o}{N}_x}{2f_0} -\frac{\p{o}{N}_y}{2 \lvert f_0 \rvert},
+\end{equation}
+\begin{equation}
+\uu{o}{N} = -\frac{\p{o}{N}_y}{2f_0} - \frac{\p{o}{N}_x}{2 \lvert f_0 \rvert }.
+\end{equation}
+\end{subequations}
+These can be substituted into (\ref{eq:cont}), which is then integrated across the Ekman layer:
+\begin{equation}\label{eq:contz}
+\ww{o}{N} = \frac{\delek}{2 \lvert f_0 \rvert } \nabla_H^2\p{o}{N}.
+\end{equation}
+This vertical velocity on the lower  boundary of the ocean alters the vertical velocity in ocean layer $N$ but has no impact on the heat flux (as there is no temperature gradient).
+
 
 \section{Mixed layers}\label{sec:mixed}
 Quasi-geostrophy describes, to first order, the dynamics of both ocean and atmosphere, but cannot handle the fluxes of heat and momentum between these two domains which are required for a coupled model.
@@ -529,45 +576,6 @@ and Ekman pumping in the ocean surface layer is obtained in a similar fashion to
 \ek{o}  = \frac{\tx{o}{y}_x - \tx{o}{x}_y}{f_0}.
 \end{equation}
 
-It is relevant at this stage to note that momentum must also be lost from the ocean, and that this occurs via drag due to a no-slip condition at the ocean floor.
-We calculate this by assuming an Ekman layer of prescribed thickness  $\delek= \sqrt{K/\lvert f_0\rvert}$ and proceed as above.
-In this case there is no need to calculate stress explicitly, and so we determine the Ekman pumping directly from pressure.
-Velocity in the Ekman layer will be given by
-\begin{subequations}
-\begin{equation}
-\vv{o}{N} = \frac{\p{o}{N}_x}{f_0} + \frac{\tx{}{x}}{\delek f_0},
-\end{equation}
-\begin{equation}
-\uu{o}{N} = -\frac{\p{o}{N}_y}{f_0} - \frac{\tx{}{y}}{\delek f_0}.
-\end{equation}
-\end{subequations}
-We use linear  stress,
-\begin{equation}
-(\tx{}{x},\tx{}{y}) = \frac{K}{\delek}(\uu{o}{N},\vv{o}{N}),
-\end{equation}
-so that
-\begin{subequations}
-\begin{equation}
-\vv{o}{N} = \frac{\p{o}{N}_x}{f_0} + \textrm{sgn}(f_0) \uu{o}{N},
-\end{equation}
-\begin{equation}
-\uu{o}{N} = -\frac{\p{o}{N}_y}{f_0} -  \textrm{sgn}(f_0) \vv{o}{N}.
-\end{equation}
-\end{subequations}
-Combining these two we can write separate equations for each component of velocity,
-\begin{subequations}
-\begin{equation}
-\vv{o}{N} = \frac{\p{o}{N}_x}{2f_0} -\frac{\p{o}{N}_y}{2 \lvert f_0 \rvert},
-\end{equation}
-\begin{equation}
-\uu{o}{N} = -\frac{\p{o}{N}_y}{2f_0} - \frac{\p{o}{N}_x}{2 \lvert f_0 \rvert }.
-\end{equation}
-\end{subequations}
-These can be substituted into (\ref{eq:cont}), which is then integrated across the Ekman layer:
-\begin{equation}\label{eq:contz}
-\ww{o}{N} = \frac{\delek}{2 \lvert f_0 \rvert } \nabla_H^2\p{o}{N}.
-\end{equation}
-This vertical velocity on the lower  boundary of the ocean alters the vertical velocity in ocean layer $N$ but has no impact on the heat flux (as there is no temperature gradient).
 
 \subsection{Mixed layer evolution}
 The mixed layers also act to transfer heat between atmosphere and ocean.
@@ -610,7 +618,8 @@ However, provision is made for constant temperature boundary conditions on the e
 This condition is necessary because advection and diffusion of warm tropical water from that boundary are not explicitly included in the model.
 A similar boundary condition is not required on the poleward meridional boundary because convection is active there.
 
-\section{Flux between layers}\label{sec:flux}
+
+\section{Heat flux between layers}\label{sec:flux}
 OpenQG includes flux of heat between each layer due to a number of different processes.
 We derive each case below, and write heat flux as the superposition of a mean and a first order perturbation quantity, so that fluxes are linearised about a mean state in which the model is in radiative balance.
 
@@ -764,45 +773,7 @@ A constant offset is added to $\e{o}{1}$ to ensure its area integral is zero (se
 We are now in a position to put together equations for each layer.
 A schematic of the model which includes radiative fluxes, entrainment velocities and momentum coupling is shown in figure \ref{fig:sketch}.
 
-\subsection{QG layers}\label{sub:qglayers}
-The QG equations are written from (\ref{eq:matr1}) and (\ref{eq:matr2}) as follows,
-\begin{equation}\label{eq:matr1a}
-\vc{q}_t  + (\vc{u} \vc{q})_x  + (\vc{v} \vc{q})_y = \mtx{B}\vc{e}  + \frac{\at{}}{f_0}\nabla_H^4 \vc{p} - \frac{\ah{}}{f_0}\nabla_H^6 \vc{p},
-\end{equation}
-which can also be written as
-\begin{equation}\label{eq:matr1alt}
-\vc{q}_t  = \frac{1}{f_0} J(\vc{q},\vc{p}) + \mtx{B}\vc{e}  + \frac{\at{}}{f_0}\nabla_H^4 \vc{p} - \frac{\ah{}}{f_0}\nabla_H^6 \vc{p},
-\end{equation}
-where $J$ is the Jacobian,
-\[J(\vc{q},\vc{p}) =\vc{q}_x\vc{p}_y - \vc{q}_y\vc{p}_x,\]
-and
-\begin{equation}\label{eq:matr2a}
-f_0 \vc{q} - f_0 \beta(y-y_0)  =  \nabla_H^2 \vc{p}  - f_0^2 \mtx{A}\vc{p}+ f_0 \Dt{}.
-\end{equation}
-For both ocean and atmosphere we can write
-\begin{equation}\label{eq:mata}
-\mtx{A} =
-\left[ \begin{array}{cccccc}
-\frac{1}{\HH{}{1} \gp{}{1}} & \frac{-1}{\HH{}{1} \gp{}{1}} &&\\
-\frac{-1}{\HH{}{2} \gp{}{1}}  & \frac{1}{\HH{}{2}}\left(\frac{1}{\gp{}{2}} + \frac{1}{\gp{}{1}}\right) & \frac{-1}{\HH{}{2} \gp{}{2}} &\\
-&  \cdot & \cdot& \cdot\\
- &&  \cdot & \cdot& \cdot\\
-&  & &   \frac{-1}{\HH{}{N} \gp{}{N-1}}& \frac{1}{\HH{}{N} \gp{}{N-1}} \\
- \end{array}\right]
-\end{equation}
-while $\mtx{B}$ differs from atmosphere to ocean,
-\begin{equation}
-\mtx{{}^oB} = f_0
-\left[ \begin{array}{cccccc}
-\frac{1}{\HH{}{1}} & \frac{-1}{\HH{}{1}} & &\\
- & \frac{1}{\HH{}{2}} & \frac{-1}{\HH{}{2}} &\\
- & &  \cdot & \cdot \\
- & &  & \cdot & \cdot \\
- & &   & & \frac{1}{\HH{}{N}}& \frac{-1}{\HH{}{N}} \\
- \end{array}\right]
-\end{equation}
-and $\mtx{{}^aB} = - \mtx{{}^oB} $.
-Note that $\mtx{B}$ is a $N \times N+1$ matrix which produces two forcing terms on each layer, one at the top and one at the bottom.
+\subsection{Entrainment}\label{sub:qglayers}
 The entrainment vectors are given by
 \begin{equation}
 \vc{{}^oe} =
@@ -828,31 +799,6 @@ and
  \end{array}\right].
 \end{equation}
 The entrainment equations will be altered if convection occurs.
-The dynamic topography vectors are simply
-\begin{equation}\label{eq:matda}
-\Dt{a} =
-\left[ \begin{array}{c}
-\frac{f_0 \D{a}}{\HH{a}{1}}\\
-0\\
-\cdot\\
-\cdot\\
-0\\
- \end{array}\right],
-\end{equation}
-and
-\begin{equation}\label{eq:matdo}
-\Dt{o} =
-\left[ \begin{array}{c}
-0\\
-0\\
-\cdot\\
-\cdot\\
-\frac{f_0 \D{o}}{\HH{o}{N}}\\
- \end{array}\right].
-\end{equation}
-
-
-
 
 \subsection{Ocean mixed layer}
 From (\ref{eq:tempd}),
