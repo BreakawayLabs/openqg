@@ -110,7 +110,7 @@ data:
 
 	T_abs = 330.0,  340.0,  350.0;
 	fsbar = -210.0;
-	fspamp = 150.0;
+	fspamp = 150.0; // Set to 100.0 for 30 years of S.O spinup
 	zopt_m = 200.0;
 	zopt = 2.0e4,  2.0e4,  3.0e4;
 	gamma = 1.0e-2;
