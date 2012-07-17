@@ -180,7 +180,6 @@ Relative Vorticity is given by
 \begin{equation}\label{eq:vort}
 \zeta \equiv v_x - u_y = \frac{\nabla_H^2 p}{f_0}.
 \end{equation}
-In the atmosphere (ocean), interface $k$ is defined to be on the upper (lower) boundary of layer $k$ (that is, in both domains we number away from the ocean-atmosphere boundary).
 The $H$ subscript on the $\nabla$ operator denotes purely horizontal derivatives.
 
 We can now compute the first order quantities (signified by ${}^*$ in the equations below) for the horizontal momentum and continuity equations which include zeroth order horizontal velocity terms and first order pressure and rotation terms,
@@ -221,19 +220,23 @@ q^*_t +\left(uq^*)\right)_x +\left(vq^*\right)_y = f_0 w^*_z - A_4\nabla_H^4 \ze
 
 \subsection{Layer equations}
 We now integrate (\ref{eq:momxi2}) over the layer depth.
-Note that it is assumed that $p_k$, $u_k$ and $v_k$ are effectively layer-averaged quantities, so that integration between $H_{k-1}$ and $H_{k}$ simply gives
+In doing this we introduce some new notation.
+Layer variables are indexed with subscript $k$ from 1-$N$, increasing away from the ocean-atmosphere interface.
+Layer interface variables are indexed with subscripts $k\uparrow$ and $k\downarrow$ for $k$ from 1-$N$. A subscript of $k\uparrow$ is used for the upper boundary of layer $k$ whilst $k\downarrow$ represents the lower boundary.
+For a layer interface variable $X$ we introduce the function
+\begin{equation}
+\delta(X_k) = X_{k\uparrow} - X_{k\downarrow}.
+\end{equation}
+
+Note that it is assumed that $p_k$, $u_k$ and $v_k$ are effectively layer-averaged quantities, so that integration between $H_{k\downarrow}$ and $H_{k\uparrow}$ simply gives
 \begin{equation}\label{eq:momq}
-\left(q^*_k\right)_t  + \left(u_k q^*_k \right)_x  + \left(v_kq^*_k\right)_y  = \frac{f_0 (w_{k+}^* -w_{k-}^*)}{\delta\left(H_{k}\right)} - A_4\nabla_H^4\zeta_k,
+\left(q^*_k\right)_t  + \left(u_k q^*_k \right)_x  + \left(v_kq^*_k\right)_y  = \frac{f_0 \delta(w^*_k)}{\delta\left(H_{k}\right)} - A_4\nabla_H^4\zeta_k,
 \end{equation}
 which is an equation for the evolution of potential vorticity in the layer.
-We use the following notation for the difference of a variable at the upper and lower boundary of a layer:
-\begin{equation}
-\delta\left(w^*_k\right) = w_{k+}^* - w_{k-}^*.
-\end{equation}
-Evaluation of vertical velocity at the layer boundaries ($w_{k+}^*$ and $w_{k-}^*$) requires knowledge of the flux between layers (which we call $e$ for net entrainment velocity through the boundary of the layer).
-Vertical velocity is a first order quantity and thus incorporates variable layer thickness $h_k$, giving
+Evaluation of vertical velocity at the layer boundaries ($w_{k\uparrow}^*$ and $w_{k\downarrow}^*$) requires knowledge of the flux between layers (which we call $e$ for net entrainment velocity through the boundary of the layer).
+Vertical velocity is a first order quantity and thus incorporates variable layer interface height $h$, giving
 \begin{equation}\label{eq:w1}
-w_{k\pm}^* =  (h_{k\pm})_t + (u_{k} h_{k\pm})_x + (v_{k} h_{k\pm})_y + e_{k\pm}.
+w_{k\uparrow\downarrow}^* =  (h_{k\uparrow\downarrow})_t + (u_{k} h_{k\uparrow\downarrow})_x + (v_{k} h_{k\uparrow\downarrow})_y + e_{k\uparrow\downarrow}.
 \end{equation}
 This leads to
 \begin{equation}\label{eq:w2}
@@ -241,7 +244,7 @@ This leads to
 \end{equation}
 Combining (\ref{eq:momq}) and (\ref{eq:w2}) gives
 \begin{equation}
-\left(q^*_k - \frac{f_0\delta\left(h_k\right)}{H_k}\right)_t  + \left(u_k \left(q^*_k - \frac{f_0\delta\left(h_k\right)}{H_k}\right)\right)_x  + \left(v_k\left(q^*_k -\frac{f_0\delta\left(h_k\right)}{H_k}\right)\right)_y  = \frac{f_0 \delta\left(e_k\right)}{\delta\left(H_{k}\right)} - A_4\nabla_H^4\zeta_k.
+\left(q^*_k - \frac{f_0\delta\left(h_k\right)}{\delta(H_k)}\right)_t  + \left(u_k \left(q^*_k - \frac{f_0\delta\left(h_k\right)}{\delta(H_k)}\right)\right)_x  + \left(v_k\left(q^*_k -\frac{f_0\delta\left(h_k\right)}{\delta(H_k)}\right)\right)_y  = \frac{f_0 \delta\left(e_k\right)}{\delta\left(H_{k}\right)} - A_4\nabla_H^4\zeta_k.
 \end{equation}
 We now define the layer potential vorticity as
 \begin{equation}\label{eq:layerpv}
@@ -255,34 +258,43 @@ which lets us write
 \subsection{Pertubation interface height}
 We now focus on the term $\delta(h_k)$ in (\ref{eq:layerpv}). We define the pertubation interface height
 \begin{eqnarray}
-\eta_{k+} & \equiv & h_{k+} - H_{k+} = \frac{p_k - p_{k+1}}{\gp{}{k+}} \quad \quad \textrm{for } k=1,N-1\label{eq:eta1}\\
-\eta_{k-} & \equiv & h_{k-} - H_{k-} = \frac{p_{k-1} - p_{k}}{\gp{}{k-}}  \quad \quad \textrm{for } k=2,N.\label{eq:eta2}
+\eta_{k\uparrow}   & \equiv & h_{k\uparrow}   - H_{k\uparrow} = \frac{\delta(p_{k\uparrow})}{\gp{}{k\uparrow}}\label{eq:eta1}\\
+\eta_{k\downarrow} & \equiv & h_{k\downarrow} - H_{k\downarrow} = \frac{\delta(p_{k\downarrow})}{\gp{}{k\downarrow}}\label{eq:eta2}
 \end{eqnarray}
-Here we have introduced $\gp{}{k\pm}$, the reduced gravity across the $k\pm$ interface, given by
+Here we have introduced $\gp{}{k\uparrow\downarrow}$, the reduced gravity across the $k\uparrow\downarrow$ interface, given by
 \begin{eqnarray}
-\gp{}{k+} & = & \frac{g(\rhb{a}_k - \rhb{a}_{k+1})}{\rhb{a}_0} \quad \quad \textrm{for } k=1,N-1\\
-\gp{}{k-} & = & \frac{g(\rhb{a}_{k-1} - \rhb{a}_{k})}{\rhb{a}_0} \quad \quad \textrm{for } k=2,N.
+\gp{}{k\uparrow}   & = & \frac{g\delta(\rho_{k\uparrow})}{\rhb{}_0} \\
+\gp{}{k\downarrow} & = & \frac{g\delta(\rho_{k\downarrow})}{\rhb{}_0}.
 \end{eqnarray}
-The value of $\eta$ at the upper and lower boundaries of the domain depend on the defined boundary conditions.
-At the atmosphere-ocean interface, and at the top of the highest atmosphere layer, the pertubation interface height is defined to be zero.
+Care must be taken when evaluating the $\delta()$ function to find the difference between two layer variables. In the ocean case we have
+\begin{eqnarray}
+\delta(X_{k\uparrow}) & = & X_{k-1} - X_k\\
+\delta(X_{k\downarrow}) & = & X_k - X_{k+1}
+\end{eqnarray}
+whereas in the atmosphere we have
+\begin{eqnarray}
+\delta(X_{k\uparrow}) & = & X_{k+1} - X_k\\
+\delta(X_{k\downarrow}) & = & X_k - X_{k-1}.
+\end{eqnarray}
+The value of $\eta$ at the upper and lower boundaries of the domain cannot be expclitly calculated with the above equations, and thus depend on the defined boundary conditions.
 At the ocean bottom, the pertubation interface height is based on the bathymetry, whilst at the top of the atmosphere the pertubation interface height is defined to be zero, so
 \begin{eqnarray}
-\textrm{ocean: } \quad \eta_{N+} & = & D - H_N \\
-\textrm{atmos: } \quad \eta_{N+} & = & 0,
+\textrm{ocean: } \quad \eta_{N\downarrow} & = & D - H_N \\
+\textrm{atmos: } \quad \eta_{N\uparrow} & = & 0,
 \end{eqnarray}
 where D is the ocean depth.
 At the ocean-atmosphere interface the pertubation interface height is defined to be zero. At the atmosphere-land interface the pertubation interface height is defined by the topography, so
 \begin{eqnarray}
-\textrm{ocean: } \quad \eta_{1-} & = & 0 \\
-\textrm{atmos: } \quad \eta_{1-} & = & T,
+\textrm{ocean: } \quad \eta_{1\uparrow} & = & 0 \\
+\textrm{atmos: } \quad \eta_{1\downarrow} & = & T,
 \end{eqnarray}
-where the topography $T$ is zero over the ocean.
+where the topography $T$ is zero over the ocean and is assumed to be small compared with the unperturbed layer thickness $H_1$, for consistency with the quasigeostrophic scaling.
 
 Combining (\ref{eq:eta1}) and (\ref{eq:eta2}) lets us write
 \begin{equation}
 \delta(h_k) = \delta(\eta_k),
 \end{equation}
-where $\delta(\eta_k) = \eta_{k+} - \eta_{k-}$ is a linear function of pressure.
+where $\delta(\eta_k) = \eta_{k\uparrow} - \eta_{k\downarrow}$ is a linear function of pressure.
 
 \subsection{Vector equations}
 
@@ -318,7 +330,7 @@ For both ocean and atmosphere we can write
 \begin{equation}\label{eq:mata}
 \mtx{A} =
 \left[ \begin{array}{cccccc}
-    \frac{1}{\delta(H_1) \gp{}{1+}} & \frac{-1}{\delta(H_1) \gp{}{1+}} &&\\
+    \frac{1}{\delta(H_1) \gp{}{1\uparrow}} & \frac{-1}{\delta(H_1) \gp{}{1\uparrow}} &&\\
 \frac{-1}{\delta(H_2) \gp{}{2-}}  & \frac{1}{\delta(H_2)}\left(\frac{1}{\gp{}{2-}} + \frac{1}{\gp{}{2+}}\right) & \frac{-1}{\delta(H_2) \gp{}{2+}} &\\
 &  \cdot & \cdot& \cdot\\
  &&  \cdot & \cdot& \cdot\\
@@ -353,9 +365,6 @@ We can write (\ref{eq:layerpv2}) in operator form as
 \left(\nabla_H - f^2_0\mtx{A} \right)\vc{p}  = f_0\left(\vc{q} - \beta(y - y_0) - f_0\vc{D}\right).
 \end{equation}
 Given appropriate intial and boundary conditions, equations (\ref{eq:qt2}) and (\ref{eq:layerpv2}) allow us to solve for layer potential vorticity $\vc{q}$ and layer pressure $\vc{p}$ forced by entrainment $\vc{e}$.
-
-\subsection{FIXME: remove this subsection}
-bottom topography $\D{a}(x,y)$ which is assumed to be small compared with the unperturbed layer thickness $\HH{a}{1}$, for consistency with the quasigeostrophic scaling.
 
 \subsection{Boundary conditions}
 The boundary conditions in the model are applied to the pressure field.
