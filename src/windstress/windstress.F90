@@ -2,7 +2,7 @@ module windstress
 
   use intsubs, only: trapin
   use box, only: box_type
-  use grid, only: grid_type, new_load_grid
+  use grid, only: grid_type, load_grid
   use bicubic, only: bcudata, bcuini, new_bicubic
   use ekman, only: ekman_type
   use qg, only: qg_type
@@ -85,7 +85,7 @@ contains
 
     init_windstress%go = go
     init_windstress%ga = ga
-    init_windstress%g = new_load_grid(go, ga)
+    init_windstress%g = load_grid(go, ga)
     init_windstress%bcu = bcuini(init_windstress%g)
     init_windstress%cdat = cdat
     init_windstress%tau_udiff = tau_udiff

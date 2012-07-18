@@ -10,7 +10,7 @@ module amlsubs
   use numerics, only: c_grid_advection
   use mixed_layer, only: adv_diff
   use mixed, only: init_mixed
-  use grid, only: grid_type, new_load_grid
+  use grid, only: grid_type
 
   implicit none
 

@@ -2,7 +2,7 @@ module ml_monitor
 
   use box, only: box_type
   use ncutils, only: nc_open_w, nc_create, nc_def_dim, nc_def_float, nc_close, nc_put_double, nc_enddef
-  use grid, only: grid_type, new_load_grid
+  use grid, only: grid_type, load_grid
   use intsubs, only: genint
   use box, only: box_type
   use qg, only: qg_type
@@ -120,7 +120,7 @@ contains
 
     init_aml_monitor%nocmon = nocmon
     init_aml_monitor%filename = filename
-    init_aml_monitor%g = new_load_grid(go, ga)
+    init_aml_monitor%g = load_grid(go, ga)
     init_aml_monitor%active = .true.
 
     call aml_monnc_init(outdir, numoutsteps, filename)

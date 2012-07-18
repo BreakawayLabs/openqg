@@ -3,7 +3,7 @@ program openqg
   use util, only: s2s, streq
   ! GLAM
   use box, only: box_type, init_box_from_mesh
-  use grid, only: grid_type, new_load_grid, print_grid
+  use grid, only: grid_type, load_grid, print_grid
   use topog, only: topog_type, load_topog
   use glam, only: load_glam
   use mesh, only: mesh_type
@@ -121,7 +121,7 @@ contains
 
     ! Write a bunch of things to screen/output before beginning the actual run
     if (ocn%active .and. atm%active) then
-       g = new_load_grid(ocn%qg%b, atm%qg%b)
+       g = load_grid(ocn%qg%b, atm%qg%b)
        call print_grid(g, ocn%qg%b, atm%qg%b)
     endif
 
@@ -352,7 +352,7 @@ contains
        atm%ml%go = atm%b
     endif
     if (atm%ml%active) then
-       atm%ml%g = new_load_grid(atm%ml%go, atm%ml%b)
+       atm%ml%g = load_grid(atm%ml%go, atm%ml%b)
        allocate(atm%ml%fnetoc(atm%ml%go%nxt,atm%ml%go%nyt))
     endif
 
