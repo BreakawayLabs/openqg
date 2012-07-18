@@ -1,6 +1,6 @@
 module topog
 
-  use util, only: strlen, streq, s2s
+  use util, only: streq, s2s
   use ncutils, only: nc_open, nc_get_dim, nc_create, nc_def_dim, handle_err, nc_get_text
   use ncutils, only: nc_close, nc_enddef, nc_def_double, nc_get_double, nc_put_double
   use intsubs, only: xintp
@@ -26,15 +26,6 @@ module topog
 
   end type topog_type
 
-  type topog_conf_type
-     
-     character, allocatable :: oc_topog(:)
-     character, allocatable :: at_topog(:)
-
-  end type topog_conf_type
-
-  public topog_conf_type
-  public load_topog_conf
   public topout_nc
   public topog_type
   public load_topog
@@ -42,27 +33,6 @@ module topog
   public print_topog_summary
 
 contains
-
-  type(topog_conf_type) function load_topog_conf(filename)
-
-    character (len=*), intent(in) :: filename
-
-    integer :: topog_id, strlen
-    character subnam*(*)
-    parameter ( subnam = 'load_topog_conf' )
-
-    ! Namelist specified values
-    topog_id = nc_open(filename, 'load_topog_conf')
-
-    strlen = nc_get_dim(topog_id, 'strlen', 'load_topog_conf')
-    allocate(load_topog_conf%oc_topog(strlen))
-    allocate(load_topog_conf%at_topog(strlen))
-    call nc_get_text(topog_id, 'oc_topog', load_topog_conf%oc_topog, subnam)
-    call nc_get_text(topog_id, 'at_topog', load_topog_conf%at_topog, subnam)
-
-    call nc_close(topog_id)
-
-  end function load_topog_conf
 
   subroutine load_topog(b, foo, topo, indir)
     type(box_type), intent(in) :: b
