@@ -21,7 +21,6 @@ module mesh
 
   public mesh_type
   public init_mesh
-  public load_mesh
   public print_mesh_summary
 
 contains
@@ -48,31 +47,6 @@ contains
     call compute_derived_values(init_mesh)
 
   end function init_mesh
-
-  type(mesh_type) function load_mesh(filename)
-
-    character (len=*), intent(in) :: filename
-    integer :: cyclic
-    integer :: mesh_id
-
-    mesh_id = nc_open(filename, 'Load mesh') 
-    load_mesh%nxt = nc_get_int(mesh_id, 'nxt', 'load_mesh')
-    load_mesh%nyt = nc_get_int(mesh_id, 'nyt', 'load_mesh')
-
-    load_mesh%x0 = nc_get_double(mesh_id, 'x0', 'load_mesh')
-    load_mesh%y0 = nc_get_double(mesh_id, 'y0', 'load_mesh')
-
-    load_mesh%dx = nc_get_double(mesh_id, 'dx', 'load_mesh')
-    load_mesh%dy = nc_get_double(mesh_id, 'dy', 'load_mesh')
- 
-    cyclic = nc_get_int(mesh_id, 'cyclic', 'load_mesh')
-    load_mesh%cyclic = (cyclic == 1)
-    load_mesh%lat = nc_get_double(mesh_id, 'lat', 'load_mesh')
-    load_mesh%x1 = nc_get_double(mesh_id, 'x1', 'load_mesh')
-
-    call compute_derived_values(load_mesh)
-
-  end function load_mesh
 
   pure subroutine compute_derived_values(mesh)
     type(mesh_type), intent(inout) :: mesh
