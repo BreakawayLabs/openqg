@@ -225,8 +225,8 @@ contains
 
     integer :: ncstat
 
-    ncstat = nf_def_dim(ncid, dimname, n, nc_def_dim)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_def_dim(ncid, dimname, n, nc_def_dim)
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end function nc_def_dim
 
@@ -238,8 +238,8 @@ contains
 
     integer :: ncstat, varid
 
-    ncstat = nf_inq_dimid(ncid, dimname, varid)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_inq_dimid(ncid, dimname, varid)
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
     ncstat = nf_inq_dimlen(ncid, varid, nc_get_dim)
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
 
@@ -374,8 +374,8 @@ contains
     integer :: ncstat, varid
 
     varid = nc_inq_varid(ncid, varname, subnam)
-    ncstat = nf_get_var_int(ncid, varid, nc_get_int)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    ncstat = nf90_get_var(ncid, varid, nc_get_int)
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam, varname)
 
   end function nc_get_int
 
@@ -390,8 +390,8 @@ contains
     integer :: ncstat, varid
 
     varid = nc_inq_varid(ncid, varname, subnam)
-    ncstat = nf_get_var_int(ncid, varid, nc_get_int_1d)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    ncstat = nf90_get_var(ncid, varid, nc_get_int_1d)
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam, varname)
 
   end function nc_get_int_1d
 
