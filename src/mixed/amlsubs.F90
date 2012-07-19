@@ -129,10 +129,10 @@ contains
     print *,' Entrainment coefficients:'
     print *,' -------------------------'
     print *,' QG internal interface 1 coeffts:'
-    write(*,215) '  eta  coefficients  aface(l) = ', &
+    print 215, '  eta  coefficients  aface(l) = ', &
          (init_entrain_coeff%aface(l),l=1,nl-1)
-    write(*,215) '  etam+D coefficient    bface = ',init_entrain_coeff%bface
-    write(*,215) '  aTm    coefficient    dface = ',init_entrain_coeff%dface
+    print 215, '  etam+D coefficient    bface = ',init_entrain_coeff%bface
+    print 215, '  aTm    coefficient    dface = ',init_entrain_coeff%dface
 
 215 format(a,1p,9d13.5)
 

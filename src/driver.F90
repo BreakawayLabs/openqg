@@ -249,8 +249,8 @@ contains
     endif
 
     if ( print_step(ocn%print, ntdone, force) .or. (print_step(atm%print, ntdone, force)) ) then
-       print *,' '
-       write(*,'(a,i12,f11.2,f11.4)') '  Sample output at nt, tday, tyrs = ',nt,tday,tyrs
+       print *
+       print '(a,i12,f11.2,f11.4)', '  Sample output at nt, tday, tyrs = ',nt,tday,tyrs
     endif
     if (print_step(ocn%print, ntdone, force)) call print_ocn(ocn%qg, ocn%ml)
     if (print_step(atm%print, ntdone, force)) call print_atm(atm%qg, atm%ml)

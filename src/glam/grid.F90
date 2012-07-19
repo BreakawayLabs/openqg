@@ -76,46 +76,40 @@ contains
 
     integer :: k
 
-    print *,' '
+    print *
     print *,' Grid parameters:'
     print *,' ----------------'
-    write(*,201) '  Atmos/ocean grid ratio ndxr = ',g%ndxr
-    write(*,201) '  Atmos. gridcells over ocean = ',g%nxaooc,g%nyaooc
-    write(*,201) '  Ocn start indices  nx1, ny1 = ',g%nx1,g%ny1
-    write(*,214) '  Coriolis par. f0 (rad s^-1) = ',go%fnot
-    write(*,214) '  Beta =df/dy (rad s^-1 m^-1) = ',go%beta
+    print 201, '  Atmos/ocean grid ratio ndxr = ',g%ndxr
+    print 201, '  Atmos. gridcells over ocean = ',g%nxaooc,g%nyaooc
+    print 201, '  Ocn start indices  nx1, ny1 = ',g%nx1,g%ny1
+    print 214, '  Coriolis par. f0 (rad s^-1) = ',go%fnot
+    print 214, '  Beta =df/dy (rad s^-1 m^-1) = ',go%beta
 
-    print *,' '
+    print *
     print *,' Oceanic grid:'
     print *,' -------------'
-    write(*,201) '  No. of ocean QG layers  nlo = ',go%nl
-    write(*,201) '  No. of gridcells nxto, nyto = ',go%nxt,go%nyt
-    write(*,204) '  Gridlength dxo         (km) = ',1.0d-3*go%dx
-    write(*,203) '  Domain sizes xlo, ylo  (km) = ', &
-         1.0d-3*go%xl,1.0d-3*go%yl
-    write(*,205) '  Rossby number   Beta*ylo/f0 = ',go%beta*go%yl/abs(go%fnot)
-    write(*,214) '  f range S -> N   (rad s^-1) = ', &
-         go%fnot+go%beta*go%yprel(1),go%fnot+go%beta*go%yprel(go%nyp)
-    write(*,214) '  Midlatitude Coriolis param  = ', &
-         go%fnot+go%beta*0.5d0*( go%yprel(1) + go%yprel(go%nyp) )
-    write(*,203) '  Layer thicknesses hoc   (m) = ',(go%h(k),k=1,go%nl)
-    write(*,203) '  Total thickness   hto   (m) = ',sum(go%h)
+    print 201, '  No. of ocean QG layers  nlo = ', go%nl
+    print 201, '  No. of gridcells nxto, nyto = ', go%nxt,go%nyt
+    print 204, '  Gridlength dxo         (km) = ', 1.0d-3*go%dx
+    print 203, '  Domain sizes xlo, ylo  (km) = ', 1.0d-3*go%xl,1.0d-3*go%yl
+    print 205, '  Rossby number   Beta*ylo/f0 = ', go%beta*go%yl/abs(go%fnot)
+    print 214, '  f range S -> N   (rad s^-1) = ', go%fnot+go%beta*go%yprel(1),go%fnot+go%beta*go%yprel(go%nyp)
+    print 214, '  Midlatitude Coriolis param  = ', go%fnot+go%beta*0.5d0*( go%yprel(1) + go%yprel(go%nyp) )
+    print 203, '  Layer thicknesses hoc   (m) = ', (go%h(k),k=1,go%nl)
+    print 203, '  Total thickness   hto   (m) = ', sum(go%h)
 
-    print *,' '
+    print *
     print *,' Atmospheric grid:'
     print *,' -----------------'
-    write(*,201) '  No. of atmos. QG layers nla = ',ga%nl
-    write(*,201) '  No. of gridcells nxta, nyta = ',ga%nxt,ga%nyt
-    write(*,204) '  Gridlength dxa         (km) = ',1.0d-3*ga%dx
-    write(*,203) '  Domain sizes xla, yla  (km) = ', &
-         1.0d-3*ga%xl,1.0d-3*ga%yl
-    write(*,205) '  Rossby number   Beta*yla/f0 = ',go%beta*ga%yl/abs(ga%fnot)
-    write(*,214) '  f range S -> N   (rad s^-1) = ', &
-         ga%fnot+ga%beta*ga%yprel(1),ga%fnot+go%beta*ga%yprel(ga%nyp)
-    write(*,214) '  Midlatitude Coriolis param  = ', &
-         ga%fnot+ga%beta*0.5d0*( ga%yprel(1) + ga%yprel(ga%nyp) )
-    write(*,203) '  Layer thicknesses hat   (m) = ',(ga%h(k),k=1,ga%nl)
-    write(*,203) '  Total thickness   hta   (m) = ',sum(ga%h)
+    print 201, '  No. of atmos. QG layers nla = ', ga%nl
+    print 201, '  No. of gridcells nxta, nyta = ', ga%nxt,ga%nyt
+    print 204, '  Gridlength dxa         (km) = ', 1.0d-3*ga%dx
+    print 203, '  Domain sizes xla, yla  (km) = ', 1.0d-3*ga%xl,1.0d-3*ga%yl
+    print 205, '  Rossby number   Beta*yla/f0 = ', go%beta*ga%yl/abs(ga%fnot)
+    print 214, '  f range S -> N   (rad s^-1) = ', ga%fnot+ga%beta*ga%yprel(1),ga%fnot+go%beta*ga%yprel(ga%nyp)
+    print 214, '  Midlatitude Coriolis param  = ', ga%fnot+ga%beta*0.5d0*( ga%yprel(1) + ga%yprel(ga%nyp) )
+    print 203, '  Layer thicknesses hat   (m) = ', (ga%h(k),k=1,ga%nl)
+    print 203, '  Total thickness   hta   (m) = ', sum(ga%h)
 
   201 format(a,9i13)
   203 format(a,9f13.3)

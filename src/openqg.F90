@@ -498,7 +498,7 @@ contains
        if ( .not.solnok ) then
           tday = nt*clk%dta/secday
           print *,' valids has detected invalid values'
-          write(*,'(a,i12,f12.2,f11.3)') '  problem occurs at nt, tday, tyrs = ',nt,tday,tyrs
+          print '(a,i12,f12.2,f11.3)', '  problem occurs at nt, tday, tyrs = ',nt,tday,tyrs
           call save_all(outdir(1:lenod), ocn, atm, "invalid.nc")
           print *,' program terminates'
           stop 1
@@ -516,8 +516,8 @@ contains
     call diagnose_final(outdir(1:lenod), ocn, atm)
 
     tday = nt*clk%dta/secday
-    print *,' '
-    write(*,'(a,i12,f11.2,f11.4)') '  End of run at nt, tday, tyrs = ',nt,tday,tyrs
+    print *
+    print '(a,i12,f11.2,f11.4)', '  End of run at nt, tday, tyrs = ',nt,tday,tyrs
 
   end subroutine run
 
