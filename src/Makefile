@@ -5,9 +5,6 @@
 # DEBUGS = List of strict debugging flags for your Fortran compiler (for testing)
 # LAPACK = Compiler flag for picking up system copy of LAPACK & BLAS
 #
-# NCDIR = Top directory of netCDF installation
-# NCLIB = Location from which to link netCDF library
-# NCDINC = Absolute filename of netcdf.inc file to be included
 # NCLINK = Linker flags for picking up the netCDF library
 #
 # MAKEFILE = Makefile on which one may want the make process to depend,
@@ -90,22 +87,22 @@ intsubs.o: util/intsubs.F90
 
 ## GLAM
 
-mesh.o: glam/mesh.F90 ${NCDINC} ncutils.o
+mesh.o: glam/mesh.F90 ncutils.o
 	${FC} ${FFLAGS} -c glam/mesh.F90
 
-box.o: glam/box.F90 ${NCDINC} ncutils.o mesh.o
+box.o: glam/box.F90 ncutils.o mesh.o
 	${FC} ${FFLAGS} -c glam/box.F90
 
-grid.o: glam/grid.F90 ${NCDINC} ncutils.o box.o
+grid.o: glam/grid.F90 ncutils.o box.o
 	${FC} ${FFLAGS} -c glam/grid.F90
 
-topog.o: glam/topog.F90 ${NCDINC} ncutils.o util.o intsubs.o box.o grid.o
+topog.o: glam/topog.F90 ncutils.o util.o intsubs.o box.o grid.o
 	${FC} ${FFLAGS} -c glam/topog.F90
 
 bicubic.o: glam/bicubic.F90 box.o grid.o
 	${FC} ${FFLAGS} -c glam/bicubic.F90
 
-glam.o: glam/glam.F90 ${NCDINC} ncutils.o mesh.o
+glam.o: glam/glam.F90 $ ncutils.o mesh.o
 	${FC} ${FFLAGS} -c glam/glam.F90
 
 numerics.o: glam/numerics.F90 intsubs.o box.o
@@ -223,7 +220,7 @@ state.o: state.F90 ${MAKEFILE} qg.o mixed.o box.o radsubs.o util.o ncutils.o vor
 driver.o: driver.F90 ${MAKEFILE} coupler.o windstress.o omlsubs.o amlsubs.o core.o forcing.o basin.o
 	${FC} ${FFLAGS} -c driver.F90
 
-openqg.o: openqg.F90 ${MAKEFILE} ${NCDINC} \
+openqg.o: openqg.F90 ${MAKEFILE}  \
 	ncutils.o glam.o omlsubs.o forcing.o mixed.o \
 	qg.o modes.o homog.o inhomog.o subsampling.o clock.o vorsubs.o tavsubs.o qg_monitor.o \
 	valsubs.o covsubs.o areasubs.o vorticity.o radsubs.o constraint.o pressure.o covsubs.o \
