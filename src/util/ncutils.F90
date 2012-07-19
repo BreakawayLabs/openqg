@@ -1,7 +1,10 @@
 module ncutils
 
+  use netcdf
+
   implicit none
   include 'netcdf.inc'
+  
 
   private
 
@@ -108,8 +111,8 @@ contains
 
     integer :: status
 
-    status = nf_close(ncid)
-    if (status.ne.NF_NOERR) call handle_err (status, subnam)
+    status = nf90_close(ncid)
+    if (status /= NF90_NOERR) call handle_err(status, subnam)
 
   end subroutine nc_close
 
@@ -121,8 +124,8 @@ contains
 
     integer :: status
 
-    status = nf_create (trim(outdir)//'/'//filename, NF_CLOBBER, nc_create)
-    if ( status.ne.NF_NOERR ) call handle_err (status, subnam, trim(outdir)//'/'//filename)
+    status = nf90_create(trim(outdir)//'/'//filename, NF90_CLOBBER, nc_create)
+    if (status /= NF90_NOERR) call handle_err(status, subnam, trim(outdir)//'/'//filename)
 
   end function nc_create
 
@@ -133,8 +136,8 @@ contains
 
     integer :: status
 
-    status = nf_open(filename,NF_NOWRITE,nc_open)
-    if ( status.ne.NF_NOERR ) call handle_err (status, subnam, filename)
+    status = nf90_open(filename, NF90_NOWRITE, nc_open)
+    if (status /= NF90_NOERR) call handle_err(status, subnam, filename)
 
   end function nc_open
 
@@ -146,8 +149,8 @@ contains
 
     integer :: status
 
-    status = nf_open(trim(outdir)//'/'//filename,NF_WRITE,nc_open_w)
-    if ( status.ne.NF_NOERR ) call handle_err (status, subnam, filename)
+    status = nf90_open(trim(outdir)//'/'//filename, NF90_WRITE, nc_open_w)
+    if (status /= NF90_NOERR) call handle_err(status, subnam, filename)
 
   end function nc_open_w
 
