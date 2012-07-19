@@ -421,8 +421,8 @@ contains
     integer :: ncstat, varid
 
     varid = nc_inq_varid(nc_id, varname, subnam)
-    ncstat = nf_put_vara_int(nc_id, varid, start, count, data)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(nc_id, varid, data, start, count)
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_int
 
@@ -436,8 +436,8 @@ contains
 
     integer :: ncstat
 
-    ncstat = nf_put_vara_int(nc_id, varid, start, count, data)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(nc_id, varid, data, start, count)
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_int_id
 
@@ -449,8 +449,8 @@ contains
 
     integer :: ncstat
 
-    ncstat = nf_put_var_int(nc_id, varid, data)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(nc_id, varid, data)
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_int_simple
 
@@ -464,8 +464,8 @@ contains
 
     integer :: ncstat
 
-    ncstat = nf_put_vara_double(ncid, varid, 1, size(data), data)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(ncid, varid, data, (/1/), shape(data))
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_double_block_1d_id
 
@@ -478,8 +478,8 @@ contains
 
     integer :: ncstat
 
-    ncstat = nf_put_vara_double(ncid, varid, (/1, 1/), shape(data), data)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(ncid, varid, data, (/1, 1/), shape(data))
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_double_block_2d_id
 
@@ -492,8 +492,8 @@ contains
 
     integer :: ncstat
 
-    ncstat = nf_put_vara_double(ncid, varid, (/1, 1, 1/), shape(data), data)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(ncid, varid, data, (/1, 1, 1/), shape(data))
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_double_block_3d_id
 
@@ -507,8 +507,8 @@ contains
     integer :: ncstat, varid
 
     varid = nc_inq_varid(ncid, varname, subnam)
-    ncstat = nf_put_vara_double(ncid, varid, 1, size(data), data)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(ncid, varid, data, (/1/), shape(data))
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_double_block_1d_name
 
@@ -522,8 +522,8 @@ contains
     integer :: ncstat, varid
 
     varid = nc_inq_varid(ncid, varname, subnam)
-    ncstat = nf_put_vara_double(ncid, varid, (/1, 1/), shape(data), data)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(ncid, varid, data, (/1, 1/), shape(data))
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_double_block_2d_name
 
@@ -537,8 +537,8 @@ contains
     integer :: ncstat, varid
 
     varid = nc_inq_varid(ncid, varname, subnam)
-    ncstat = nf_put_vara_double(ncid, varid, (/1, 1, 1/), shape(data), data)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(ncid, varid, data, (/1, 1, 1/), shape(data))
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_double_block_3d_name
 
@@ -561,8 +561,8 @@ contains
     count = (/size(data), 1/)
 
     varid = nc_inq_varid(ncid, varname, subnam)
-    ncstat = nf_put_vara_double(ncid, varid, startt, count, data)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(ncid, varid, data, startt, count)
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_double_line_array_1d_name
 
@@ -579,8 +579,8 @@ contains
     startt = (/1, start/)
     count = (/size(data), 1/)
 
-    ncstat = nf_put_vara_double(ncid, varid, startt, count, data)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(ncid, varid, data, startt, count)
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_double_line_array_1d_id
 
@@ -598,8 +598,8 @@ contains
     count = (/shape(data), 1/)
 
     varid = nc_inq_varid(ncid, varname, subnam)
-    ncstat = nf_put_vara_double(ncid, varid, startt, count, data)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(ncid, varid, data, startt, count)
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_double_line_array_2d_name
 
@@ -616,8 +616,8 @@ contains
     startt = (/1, 1, start/)
     count = (/shape(data), 1/)
 
-    ncstat = nf_put_vara_double(ncid, varid, startt, count, data)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(ncid, varid, data, startt, count)
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_double_line_array_2d_id
 
@@ -635,8 +635,8 @@ contains
     count = (/shape(data), 1/)
 
     varid = nc_inq_varid(ncid, varname, subnam)
-    ncstat = nf_put_vara_double(ncid, varid, startt, count, data)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(ncid, varid, data, startt, count)
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_double_line_array_3d_name
 
@@ -653,8 +653,8 @@ contains
     startt = (/1, 1, 1, start/)
     count = (/shape(data), 1/)
 
-    ncstat = nf_put_vara_double(ncid, varid, startt, count, data)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(ncid, varid, data, startt, count)
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_double_line_array_3d_id
 
@@ -672,8 +672,8 @@ contains
     count = (/1, 1/)
 
     varid = nc_inq_varid(ncid, varname, subnam)
-    ncstat = nf_put_vara_double(ncid, varid, startt, count, (/data/))
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(ncid, varid, (/data/), startt, count)
+    if (ncstat /= NF90_NOERR ) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_double_line_scalar_name
 
@@ -690,8 +690,8 @@ contains
     startt = (/1, start/)
     count = (/1, 1/)
 
-    ncstat = nf_put_vara_double(ncid, varid, startt, count, (/data/))
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
+    ncstat = nf90_put_var(ncid, varid, (/data/), startt, count)
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_double_line_scalar_id
 
