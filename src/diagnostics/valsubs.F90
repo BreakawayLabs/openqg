@@ -156,7 +156,7 @@ contains
     do j=1,ny
        do i=1,nx
           if ( array(i,j).eq.extrem ) then
-             write(*,'(2x,a,a,2i7)') string,' located at i, j = ',i,j
+             print '(2x,a,a,2i7)', string,' located at i, j = ',i,j
              im = i
              jm = j
           endif
@@ -165,9 +165,9 @@ contains
     ! Print neighbourhood of extremum
     ilo = max( 1,im-2)
     ihi = min(nx,im+2)
-    write(*,'(3x,5i14)') (i,i=ilo,ihi)
+    print '(3x,5i14)', (i,i=ilo,ihi)
     do j=min(ny,jm+3),max(1,jm-3),-1
-       write(*,'(i7,1p,5d14.5)') j,(array(i,j),i=ilo,ihi)
+       print '(i7,1p,5d14.5)', j,(array(i,j),i=ilo,ihi)
     enddo
 
   end subroutine scan2D
@@ -194,8 +194,7 @@ contains
        do j=1,ny
           do i=1,nx
              if ( bad_count < 20 .and. array(i,j,k).eq.extrem ) then
-                write(*,'(2x,a,a,3i7)') &
-                     string,' located at i, j, k = ',i,j,k
+                print '(2x,a,a,3i7)', string,' located at i, j, k = ',i,j,k
                 im = i
                 jm = j
                 km = k
@@ -207,9 +206,9 @@ contains
     ! Print neighbourhood of extremum
     ilo = max( 1,im-2)
     ihi = min(nx,im+2)
-    write(*,'(3x,5i14)') (i,i=ilo,ihi)
+    print '(3x,5i14)', (i,i=ilo,ihi)
     do j=min(ny,jm+3),max(1,jm-3),-1
-       write(*,'(i7,1p,5d14.5)') j,(array(i,j,km),i=ilo,ihi)
+       print '(i7,1p,5d14.5)', j,(array(i,j,km),i=ilo,ihi)
     enddo
 
   end subroutine scan3D

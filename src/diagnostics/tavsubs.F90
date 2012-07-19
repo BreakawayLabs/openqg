@@ -56,8 +56,8 @@ contains
     init_basin_average%active = (dtav > 0.0d0)
     call finish_loading_avg(b, dtav, clk, filename, init_basin_average)
     if ( init_basin_average%active ) then
-       write(*,204) '  Averaging int. (day) = ',dtav
-       write(*,201) '  No. of steps in avg. inter. = ',init_basin_average%ntav
+       print 204, '  Averaging int. (day) = ',dtav
+       print 201, '  No. of steps in avg. inter. = ',init_basin_average%ntav
        if ( mod(clk%ntsrun,init_basin_average%ntav).ne.0 .or. mod(init_basin_average%ntav,2).ne.0 ) then
           print *,' Unsuitable choice of dtav; program stops'
           stop 1

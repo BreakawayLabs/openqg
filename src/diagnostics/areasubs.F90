@@ -215,18 +215,13 @@ contains
     endif
     subarea%fnp = 0.5d0 + frhi
 
-    write(6,'(a)') ' '
-    write(*,'(a,4i9)') '  area name       = ', index
-    write(*,'(a,4f9.1)') '  xlo, xhi, ylo, yhi = ', &
-         1.0d-3*xlo, 1.0d-3*xhi, 1.0d-3*ylo, 1.0d-3*yhi
-    write(*,'(a,4i9)')   '  i1t, i2t, j1t, j2t = ', &
-         subarea%i1t, subarea%i2t, subarea%j1t, subarea%j2t
-    write(*,'(a,4f9.3)') '             weights = ', &
-         subarea%fwt, subarea%fet, subarea%fst, subarea%fnt
-    write(*,'(a,4i9)')   '  i1p, i2p, j1p, j2p = ', &
-         subarea%i1p, subarea%i2p, subarea%j1p, subarea%j2p
-    write(*,'(a,4f9.3)') '             weights = ', &
-         subarea%fwp, subarea%fep, subarea%fsp, subarea%fnp
+    print *
+    print '(a,4i9)', '  area name       = ', index
+    print '(a,4f9.1)', '  xlo, xhi, ylo, yhi = ', 1.0d-3*xlo, 1.0d-3*xhi, 1.0d-3*ylo, 1.0d-3*yhi
+    print '(a,4i9)',   '  i1t, i2t, j1t, j2t = ', subarea%i1t, subarea%i2t, subarea%j1t, subarea%j2t
+    print '(a,4f9.3)', '             weights = ', subarea%fwt, subarea%fet, subarea%fst, subarea%fnt
+    print '(a,4i9)',   '  i1p, i2p, j1p, j2p = ', subarea%i1p, subarea%i2p, subarea%j1p, subarea%j2p
+    print '(a,4f9.3)', '             weights = ', subarea%fwp, subarea%fep, subarea%fsp, subarea%fnp
 
     if ( xlo.lt.0.0d0 .or. xlo.gt.b%xl .or. &
          xhi.lt.0.0d0 .or. xhi.gt.b%xl ) then

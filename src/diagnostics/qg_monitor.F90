@@ -797,10 +797,10 @@ contains
        vmax(k) = maxval(abs(vgeos(:,:,k)))
     enddo
 
-    write(*,217) '  max |u|(k) = ',(umax(k),k=1,qg%b%nl)
-    write(*,217) '  CFL |u|(k) = ',(umax(k)*dt/qg%b%dx,k=1,qg%b%nl)
-    write(*,217) '  max |v|(k) = ',(vmax(k),k=1,qg%b%nl)
-    write(*,217) '  CFL |v|(k) = ',(vmax(k)*dt/qg%b%dx,k=1,qg%b%nl)
+    print 217, '  max |u|(k) = ',(umax(k),k=1,qg%b%nl)
+    print 217, '  CFL |u|(k) = ',(umax(k)*dt/qg%b%dx,k=1,qg%b%nl)
+    print 217, '  max |v|(k) = ',(vmax(k),k=1,qg%b%nl)
+    print 217, '  CFL |v|(k) = ',(vmax(k)*dt/qg%b%dx,k=1,qg%b%nl)
     ! If have bad CFL values, scan for and print locations
     do k=1,qg%b%nl
        if ( umax(k)*dt/qg%b%dx.ge.cflcrit ) then
@@ -808,7 +808,7 @@ contains
              do i=1,qg%b%nxp
                 uabs = (dt/qg%b%dx)*abs(ugeos(i,j,k))
                 if ( uabs.ge.cflcrit ) then
-                   write(*,250) '  Bad |u|; CFL, i, j, k = ',uabs,i,j,k
+                   print 250, '  Bad |u|; CFL, i, j, k = ',uabs,i,j,k
                 endif
              enddo
           enddo
@@ -818,7 +818,7 @@ contains
              do i=1,qg%b%nxp-1
                 vabs = (dt/qg%b%dx)*abs(vgeos(i,j,k))
                 if ( vabs.ge.cflcrit ) then
-                   write(*,250) '  Bad |v|; CFL, i, j, k = ',vabs,i,j,k
+                   print 250, '  Bad |v|; CFL, i, j, k = ',vabs,i,j,k
                 endif
              enddo
           enddo

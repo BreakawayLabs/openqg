@@ -56,13 +56,13 @@ contains
        nxco = (qgo%b%nxp+1)/2
        nyco = (qgo%b%nyp+1)/2
 
-       write(*,217) '  po(k) at centre = ',(qgo%p(nxco,nyco,k),k=1,qgo%b%nl)
-       write(*,217) '  qo(k) at centre = ',(qgo%q(nxco,nyco,k),k=1,qgo%b%nl)
+       print 217, '  po(k) at centre = ',(qgo%p(nxco,nyco,k),k=1,qgo%b%nl)
+       print 217, '  qo(k) at centre = ',(qgo%q(nxco,nyco,k),k=1,qgo%b%nl)
     endif
     if (oml%active) then
        sstmin = minval(oml%sst%data)
        sstmax = maxval(oml%sst%data)
-       write(*,217) '  s.s.t: min, max = ',sstmin,sstmax
+       print 217, '  s.s.t: min, max = ',sstmin,sstmax
     endif
 
 217 format(a,1p,9d15.7)
@@ -82,16 +82,16 @@ contains
        nxca = (qga%b%nxp+1)/2
        nyca = (qga%b%nyp+1)/2
 
-       write(*,217) '  pa(k) at centre = ',(qga%p(nxca,nyca,k),k=1,qga%b%nl)
-       write(*,217) '  qa(k) at centre = ',(qga%q(nxca,nyca,k),k=1,qga%b%nl)
+       print 217, '  pa(k) at centre = ',(qga%p(nxca,nyca,k),k=1,qga%b%nl)
+       print 217, '  qa(k) at centre = ',(qga%q(nxca,nyca,k),k=1,qga%b%nl)
     endif
     if (aml%active) then
        astmin = minval(aml%ast%data)
        astmax = maxval(aml%ast%data)
        hmxmin = minval(aml%hmixa%data)
        hmxmax = maxval(aml%hmixa%data)
-       write(*,217) '  a.s.t: min, max = ',astmin,astmax
-       write(*,217) '  hmixa: min, max = ',hmxmin,hmxmax
+       print 217, '  a.s.t: min, max = ',astmin,astmax
+       print 217, '  hmixa: min, max = ',hmxmin,hmxmax
     endif
 
 217 format(a,1p,9d15.7)
