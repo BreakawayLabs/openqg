@@ -403,7 +403,7 @@ contains
     integer :: ncstat, varid
 
     varid = nc_inq_varid(ncid, varname, subnam)
-    ncstat = nf90_get_var(ncid, varid, data)
+    ncstat = nf90_get_var(ncid, varid, data, count=shape(data))
     if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam, varname)
 
   end subroutine nc_get_text
