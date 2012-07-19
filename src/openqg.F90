@@ -563,61 +563,61 @@ contains
     print *,' '
     print *,' Oceanic parameters:'
     print *,' -------------------'
-    write(*,201) '  No. of timesteps per day    = ',nint(secday/clk%dto)
-    write(*,203) '  Mixed layer thickness   (m) = ',ocn%b%hm
+    print 201, '  No. of timesteps per day    = ',nint(secday/clk%dto)
+    print 203, '  Mixed layer thickness   (m) = ',ocn%b%hm
     if (ocn%ml%active .and. ocn%qg%active) then
        call diffts(2, ocn%b%nl, (/ocn%ml%sst%d2/), 1, ocn%b%dx, ocn%qg%mod%rdef)
        call diffts(4, ocn%b%nl, (/ocn%ml%sst%d4/), 1, ocn%b%dx, ocn%qg%mod%rdef)
     endif
     if (ocn%qg%active) then
-       write(*,207) '  Reduced gravities  (m s^-2) = ', (ocn%qg%gp(k),k=1,ocn%b%nl-1)
-       write(*,206) '  Baroclinic wavespeeds (m/s) = ', (ocn%qg%mod%c_phase(k),k=2,ocn%b%nl)
-       write(*,206) '  Courant number(s)           = ', ( (clk%dto/ocn%b%dx)*ocn%qg%mod%c_phase(k),k=2,ocn%b%nl)
-       write(*,204) '  Deformation radii      (km) = ', (1.0d-3*ocn%qg%mod%rdef(k),k=2,ocn%b%nl)
-       write(*,205) '  Gridlengths per radius      = ', (ocn%qg%mod%rdef(k)/ocn%b%dx,k=2,ocn%b%nl)
-       write(*,213) '  Del-sqd coeffts  (m^2 s^-1) = ', (ocn%qg%ah2(k),k=1,ocn%b%nl)
+       print 207, '  Reduced gravities  (m s^-2) = ', (ocn%qg%gp(k),k=1,ocn%b%nl-1)
+       print 206, '  Baroclinic wavespeeds (m/s) = ', (ocn%qg%mod%c_phase(k),k=2,ocn%b%nl)
+       print 206, '  Courant number(s)           = ', ( (clk%dto/ocn%b%dx)*ocn%qg%mod%c_phase(k),k=2,ocn%b%nl)
+       print 204, '  Deformation radii      (km) = ', (1.0d-3*ocn%qg%mod%rdef(k),k=2,ocn%b%nl)
+       print 205, '  Gridlengths per radius      = ', (ocn%qg%mod%rdef(k)/ocn%b%dx,k=2,ocn%b%nl)
+       print 213, '  Del-sqd coeffts  (m^2 s^-1) = ', (ocn%qg%ah2(k),k=1,ocn%b%nl)
        call diffts(2, ocn%b%nl, ocn%qg%ah2, ocn%b%nl, ocn%b%dx, ocn%qg%mod%rdef)
-       write(*,213) '  Del-4th coeffts  (m^4 s^-1) = ', (ocn%qg%ah4(k),k=1,ocn%b%nl)
+       print 213, '  Del-4th coeffts  (m^4 s^-1) = ', (ocn%qg%ah4(k),k=1,ocn%b%nl)
        call diffts(4, ocn%b%nl, ocn%qg%ah4, ocn%b%nl, ocn%b%dx, ocn%qg%mod%rdef)
-       write(*,204) '  Munk b.l. width scale  (km) = ', (1.0d-3*(ocn%qg%ah4(k)/ocn%b%beta)**0.2d0,k=1,ocn%b%nl)
-       write(*,203) '  Bottom Ekm. layer thickness = ', ocn%qg%delek
-       write(*,213) '  Bottom layer Ekman number   = ', (ocn%qg%delek/ocn%b%h(ocn%b%nl))**2
+       print 204, '  Munk b.l. width scale  (km) = ', (1.0d-3*(ocn%qg%ah4(k)/ocn%b%beta)**0.2d0,k=1,ocn%b%nl)
+       print 203, '  Bottom Ekm. layer thickness = ', ocn%qg%delek
+       print 213, '  Bottom layer Ekman number   = ', (ocn%qg%delek/ocn%b%h(ocn%b%nl))**2
        if ( ocn%qg%delek.lt.0.0d0 ) then
           print *,' Invalid -ve value of delek'         
           print *,' Program terminates'
           stop
        else if (ocn%qg%delek.eq.0.0d0 ) then
        else
-          write(*,203) '  Spindown timescale   (days) = ',2.0d0*ocn%b%h(ocn%b%nl)/(abs(ocn%b%fnot)*ocn%qg%delek)/secday
+          print 203, '  Spindown timescale   (days) = ',2.0d0*ocn%b%h(ocn%b%nl)/(abs(ocn%b%fnot)*ocn%qg%delek)/secday
        endif
-       write(*,213) '  Mixed BC coeff. bccooc (nd) = ',ocn%qg%bcco
+       print 213, '  Mixed BC coeff. bccooc (nd) = ',ocn%qg%bcco
     endif
     
     if (atm%active) then
        print *,' '
        print *,' Atmospheric parameters:'
        print *,' -----------------------'
-       write(*,201) '  At ocean res., no. of cells = ',g%nxtaor,g%nytaor
-       write(*,201) '  No. of timesteps per day    = ', nint(secday/clk%dta)
-       write(*,203) '  Mixed layer thickness   (m) = ',atm%b%hm
+       print 201, '  At ocean res., no. of cells = ',g%nxtaor,g%nytaor
+       print 201, '  No. of timesteps per day    = ', nint(secday/clk%dta)
+       print 203, '  Mixed layer thickness   (m) = ',atm%b%hm
        call diffts(2, atm%b%nl, (/atm%ml%ast%d2/), 1, atm%b%dx, atm%qg%mod%rdef)
        call diffts(4, atm%b%nl, (/atm%ml%ast%d4/), 1, atm%b%dx, atm%qg%mod%rdef)
        call diffts(2, atm%b%nl, (/atm%ml%hmixa%d2/), 1, atm%b%dx, atm%qg%mod%rdef)
-       write(*,207) '  Reduced gravities  (m s^-2) = ', (atm%qg%gp(k),k=1,atm%b%nl-1)
-       write(*,206) '  Baroclinic wavespeeds (m/s) = ', (atm%qg%mod%c_phase(k),k=2,atm%b%nl)
-       write(*,206) '  Courant number(s)           = ', ( (clk%dta/atm%b%dx)*atm%qg%mod%c_phase(k),k=2,atm%b%nl)
-       write(*,204) '  Deformation radii      (km) = ', (1.0d-3*atm%qg%mod%rdef(k),k=2,atm%b%nl)
-       write(*,205) '  Gridlengths per radius      = ', (atm%qg%mod%rdef(k)/atm%b%dx,k=2,atm%b%nl)
-       write(*,213) '  Del-4th coeffts  (m^4 s^-1) = ', (atm%qg%ah4(k),k=1,atm%b%nl)
+       print 207, '  Reduced gravities  (m s^-2) = ', (atm%qg%gp(k),k=1,atm%b%nl-1)
+       print 206, '  Baroclinic wavespeeds (m/s) = ', (atm%qg%mod%c_phase(k),k=2,atm%b%nl)
+       print 206, '  Courant number(s)           = ', ( (clk%dta/atm%b%dx)*atm%qg%mod%c_phase(k),k=2,atm%b%nl)
+       print 204, '  Deformation radii      (km) = ', (1.0d-3*atm%qg%mod%rdef(k),k=2,atm%b%nl)
+       print 205, '  Gridlengths per radius      = ', (atm%qg%mod%rdef(k)/atm%b%dx,k=2,atm%b%nl)
+       print 213, '  Del-4th coeffts  (m^4 s^-1) = ', (atm%qg%ah4(k),k=1,atm%b%nl)
        call diffts(4, atm%b%nl, atm%qg%ah4, atm%b%nl, atm%b%dx, atm%qg%mod%rdef)
-       write(*,213) '  Mixed BC coeff. bccoat (nd) = ',atm%qg%bcco
+       print 213, '  Mixed BC coeff. bccoat (nd) = ',atm%qg%bcco
     endif
 
     print *,' '
     print *,' Coupling parameters:'
     print *,' --------------------'
     if (atm%ml%active) then
-       write(*,205) '  Coefft. Lambda   (W m^-2/K) = ',atm%ml%rad%xlamda
+       print 205, '  Coefft. Lambda   (W m^-2/K) = ',atm%ml%rad%xlamda
     endif
 
 201 format(a,9i13)
@@ -939,7 +939,7 @@ contains
              tdamp(k) = 1.0d0/( sinfac**nord*coeff(k)*dble(nord)*secday )
           endif
        enddo
-       write(*,225) '  Mode',m-1,' damping time  (days) = ', &
+       print 225, '  Mode',m-1,' damping time  (days) = ', &
             (tdamp(k),k=1,ncoef)
     enddo
 
@@ -952,7 +952,7 @@ contains
           tdamp(k) = (0.5d0*dx)**nord/coeff(k)/3600.0d0
        endif
     enddo
-    write(*,205) '  Gridpoint timescale (hours) = ', &
+    print 205, '  Gridpoint timescale (hours) = ', &
          (tdamp(k),k=1,ncoef)
 
 205 format(a,9f13.5)
@@ -978,31 +978,31 @@ contains
     nthmax = OMP_GET_MAX_THREADS()
     dynadj = OMP_GET_DYNAMIC()
     nested = OMP_GET_NESTED()
-    write(*,*) ' '
-    write(*,*) ' OpenMP parallelism is activated'
-    write(*,'(a,i5)') '  No. of processors available = ',nprocs
-    write(*,'(a,i3)') '  Max. no. of threads available = ',nthmax
-    write(*,*) ' Dynamic adjustment = ',dynadj
-    write(*,*) ' Nested parallelism = ',nested
+    print *, ' '
+    print *, ' OpenMP parallelism is activated'
+    print '(a,i5)', '  No. of processors available = ',nprocs
+    print '(a,i3)', '  Max. no. of threads available = ',nthmax
+    print *, ' Dynamic adjustment = ',dynadj
+    print *, ' Nested parallelism = ',nested
     ! Test OpenMP is functioning correctly
-    write(*,*) ' Outside parallel section:'
+    print *, ' Outside parallel section:'
     numthr = OMP_GET_NUM_THREADS()
-    write(*,*) ' Number of threads = ',numthr
+    print *, ' Number of threads = ',numthr
     thrnum = OMP_GET_THREAD_NUM()
-    write(*,'(a,i4)') '  thrnum = ',thrnum
+    print '(a,i4)', '  thrnum = ',thrnum
 
-    write(*,*) ' Test trivial parallel loop:'
+    print *, ' Test trivial parallel loop:'
     !$OMP PARALLEL DEFAULT (NONE) &
     !$OMP         PRIVATE (j,thrnum) &
     !$OMP         SHARED (numthr)
     !$OMP SINGLE
     numthr = OMP_GET_NUM_THREADS()
-    write(*,*) ' Number of threads = ',numthr
+    print *, ' Number of threads = ',numthr
     !$OMP END SINGLE
     !$OMP DO SCHEDULE (STATIC)
     do j=1,numthr
        thrnum = OMP_GET_THREAD_NUM()
-       write(*,'(a,i6,i4)') '  j, thrnum = ',j,thrnum
+       print '(a,i6,i4)', '  j, thrnum = ',j,thrnum
     enddo
     !$OMP END DO NOWAIT
     !$OMP END PARALLEL
@@ -1011,13 +1011,13 @@ contains
     ! Enable (if necessary) by removing the first ! from each line
     ! Comment out again once OpenMP is working correctly,
     ! to avoid lots of spurious output
-    write(*,*) ' Test typical j-range loop (ocean p-points)'
+    print *, ' Test typical j-range loop (ocean p-points)'
     !$OMP PARALLEL DO DEFAULT (NONE) &
     !$OMP         PRIVATE (j,thrnum) &
     !$OMP         SCHEDULE (STATIC)
     do j=1,nyp
        thrnum = OMP_GET_THREAD_NUM()
-       write(*,'(a,i6,i4)') '  j, thrnum = ',j,thrnum
+       print '(a,i6,i4)', '  j, thrnum = ',j,thrnum
     enddo
     !$OMP END PARALLEL DO
 

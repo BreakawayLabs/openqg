@@ -168,19 +168,19 @@ contains
     hom_cyc%hbsi = b%yl/b%xl
     hom_cyc%aipbh = 0.5d0*b%xl*b%yl
     print *,' '
-    write (*,*) ' Homogeneous barotropic solution:'
-    write (*,240) '  aipbh         = ',hom_cyc%aipbh
-    write (*,240) '  hbsi          = ',hom_cyc%hbsi
+    print *, ' Homogeneous barotropic solution:'
+    print 240, '  aipbh         = ',hom_cyc%aipbh
+    print 240, '  hbsi          = ',hom_cyc%hbsi
     
     ! Now compute baroclinic solutions for use in atinvq
     ! Solutions are functions of y only, but use the usual
     ! 2-D Helmholtz solver for simplicity and consistency
 
-    print *,' '
-    write (*,*) ' Homogeneous (baroclinic) solutions:'
+    print *
+    print *, ' Homogeneous (baroclinic) solutions:'
     do m=1,b%nl-1
-       print *,' '
-       write (*,'(a,i2)') '  Mode: ',m
+       print *
+       print '(a,i2)', '  Mode: ',m
 
        ! pch = L(y) + rdm2*sol0, where L(y) is linear in y,
        ! and sol0 satisfies Del-sqd(sol0) - rdm2*sol0 = L(y)
@@ -243,14 +243,14 @@ contains
        hom_cyc%hc2s(m) = pch2ys/pchdet
        hom_cyc%hc1n(m) = pch1yn/pchdet
        hom_cyc%hc2n(m) = pch2yn/pchdet
-       print *,' '
-       write (*,240) '  aipch1, aipch2 = ',aipch1,aipch2
-       write (*,240) '  aipch          = ',hom_cyc%aipch(m)
-       write (*,240) '  pch1ys, pch1yn = ',pch1ys,pch1yn
-       write (*,240) '  pch2ys, pch2yn = ',pch2ys,pch2yn
-       write (*,240) '  pchdet         = ',pchdet
-       write (*,240) '  hc1s, hc2s = ',hom_cyc%hc1s(m),hom_cyc%hc2s(m)
-       write (*,240) '  hc1n, hc2n = ',hom_cyc%hc1n(m),hom_cyc%hc2n(m)
+       print *
+       print 240, '  aipch1, aipch2 = ',aipch1,aipch2
+       print 240, '  aipch          = ',hom_cyc%aipch(m)
+       print 240, '  pch1ys, pch1yn = ',pch1ys,pch1yn
+       print 240, '  pch2ys, pch2yn = ',pch2ys,pch2yn
+       print 240, '  pchdet         = ',pchdet
+       print 240, '  hc1s, hc2s = ',hom_cyc%hc1s(m),hom_cyc%hc2s(m)
+       print 240, '  hc1n, hc2n = ',hom_cyc%hc1n(m),hom_cyc%hc2n(m)
     enddo
 
 240 format(a,1p,9d21.13)
@@ -269,11 +269,11 @@ contains
 
     ! Finite box ocean
     ! ----------------
-    print *,' '
-    write (*,*) ' Homogeneous (baroclinic) solutions:'
+    print *
+    print *, ' Homogeneous (baroclinic) solutions:'
     do m=1,b%nl-1
-       print *,' '
-       write (*,'(a,i2)') '  Mode: ',m
+       print *
+       print '(a,i2)', '  Mode: ',m
 
        ! Compute new homogeneous solution = (1 + rdm2*sol0)
        ! sol0 satisfies Del-sqd(sol0) - rdm2*sol0 = 1
@@ -289,7 +289,7 @@ contains
        ! Area integral of full homogeneous solution
        hom_box%aipohs(m) = xintp(hom_box%ochom_(:,:,m), b%nxp, b%nyp)
        hom_box%aipohs(m) = hom_box%aipohs(m)*b%dx*b%dy
-       write (*,240) '  aipohs = ',hom_box%aipohs(m)
+       print 240, '  aipohs = ',hom_box%aipohs(m)
     enddo
     ! Compute the matrices used in the mass constraint equation
     ! dpioc(k) = Area integral of pressure diff ( po(k+1) - po(k) )
@@ -307,17 +307,17 @@ contains
           hom_box%cdhlu(k,m) = hom_box%cdhoc(k,m)
        enddo
     enddo
-    print *,' '
-    write (*,*) ' Mass constraint matrices:'
-    print *,' '
-    write (*,*) ' cdiffo:'
+    print *
+    print *, ' Mass constraint matrices:'
+    print *
+    print *, ' cdiffo:'
     do k=1,b%nl-1
-       write (*,'(2x,i2,1x,1p,9d17.9)') k,(hom_box%cdiffo(m,k),m=1,b%nl)
+       print '(2x,i2,1x,1p,9d17.9)', k,(hom_box%cdiffo(m,k),m=1,b%nl)
     enddo
-    print *,' '
-    write (*,*) ' cdhoc:'
+    print *
+    print *, ' cdhoc:'
     do k=1,b%nl-1
-       write (*,'(2x,i2,1x,1p,9d17.9)') k,(hom_box%cdhoc(k,m),m=1,b%nl-1)
+       print '(2x,i2,1x,1p,9d17.9)', k,(hom_box%cdhoc(k,m),m=1,b%nl-1)
     enddo
     ! Compute the LU factorization of cdhoc
     ! DGETRF = NAG routine F07ADF
@@ -327,14 +327,14 @@ contains
        print *,'  program terminates in homsol'
        stop
     endif
-    print *,' '
-    write (*,*) ' cdhlu:'
+    print *
+    print *, ' cdhlu:'
     do k=1,b%nl-1
-       write (*,'(2x,i2,1x,1p,9d17.9)') k,(hom_box%cdhlu(k,m),m=1,b%nl-1)
+       print '(2x,i2,1x,1p,9d17.9)', k,(hom_box%cdhlu(k,m),m=1,b%nl-1)
     enddo
-    print *,' '
-    write (*,*) ' ipivch:'
-    write (*,'(4x,9i4)') (hom_box%ipivch(k),k=1,b%nl-1)
+    print *
+    print *, ' ipivch:'
+    print '(4x,9i4)', (hom_box%ipivch(k),k=1,b%nl-1)
 
 240 format(a,1p,9d21.13)
 

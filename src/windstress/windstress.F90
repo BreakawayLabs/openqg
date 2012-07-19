@@ -64,7 +64,7 @@ contains
     if (load_windstress%coupled) then
        load_windstress%cdat = nc_get_double(windstress_id, 'cdat', subnam)
        load_windstress%tau_udiff = nc_get_int(windstress_id, 'tau_udiff', subnam) /= 0
-       write(*,213) '  Quad. drag coefft Cd (nond) = ',load_windstress%cdat
+       print 213, '  Quad. drag coefft Cd (nond) = ',load_windstress%cdat
 213 format(a,1p,9d13.3)
     else
        strlen = nc_get_dim(windstress_id, 'strlen', subnam)

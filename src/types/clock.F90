@@ -75,17 +75,17 @@ contains
     load_clock%nsteps = nint(tend*secsyr/load_clock%dta)
     load_clock%ntsrun = load_clock%nsteps - load_clock%nsteps0
 
-    write(*,201) '  Oc/atm. timestep ratio nstr = ',load_clock%nstr
-    write(*,205) '  Timestep dto      (minutes) = ',load_clock%dto/60.0d0
-    write(*,205) '  Timestep dta      (minutes) = ',load_clock%dta/60.0d0
-    write(*,204) '  Start time tini     (years) = ',load_clock%tini
-    write(*,204) '  Run length trun     (years) = ',load_clock%trun
-    write(*,204) '  Final time tend     (years) = ',tend
-    write(*,201) '  Start no. of (atmos)  steps = ',load_clock%nsteps0
-    write(*,201) '  Final no. of (atmos)  steps = ',load_clock%nsteps
-    write(*,201) '  Total no. of (atmos)  steps = ',load_clock%ntsrun
+    print 201, '  Oc/atm. timestep ratio nstr = ',load_clock%nstr
+    print 205, '  Timestep dto      (minutes) = ',load_clock%dto/60.0d0
+    print 205, '  Timestep dta      (minutes) = ',load_clock%dta/60.0d0
+    print 204, '  Start time tini     (years) = ',load_clock%tini
+    print 204, '  Run length trun     (years) = ',load_clock%trun
+    print 204, '  Final time tend     (years) = ',tend
+    print 201, '  Start no. of (atmos)  steps = ',load_clock%nsteps0
+    print 201, '  Final no. of (atmos)  steps = ',load_clock%nsteps
+    print 201, '  Total no. of (atmos)  steps = ',load_clock%ntsrun
     if ( resday.gt.0.0d0 ) then
-       write(*,204) '  Restart dump interval (day) = ',resday
+       print 204, '  Restart dump interval (day) = ',resday
        load_clock%noutre = days_to_steps(resday, load_clock)
     else
        load_clock%noutre = load_clock%ntsrun + 1

@@ -407,33 +407,33 @@ contains
     print *,' '
     print *,' Mean state radiation parameters:'
     print *,' --------------------------------'
-    write(*,205) '  Mean forcing fsbar (W m^-2) = ',rad%fsbar
-    write(*,205) '  Pert. ampl. fspamp (W m^-2) = ',rad%fspamp
-    write(*,205) '  Pert. coefft fspco (W m^-2) = ',rad%fspco
-    write(*,204) '  Optic. depth in aml. zopt(0) (m) = ',rad%zopt(0)
+    print 205, '  Mean forcing fsbar (W m^-2) = ',rad%fsbar
+    print 205, '  Pert. ampl. fspamp (W m^-2) = ',rad%fspamp
+    print 205, '  Pert. coefft fspco (W m^-2) = ',rad%fspco
+    print 204, '  Optic. depth in aml. zopt(0) (m) = ',rad%zopt(0)
     do k=1,ga%nl
-       write(*,224) '  Optic. depth (m) in layer',k,' = ',rad%zopt(k)
+       print 224, '  Optic. depth (m) in layer',k,' = ',rad%zopt(k)
     enddo
-    write(*,214) '  Lapse rate gamma   (K m^-1) = ',rad%gamma
+    print 214, '  Lapse rate gamma   (K m^-1) = ',rad%gamma
     print *,' '
-    write(*,209) '  A.m.l. transmissivity  taum = ',tauk(0)
+    print 209, '  A.m.l. transmissivity  taum = ',tauk(0)
     do k=1,ga%nl
-       write(*,229) '  Layer', k ,'  transmissivity tau = ', tauk(k)
+       print 229, '  Layer', k ,'  transmissivity tau = ', tauk(k)
     enddo
-    write(*,209) '  Transmissivity prod. tupmul = ',product(tauk(1:))
+    print 209, '  Transmissivity prod. tupmul = ',product(tauk(1:))
     do k=1,ga%nl
-       write(*,228) '  Layer', k ,' integs uprad, dnrad = ', uprad(k),dnrad(k)
+       print 228, '  Layer', k ,' integs uprad, dnrad = ', uprad(k),dnrad(k)
     enddo
     print *,' '
-    write(*,214) '  Tolerance for m.l. temp (K) = ',tmbtol
-    write(*,207) '  Atmos. mixed layer T (K, C) = ', atm_tmbar,atm_tmbar-273.15d0
+    print 214, '  Tolerance for m.l. temp (K) = ',tmbtol
+    print 207, '  Atmos. mixed layer T (K, C) = ', atm_tmbar,atm_tmbar-273.15d0
     print *,' '
-    write(*,206) '  Ocean m.l. radiat.  F0upbar = ',F0upbar
-    write(*,206) '  Mixed layer  Fmbar up, down = ',Fupbar(0),Fmdnbar
+    print 206, '  Ocean m.l. radiat.  F0upbar = ',F0upbar
+    print 206, '  Mixed layer  Fmbar up, down = ',Fupbar(0),Fmdnbar
     do k=1,ga%nl
-       write(*,226) '  Layer', k ,'       Fbar up, down = ', Fupbar(k),Fdnbar(k)
+       print 226, '  Layer', k ,'       Fbar up, down = ', Fupbar(k),Fdnbar(k)
     enddo
-    write(*,214) '  Fractional error in OLR     = ', abs( Fupbar(ga%nl) + rad%fsbar )/abs(rad%fsbar)
+    print 214, '  Fractional error in OLR     = ', abs( Fupbar(ga%nl) + rad%fsbar )/abs(rad%fsbar)
 
 204 format(a,9f13.4)
 205 format(a,9f13.5)
@@ -561,23 +561,23 @@ contains
     print *,' -----------------------------'
     print *,' QG internal interface eta coeffts:'
     do k=1,ga%nl
-       write(*,235) '  Layer', k ,' coeffts    Aup(k,l) = ', (rad%Aup(k,l),l=1,ga%nl-1)
+       print 235, '  Layer', k ,' coeffts    Aup(k,l) = ', (rad%Aup(k,l),l=1,ga%nl-1)
     enddo
     do k=1,ga%nl
-       write(*,235) '  Layer', k ,' coeffts  Adown(k,l) = ', (rad%Adown(k,l),l=1,ga%nl-1)
+       print 235, '  Layer', k ,' coeffts  Adown(k,l) = ', (rad%Adown(k,l),l=1,ga%nl-1)
     enddo
     print *,' Mixed layer eta coeffts:'
-    write(*,209) '  Mixed layer coefft     Bmup = ',rad%Aup(0,0)
-    write(*,209) '  Layer 1 coefft       B1down = ',rad%Adown(1,0)
+    print 209, '  Mixed layer coefft     Bmup = ',rad%Aup(0,0)
+    print 209, '  Layer 1 coefft       B1down = ',rad%Adown(1,0)
     do k=1,ga%nl
-       write(*,229) '  Layer', k ,' coefft          Bup = ', rad%Aup(k,0)
+       print 229, '  Layer', k ,' coefft          Bup = ', rad%Aup(k,0)
     enddo
     print *,' Temperature perturbation coeffts:'
-    write(*,209) '  Oceanic coefft         D0up = ',rad%D0up
-    write(*,209) '  Mixed layer coefft     Dmup = ',rad%Dup(0)
-    write(*,209) '  Mixed layer coefft   Dmdown = ',rad%Dmdown
+    print 209, '  Oceanic coefft         D0up = ',rad%D0up
+    print 209, '  Mixed layer coefft     Dmup = ',rad%Dup(0)
+    print 209, '  Mixed layer coefft   Dmdown = ',rad%Dmdown
     do k=1,ga%nl
-       write(*,229) '  Layer', k ,' coefft          Dup = ',rad%Dup(k)
+       print 229, '  Layer', k ,' coefft          Dup = ',rad%Dup(k)
     enddo
 
 209 format(a,9f13.9)
@@ -671,26 +671,26 @@ contains
     rbtmat = rbafac(ga%nl)
     rbtmoc = ((rad%xlamda - rad%Dmdown)*rbtmat - 1.0d0)/(rad%xlamda + rad%D0up)
 
-    write (*,*) ' Radiation balance matrices:'
-    print *,' '
-    write (*,*) ' rbalar:'
+    print *, ' Radiation balance matrices:'
+    print *
+    print *, ' rbalar:'
     do k=1,ga%nl
-       write (*,'(2x,i2,1x,1p,5d17.9)') k,(rbalar(k,i),i=1,ga%nl)
+       print '(2x,i2,1x,1p,5d17.9)', k,(rbalar(k,i),i=1,ga%nl)
     enddo
-    print *,' '
-    write (*,*) ' rballu:'
+    print *
+    print *, ' rballu:'
     do k=1,ga%nl
-       write (*,'(2x,i2,1x,1p,5d17.9)') k,(rballu(k,i),i=1,ga%nl)
+       print '(2x,i2,1x,1p,5d17.9)', k,(rballu(k,i),i=1,ga%nl)
     enddo
-    print *,' '
+    print *
     print *,' Radiative balance initialisation coeffts:'
     print *,' -----------------------------------------'
     print *,' QG internal interface eta coeffts:'
     do k=1,ga%nl-1
-       write(*,228) '  Layer', k ,' coefft       rbetat = ',rad%rbetat(k)
+       print 228, '  Layer', k ,' coefft       rbetat = ',rad%rbetat(k)
     enddo
-    write(*,208) '  Atmos. m.l. T coefft rbtmat = ',rbtmat
-    write(*,208) '  Ocean  m.l. T coefft rbtmoc = ',rbtmoc
+    print 208, '  Atmos. m.l. T coefft rbtmat = ',rbtmat
+    print 208, '  Ocean  m.l. T coefft rbtmoc = ',rbtmoc
 
 208 format(a,9f13.8)
 228 format(a,i2,a,9f13.8)

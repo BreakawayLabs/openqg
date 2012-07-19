@@ -214,9 +214,9 @@ contains
              print *,' Nonzero atmosphere topography over ocean'
              print *,' Problem occurs at i, j, xpa(km), ypa(km) = ', &
                   i,j,1.0d-3*ga%xp(i),1.0d-3*ga%yp(j)
-             write(*,'(a,2f11.2)') '  Ocean limits in x (km) are: ', &
+             print '(a,2f11.2)', '  Ocean limits in x (km) are: ', &
                   1.0d-3*ga%xp(g%nx1),1.0d-3*ga%xp(g%nx1+g%nxaooc)
-             write(*,'(a,2f11.2)') '  Ocean limits in y (km) are: ', &
+             print '(a,2f11.2)', '  Ocean limits in y (km) are: ', &
                   1.0d-3*ga%yp(g%ny1),1.0d-3*ga%yp(g%ny1+g%nyaooc)
              print *,' Program terminates in topset'
              stop

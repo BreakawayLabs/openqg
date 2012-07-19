@@ -190,26 +190,26 @@ contains
     ! Optionally print eigenvalues and vectors as a check
     ! ---------------------------------------------------
     if ( prtval ) then
-       write (*,'(a)') ' '
-       write (*,'(2x,a)') 'A matrix:'
+       print *
+       print '(2x,a)', 'A matrix:'
        do i=1,nl
-          write (*,'(2x,i3,1x,1p,9d16.7)') i,(mod%amat(i,j),j=1,nl)
+          print '(2x,i3,1x,1p,9d16.7)', i,(mod%amat(i,j),j=1,nl)
        enddo
-       write (*,'(2x,a,i9,8i16)') ' m:  ',(m,m=1,nl)
-       write (*,'(2x,a,1p,9d16.7)') ' Wre',(wre(m),m=1,nl)
-       write (*,'(2x,a,1p,9d16.7)') ' Wim',(wim(m),m=1,nl)
-       write (*,'(2x,a)') 'Right eigenvectors:'
+       print '(2x,a,i9,8i16)', ' m:  ',(m,m=1,nl)
+       print '(2x,a,1p,9d16.7)', ' Wre',(wre(m),m=1,nl)
+       print '(2x,a,1p,9d16.7)', ' Wim',(wim(m),m=1,nl)
+       print '(2x,a)', 'Right eigenvectors:'
        do k=1,nl
-          write (*,'(2x,i3,1x,1p,9d16.7)') k,(evecr(k,m),m=1,nl)
+          print '(2x,i3,1x,1p,9d16.7)', k,(evecr(k,m),m=1,nl)
        enddo
-       write (*,'(2x,a)') 'Left  eigenvectors:'
+       print '(2x,a)', 'Left  eigenvectors:'
        do k=1,nl
-          write (*,'(2x,i3,1x,1p,9d16.7)') k,(evecl(k,m),m=1,nl)
+          print '(2x,i3,1x,1p,9d16.7)', k,(evecl(k,m),m=1,nl)
        enddo
-       write (*,'(2x,a)') 'Dot products evecl(m).evecr(n):'
-       write (*,'(2x,a,i9,8i16)') ' n:  ',(n,n=1,nl)
+       print '(2x,a)', 'Dot products evecl(m).evecr(n):'
+       print '(2x,a,i9,8i16)', ' n:  ',(n,n=1,nl)
        do m=1,nl
-          write (*,'(2x,i3,1x,1p,9d16.7)') m,(elder(m,n),n=1,nl)
+          print '(2x,i3,1x,1p,9d16.7)', m,(elder(m,n),n=1,nl)
        enddo
     endif
 
@@ -297,57 +297,57 @@ contains
 
     ! Write formatted results to standard output
     ! ------------------------------------------
-    write (*,'(a)') ' '
-    write (*,'(2x,a)') 'Eigenmode solver;'
-    write (*,'(2x,a)') 'A matrix:'
-    write (*,'(2x,a,i9,8i16)') ' j:  ',(j,j=1,b%nl)
+    print *
+    print '(2x,a)', 'Eigenmode solver;'
+    print '(2x,a)', 'A matrix:'
+    print '(2x,a,i9,8i16)', ' j:  ',(j,j=1,b%nl)
     do i=1,b%nl
-       write (*,'(2x,i3,1x,1p,9d16.7)') i,(mod%amat(i,j),j=1,b%nl)
+       print '(2x,i3,1x,1p,9d16.7)', i,(mod%amat(i,j),j=1,b%nl)
     enddo
-    write (*,'(2x,a)') 'Modes:'
-    write (*,'(2x,a,i9,8i16)') ' m:  ',(m,m=1,b%nl)
-    write (*,'(2x,a,1p,9d16.7)') 'eig_val',(eig_val(m),m=1,b%nl)
-    write (*,'(2x,a,1p,9d16.7)') 'C_phase',(mod%c_phase(m),m=1,b%nl)
-    write (*,'(2x,a,1p,9d16.7)') 'Rdef',(mod%rdef(m),m=1,b%nl)
-    write (*,'(2x,a,1p,9d16.7)') 'Rdm2',(mod%rdm2(m),m=1,b%nl)
-    write (*,'(2x,a)') 'right eigenvectors Rm(k):'
+    print '(2x,a)', 'Modes:'
+    print '(2x,a,i9,8i16)', ' m:  ',(m,m=1,b%nl)
+    print '(2x,a,1p,9d16.7)', 'eig_val',(eig_val(m),m=1,b%nl)
+    print '(2x,a,1p,9d16.7)', 'C_phase',(mod%c_phase(m),m=1,b%nl)
+    print '(2x,a,1p,9d16.7)', 'Rdef',(mod%rdef(m),m=1,b%nl)
+    print '(2x,a,1p,9d16.7)', 'Rdm2',(mod%rdm2(m),m=1,b%nl)
+    print '(2x,a)', 'right eigenvectors Rm(k):'
     do k=1,b%nl
-       write (*,'(2x,i3,1x,1p,9d16.7)') k,(evecr(k,index(m)),m=1,b%nl)
+       print '(2x,i3,1x,1p,9d16.7)', k,(evecr(k,index(m)),m=1,b%nl)
     enddo
-    write (*,'(2x,a)') 'left  eigenvectors Lm(k):'
+    print '(2x,a)', 'left  eigenvectors Lm(k):'
     do k=1,b%nl
-       write (*,'(2x,i3,1x,1p,9d16.7)') k,(evecl(k,index(m)),m=1,b%nl)
+       print '(2x,i3,1x,1p,9d16.7)', k,(evecl(k,index(m)),m=1,b%nl)
     enddo
-    write (*,'(2x,a)') 'layer to mode coefficients cl2m(k,m):'
+    print '(2x,a)', 'layer to mode coefficients cl2m(k,m):'
     do k=1,b%nl
-       write (*,'(2x,i3,1x,1p,9d16.7)') k,(cl2m(k,m),m=1,b%nl)
+       print '(2x,i3,1x,1p,9d16.7)', k,(cl2m(k,m),m=1,b%nl)
     enddo
-    write (*,'(2x,a)') 'mode to layer coefficients cm2l(m,k):'
+    print '(2x,a)', 'mode to layer coefficients cm2l(m,k):'
     do k=1,b%nl
-       write (*,'(2x,i3,1x,1p,9d16.7)') k,(cm2l(m,k),m=1,b%nl)
+       print '(2x,i3,1x,1p,9d16.7)', k,(cm2l(m,k),m=1,b%nl)
     enddo
-    write (*,'(2x,a)') 'matrix product cm2l(m,k)*cl2m(l,m):'
-    write (*,'(2x,a,i9,8i16)') ' l:  ',(l,l=1,b%nl)
+    print '(2x,a)', 'matrix product cm2l(m,k)*cl2m(l,m):'
+    print '(2x,a,i9,8i16)', ' l:  ',(l,l=1,b%nl)
     do k=1,b%nl
-       write (*,'(2x,i3,1x,1p,9d16.7)') k,(ccprod(k,l),l=1,b%nl)
+       print '(2x,i3,1x,1p,9d16.7)', k,(ccprod(k,l),l=1,b%nl)
     enddo
-    write (*,'(2x,a)') '(should be the identity matrix)'
+    print '(2x,a)', '(should be the identity matrix)'
 
     ! Optionally verify that the (ordered) eigenvectors are indeed correct
     ! --------------------------------------------------------------------
     if ( eigchk ) then
-       write (*,'(a)') ' '
-       write (*,'(2x,a)') 'Verify ordered eigenmodes:'
+       print *
+       print '(2x,a)', 'Verify ordered eigenmodes:'
        do m=1,b%nl
           inm = index(m)
           do i=1,b%nl
              aevec(i) = sum(mod%amat(i,:)*evecr(:,inm))
              eevec(i) = eig_val(m)*evecr(i,inm)
           enddo
-          write (*,'(2x,a,i2)') 'For mode m = ',m
-          write (*,'(2x,a,1p,9d17.9)') '  Rm   = ',(evecr(i,inm),i=1,b%nl)
-          write (*,'(2x,a,1p,9d17.9)') ' A *Rm = ',(aevec(i),i=1,b%nl)
-          write (*,'(2x,a,1p,9d17.9)') 'lam*Rm = ',(eevec(i),i=1,b%nl)
+          print '(2x,a,i2)', 'For mode m = ',m
+          print '(2x,a,1p,9d17.9)', '  Rm   = ',(evecr(i,inm),i=1,b%nl)
+          print '(2x,a,1p,9d17.9)', ' A *Rm = ',(aevec(i),i=1,b%nl)
+          print '(2x,a,1p,9d17.9)', 'lam*Rm = ',(eevec(i),i=1,b%nl)
        enddo
     endif
 
@@ -371,13 +371,13 @@ contains
     ! **        ccprod(i,j) = ca
     ! **      enddo
     ! **    enddo
-    ! **    write (*,'(a)') ' '
-    ! **    write (*,'(2x,a,i9,8i16)') ' j:  ',(j,j=1,nl)
-    ! **    write (*,'(2x,a,1p,9d16.7)') 'eig_val',(eig_val(j),j=1,nl)
-    ! **    write (*,'(2x,a,a)') 'matrix triple product ',
+    ! **    print *
+    ! **    print '(2x,a,i9,8i16)', ' j:  ',(j,j=1,nl)
+    ! **    print '(2x,a,1p,9d16.7)', 'eig_val',(eig_val(j),j=1,nl)
+    ! **    print '(2x,a,a)', 'matrix triple product ',
     ! **   &                     'cl2m(i,k)*A(k,m)*cm2l(m,j):'
     ! **    do i=1,nl
-    ! **      write (*,'(2x,i3,1x,1p,9d16.7)') i,(ccprod(i,j),j=1,nl)
+    ! **      print '(2x,i3,1x,1p,9d16.7)', i,(ccprod(i,j),j=1,nl)
     ! **    enddo
     ! *     Confirms that the matrix triple product is a diagonal
     ! *     matrix whose entries are the eigenvalues Lambda
