@@ -162,8 +162,7 @@ contains
 
     integer :: ncstat, varid
 
-    ncstat = nf_inq_varid(ncid, varname, varid)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    varid = nc_inq_varid(ncid, varname, subnam)
     ncstat = nf_get_var_double(ncid, varid, nc_get_double)
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
 
@@ -179,8 +178,7 @@ contains
 
     integer :: ncstat, varid
 
-    ncstat = nf_inq_varid(ncid, varname, varid)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    varid = nc_inq_varid(ncid, varname, subnam)
     ncstat = nf_get_var_double(ncid, varid, nc_get_double_1d)
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
 
@@ -196,8 +194,7 @@ contains
 
     integer :: ncstat, varid
 
-    ncstat = nf_inq_varid(ncid, varname, varid)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    varid = nc_inq_varid(ncid, varname, subnam)
     ncstat = nf_get_var_double(ncid, varid, nc_get_double_2d)
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
 
@@ -213,8 +210,7 @@ contains
 
     integer :: ncstat, varid
 
-    ncstat = nf_inq_varid(ncid, varname, varid)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    varid = nc_inq_varid(ncid, varname, subnam)
     ncstat = nf_get_var_double(ncid, varid, nc_get_double_3d)
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
 
@@ -377,8 +373,7 @@ contains
 
     integer :: ncstat, varid
 
-    ncstat = nf_inq_varid(ncid, varname, varid)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    varid = nc_inq_varid(ncid, varname, subnam)
     ncstat = nf_get_var_int(ncid, varid, nc_get_int)
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
 
@@ -394,8 +389,7 @@ contains
 
     integer :: ncstat, varid
 
-    ncstat = nf_inq_varid(ncid, varname, varid)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    varid = nc_inq_varid(ncid, varname, subnam)
     ncstat = nf_get_var_int(ncid, varid, nc_get_int_1d)
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
 
@@ -410,8 +404,7 @@ contains
 
     integer :: ncstat, varid
 
-    ncstat = nf_inq_varid(ncid, varname, varid)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    varid = nc_inq_varid(ncid, varname, subnam)
     ncstat = nf_get_var_text(ncid, varid, data)
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
 
@@ -427,8 +420,7 @@ contains
 
     integer :: ncstat, varid
 
-    ncstat = nf_inq_varid(nc_id, varname, varid)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    varid = nc_inq_varid(nc_id, varname, subnam)
     ncstat = nf_put_vara_int(nc_id, varid, start, count, data)
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
 
@@ -514,8 +506,7 @@ contains
 
     integer :: ncstat, varid
 
-    ncstat = nf_inq_varid(ncid, varname, varid)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    varid = nc_inq_varid(ncid, varname, subnam)
     ncstat = nf_put_vara_double(ncid, varid, 1, size(data), data)
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
 
@@ -530,8 +521,7 @@ contains
 
     integer :: ncstat, varid
 
-    ncstat = nf_inq_varid(ncid, varname, varid)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    varid = nc_inq_varid(ncid, varname, subnam)
     ncstat = nf_put_vara_double(ncid, varid, (/1, 1/), shape(data), data)
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
 
@@ -546,8 +536,7 @@ contains
 
     integer :: ncstat, varid
 
-    ncstat = nf_inq_varid(ncid, varname, varid)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    varid = nc_inq_varid(ncid, varname, subnam)
     ncstat = nf_put_vara_double(ncid, varid, (/1, 1, 1/), shape(data), data)
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
 
@@ -571,8 +560,7 @@ contains
     startt = (/1, start/)
     count = (/size(data), 1/)
 
-    ncstat = nf_inq_varid(ncid, varname, varid)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    varid = nc_inq_varid(ncid, varname, subnam)
     ncstat = nf_put_vara_double(ncid, varid, startt, count, data)
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
 
@@ -609,8 +597,7 @@ contains
     startt = (/1, 1, start/)
     count = (/shape(data), 1/)
 
-    ncstat = nf_inq_varid(ncid, varname, varid)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    varid = nc_inq_varid(ncid, varname, subnam)
     ncstat = nf_put_vara_double(ncid, varid, startt, count, data)
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
 
@@ -647,8 +634,7 @@ contains
     startt = (/1, 1, 1, start/)
     count = (/shape(data), 1/)
 
-    ncstat = nf_inq_varid(ncid, varname, varid)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    varid = nc_inq_varid(ncid, varname, subnam)
     ncstat = nf_put_vara_double(ncid, varid, startt, count, data)
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
 
@@ -685,8 +671,7 @@ contains
     startt = (/start, 1/)
     count = (/1, 1/)
 
-    ncstat = nf_inq_varid(ncid, varname, varid)
-    if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam, varname)
+    varid = nc_inq_varid(ncid, varname, subnam)
     ncstat = nf_put_vara_double(ncid, varid, startt, count, (/data/))
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
 
@@ -709,5 +694,17 @@ contains
     if ( ncstat.ne.NF_NOERR ) call handle_err (ncstat, subnam)
 
   end subroutine nc_put_double_line_scalar_id
+
+  integer function nc_inq_varid(ncid, varname, subnam)
+    integer, intent(in) :: ncid
+    character (len=*), intent(in) :: varname
+    character (len=*), intent(in) :: subnam
+
+    integer :: ncstat
+
+    ncstat = nf90_inq_varid(ncid, varname, nc_inq_varid)
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam, varname)
+
+  end function nc_inq_varid
   
 end module ncutils
