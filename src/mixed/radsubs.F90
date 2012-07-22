@@ -278,29 +278,29 @@ contains
     deltm = 0.0d0
     delz = ga%hm/dble(nz-1)
     iter = 0
-100 continue
+    do while (.true.)
+       do i=1,nz
+          zz = dble(i-1)*delz
+          T(i) = atm_tmbar - rad%gamma*zz
+          tau_up(i) = trans(ga%hm - zz, rad%zopt(0))
+       enddo
+       fup(:) = T(:)**4 * tau_up(:)
+       uprad_m = trapin(fup, nz, delz)
+       uprad_m = uprad_m*sigov2/rad%zopt(0)
+       ! Convert error to (approximate) temperature change
+       deltm = 0.25d0*(rhstat - uprad_m)*atm_tmbar/uprad_m
+       atm_tmbar = atm_tmbar + 0.75d0*deltm
+       iter = iter + 1
 
-    do i=1,nz
-       zz = dble(i-1)*delz
-       T(i) = atm_tmbar - rad%gamma*zz
-       tau_up(i) = trans(ga%hm - zz, rad%zopt(0))
-    enddo
-    fup(:) = T(:)**4 * tau_up(:)
-    uprad_m = trapin(fup, nz, delz)
-    uprad_m = uprad_m*sigov2/rad%zopt(0)
-    ! Convert error to (approximate) temperature change
-    deltm = 0.25d0*(rhstat - uprad_m)*atm_tmbar/uprad_m
-    atm_tmbar = atm_tmbar + 0.75d0*deltm
-    iter = iter + 1
-
-    if (iter > nitmax) then
-       print *,' iteration for tmbara not converged'
-       print *,' max. no. of iterations nitmax = ',nitmax
-       print *,' deltm, tmbara = ',deltm,atm_tmbar
-       print *,' program terminates in radiat'
-       stop 1
-    endif
-    if (abs(deltm) > tmbtol) goto 100
+       if (iter > nitmax) then
+          print *,' iteration for tmbara not converged'
+          print *,' max. no. of iterations nitmax = ',nitmax
+          print *,' deltm, tmbara = ',deltm,atm_tmbar
+          print *,' program terminates in radiat'
+          stop 1
+       endif
+       if (abs(deltm) <= tmbtol) exit
+    end do
 
   end subroutine compute_ml_mean_temp
 
@@ -323,19 +323,20 @@ contains
     compute_oml_mean_temp = atm_tmbar
 
     iter = 0
-150 continue
-    tocold = compute_oml_mean_temp
-    compute_oml_mean_temp = rhstoc/( rad%xlamda + stefan*tocold**3 )
-    iter = iter + 1
+    do while (.true.)
+       tocold = compute_oml_mean_temp
+       compute_oml_mean_temp = rhstoc/( rad%xlamda + stefan*tocold**3 )
+       iter = iter + 1
 
-    if (iter > nitmax) then
-       print *,' iteration for tmbaro not converged'
-       print *,' max. no. of iterations nitmax = ',nitmax
-       print *,' tocold, tmbaro = ',tocold,compute_oml_mean_temp
-       print *,' program terminates in radiat'
-       stop 1
-    endif
-    if (abs(compute_oml_mean_temp - tocold) > tmbtol) goto 150
+       if (iter > nitmax) then
+          print *,' iteration for tmbaro not converged'
+          print *,' max. no. of iterations nitmax = ',nitmax
+          print *,' tocold, tmbaro = ',tocold,compute_oml_mean_temp
+          print *,' program terminates in radiat'
+          stop 1
+       endif
+       if (abs(compute_oml_mean_temp - tocold) <= tmbtol) exit
+    end do
 
   end function compute_oml_mean_temp
 
