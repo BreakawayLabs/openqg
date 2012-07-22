@@ -1,6 +1,7 @@
 module mesh
   
   use ncutils, only: nc_open, nc_get_int, nc_get_double
+  use constants, only: PI, R0, OMEGA
 
   implicit none
 
@@ -51,25 +52,21 @@ contains
   pure subroutine compute_derived_values(mesh)
     type(mesh_type), intent(inout) :: mesh
 
-    double precision :: pi, T, omega, phi, R0, xl, R
+    double precision :: phi, xl, R
 
-    pi = 3.14159265358979323d0
-    T = (23*60 + 56)*60 + 4.098903691d0 ! Mean Solar Day
-    omega = 2*pi/T                    ! rotation of earth
-    phi = pi*mesh%lat/180.0d0      ! latitude in radians
-    R0 = 6378.1e3 ! Estimate of the radius of the earth from Google.
+    phi = PI*mesh%lat/180.0d0      ! latitude in radians
     if (mesh%cyclic) then
        xl = mesh%nxt*mesh%dx
-       R = xl/(2*pi*cos(phi))                  ! Effective radius of earth
+       R = xl/(2*PI*cos(phi))                  ! Effective radius of earth
     else if (mesh%x1 == 0.0d0) then
        ! Actual earth size
        R = R0*cos(phi)
     else
-       R = mesh%x1/(2*pi*cos(phi))                  ! Effective radius of earth
+       R = mesh%x1/(2*PI*cos(phi))                  ! Effective radius of earth
     endif
 
-    mesh%fnot = 2*omega*sin(phi)
-    mesh%beta = 2*omega*cos(phi)/R
+    mesh%fnot = 2*OMEGA*sin(phi)
+    mesh%beta = 2*OMEGA*cos(phi)/R
 
   end subroutine compute_derived_values
 

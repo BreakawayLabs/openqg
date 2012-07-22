@@ -1,6 +1,7 @@
 program openqg
 
   use util, only: s2s, streq
+  use constants, only: PIBY2, SECDAY, SECSYR
   ! GLAM
   use box, only: box_type, init_box_from_mesh
   use grid, only: grid_type, load_grid, print_grid
@@ -456,10 +457,6 @@ contains
     type(ocn_basin_type), intent(inout) :: ocn
     type(atm_basin_type), intent(inout) :: atm
 
-    double precision :: secday,daysyr,secsyr
-    parameter ( secday=86400.0d0, daysyr=365.0d0, &
-         secsyr=secday*daysyr )
-
     integer :: k,nt,lenod,ntdone
     double precision :: tday,tyrs
     logical :: solnok
@@ -491,12 +488,12 @@ contains
        call dynamic_step(ocn, atm, stress, clk%tdto, clk%tdta, ocean_step, ocn_supp_step, atm_supp_step)
        
        ! Timestep done; do checking and diagnostics as necessary
-       tyrs = nt*clk%dta/secsyr
+       tyrs = nt*clk%dta/SECSYR
 
        ! Periodically check validity of solution
        call diagnostic_step(outdir(1:lenod), ocn, atm, clk, nt, solnok)
        if ( .not.solnok ) then
-          tday = nt*clk%dta/secday
+          tday = nt*clk%dta/SECDAY
           print *,' valids has detected invalid values'
           print '(a,i12,f12.2,f11.3)', '  problem occurs at nt, tday, tyrs = ',nt,tday,tyrs
           call save_all(outdir(1:lenod), ocn, atm, "invalid.nc")
@@ -515,7 +512,7 @@ contains
     call save_all(outdir(1:lenod), ocn, atm, "lastday.nc")
     call diagnose_final(outdir(1:lenod), ocn, atm)
 
-    tday = nt*clk%dta/secday
+    tday = nt*clk%dta/SECDAY
     print *
     print '(a,i12,f11.2,f11.4)', '  End of run at nt, tday, tyrs = ',nt,tday,tyrs
 
@@ -551,8 +548,6 @@ contains
     type(grid_type), intent(in) :: g
 
     integer :: k
-    double precision :: secday
-    parameter ( secday=86400.0d0 )
 
     print *,' '
     print *,' Control parameters:'
@@ -563,7 +558,7 @@ contains
     print *,' '
     print *,' Oceanic parameters:'
     print *,' -------------------'
-    print 201, '  No. of timesteps per day    = ',nint(secday/clk%dto)
+    print 201, '  No. of timesteps per day    = ',nint(SECDAY/clk%dto)
     print 203, '  Mixed layer thickness   (m) = ',ocn%b%hm
     if (ocn%ml%active .and. ocn%qg%active) then
        call diffts(2, ocn%b%nl, (/ocn%ml%sst%d2/), 1, ocn%b%dx, ocn%qg%mod%rdef)
@@ -588,7 +583,7 @@ contains
           stop
        else if (ocn%qg%delek == 0.0d0) then
        else
-          print 203, '  Spindown timescale   (days) = ',2.0d0*ocn%b%h(ocn%b%nl)/(abs(ocn%b%fnot)*ocn%qg%delek)/secday
+          print 203, '  Spindown timescale   (days) = ',2.0d0*ocn%b%h(ocn%b%nl)/(abs(ocn%b%fnot)*ocn%qg%delek)/SECDAY
        endif
        print 213, '  Mixed BC coeff. bccooc (nd) = ',ocn%qg%bcco
     endif
@@ -598,7 +593,7 @@ contains
        print *,' Atmospheric parameters:'
        print *,' -----------------------'
        print 201, '  At ocean res., no. of cells = ',g%nxtaor,g%nytaor
-       print 201, '  No. of timesteps per day    = ', nint(secday/clk%dta)
+       print 201, '  No. of timesteps per day    = ', nint(SECDAY/clk%dta)
        print 203, '  Mixed layer thickness   (m) = ',atm%b%hm
        call diffts(2, atm%b%nl, (/atm%ml%ast%d2/), 1, atm%b%dx, atm%qg%mod%rdef)
        call diffts(4, atm%b%nl, (/atm%ml%ast%d4/), 1, atm%b%dx, atm%qg%mod%rdef)
@@ -899,11 +894,8 @@ contains
     integer, intent(in) :: nord,nl,ncoef
     double precision, intent(in) :: coeff(ncoef),dx,rdef(nl)
 
-    double precision :: PIBY2
     integer :: nlmax
-    double precision :: secday
-    parameter ( PIBY2=1.57079632679489662D0 )
-    parameter ( nlmax=9, secday=86400.0d0 )
+    parameter ( nlmax=9 )
 
     integer :: k,m
     double precision :: tdamp(nlmax),sinfac
@@ -936,7 +928,7 @@ contains
           if (coeff(k) ==  0.0d0) then
              tdamp(k) = 0.0d0
           else
-             tdamp(k) = 1.0d0/( sinfac**nord*coeff(k)*dble(nord)*secday )
+             tdamp(k) = 1.0d0/( sinfac**nord*coeff(k)*dble(nord)*SECDAY )
           endif
        enddo
        print 225, '  Mode',m-1,' damping time  (days) = ', &

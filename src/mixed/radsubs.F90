@@ -5,6 +5,7 @@ module radsubs
   use box, only: box_type
   use intsubs, only: trapin
   use mixed, only: temp_type, init_temp_from_rad
+  use constants, only: PI, STEFAN, SIGOV2
 
   implicit none
 
@@ -108,9 +109,6 @@ contains
     double precision, intent(in) :: fspco
     double precision, intent(in) ::  yrel
     
-    double precision :: PI
-    parameter ( PI=3.14159265358979324D0 )
-
     fsprim = fspco*0.5d0*sin( PI*yrel/ga%yl )
 
   end function fsprim
@@ -201,9 +199,6 @@ contains
     double precision :: T(nz), tau_up(nz), tau_down(nz)
     integer :: i, k
 
-    double precision :: stefan,sigov2
-    parameter ( stefan=5.67040D-8, sigov2=0.5d0*stefan )
-
     ! Computes sig*I_k/2*zk up and down as per A.26 and A.41
     
     ! Layer 1 up- and downgoing mean radiation
@@ -217,8 +212,8 @@ contains
        tau_down(i) = trans(zz - hbot, zopt(1))
     enddo
 
-    fup(:) = sigov2*T(:)**4 * tau_up(:)
-    fdn(:) = sigov2*T(:)**4 * tau_down(:)
+    fup(:) = SIGOV2*T(:)**4 * tau_up(:)
+    fdn(:) = SIGOV2*T(:)**4 * tau_down(:)
     upint = trapin(fup, nz, delz)
     dnint = trapin(fdn, nz, delz)
     uprad(1) = upint/zopt(1)
@@ -236,8 +231,8 @@ contains
           tau_down(i) = trans(zz - hbot, zopt(k))
        enddo
 
-       fup(:) = sigov2*T(:)**4 * tau_up(:)
-       fdn(:) = sigov2*T(:)**4 * tau_down(:)
+       fup(:) = SIGOV2*T(:)**4 * tau_up(:)
+       fdn(:) = SIGOV2*T(:)**4 * tau_down(:)
        upint = trapin(fup, nz, delz)
        dnint = trapin(fdn, nz, delz)
        uprad(k) = upint/zopt(k)
@@ -257,8 +252,8 @@ contains
       
     integer :: nz, nitmax
     parameter ( nz=10001, nitmax=200)
-    double precision :: stefan, sigov2, tmbtol
-    parameter ( stefan=5.67040D-8, sigov2=0.5d0*stefan,tmbtol=1.0d-13)
+    double precision :: tmbtol
+    parameter ( tmbtol=1.0d-13)
 
     double precision :: deltm, delz
     integer :: iter, i, k
@@ -286,7 +281,7 @@ contains
        enddo
        fup(:) = T(:)**4 * tau_up(:)
        uprad_m = trapin(fup, nz, delz)
-       uprad_m = uprad_m*sigov2/rad%zopt(0)
+       uprad_m = uprad_m*SIGOV2/rad%zopt(0)
        ! Convert error to (approximate) temperature change
        deltm = 0.25d0*(rhstat - uprad_m)*atm_tmbar/uprad_m
        atm_tmbar = atm_tmbar + 0.75d0*deltm
@@ -314,8 +309,8 @@ contains
 
     integer :: nitmax
     parameter ( nitmax=200)
-    double precision :: stefan, tmbtol
-    parameter ( stefan=5.67040D-8, tmbtol=1.0d-13)
+    double precision :: tmbtol
+    parameter ( tmbtol=1.0d-13)
 
     ! Compute ocean m. l. mean temperature
     rhstoc = rad%xlamda*atm_tmbar +  B(atm_tmbar, 0.0d0, 0.0d0) - rad%fsbar
@@ -325,7 +320,7 @@ contains
     iter = 0
     do while (.true.)
        tocold = compute_oml_mean_temp
-       compute_oml_mean_temp = rhstoc/( rad%xlamda + stefan*tocold**3 )
+       compute_oml_mean_temp = rhstoc/( rad%xlamda + STEFAN*tocold**3 )
        iter = iter + 1
 
        if (iter > nitmax) then
@@ -343,9 +338,8 @@ contains
   double precision function B(T0, z, gamma)
 
     double precision :: T0, z, gamma
-    double precision :: sigma = 5.67040D-8
     
-    B = (sigma/2.0)*(T0 - z*gamma)**4
+    B = SIGOV2*(T0 - z*gamma)**4
 
   end function B
   
@@ -365,12 +359,9 @@ contains
     
     integer :: k
 
-    double precision :: stefan, sigov2
-    parameter ( stefan=5.67040D-8, sigov2=0.5d0*stefan )
-
     ! Upgoing mean state fluxes
     ! Ocean
-    F0upbar = stefan*ocn_tmbar**4 ! A.10
+    F0upbar = STEFAN*ocn_tmbar**4 ! A.10
     ! Atmos. mixed layer
     Fupbar(0) = uprad_m       ! A.16
     ! Upper layers
@@ -386,7 +377,7 @@ contains
        Fdnbar(k) = Fdnbar(k+1)*tauk(k) - dnrad(k) ! A.43
     enddo
     ! Atmos. mixed layer
-    Fmdnbar = -sigov2*atm_tmbar**4 ! A.22
+    Fmdnbar = -SIGOV2*atm_tmbar**4 ! A.22
 
   end subroutine compute_mean_flux
 
@@ -465,10 +456,6 @@ contains
     integer :: nz
     parameter ( nz=10001 )
 
-    double precision :: stefan
-    ! stefan is the Stefan-Boltzmann constant (usually denoted by sigma)
-    parameter ( stefan=5.67040D-8 )
-
     double precision :: delz, upint, zz
     double precision :: fup(nz)
     integer :: i,k,l
@@ -515,7 +502,7 @@ contains
 
     ! Upgoing
     ! Ocean mixed layer
-    rad%D0up = 4.0d0*stefan*ocn_tmbar**3
+    rad%D0up = 4.0d0*STEFAN*ocn_tmbar**3
     ! Atmospheric mixed layer
     delz = ga%hm/dble(nz-1)
     do i=1,nz
@@ -523,7 +510,7 @@ contains
        fup(i) = (atm_tmbar-rad%gamma*zz)**3*exp(-(ga%hm - zz)/rad%zopt(0))
     enddo
     upint = trapin(fup, nz, delz)
-    rad%Dup(0) = 2.0d0*stefan*upint/rad%zopt(0)
+    rad%Dup(0) = 2.0d0*STEFAN*upint/rad%zopt(0)
     ! Layer 1
     rad%Dup(1) = rad%Dup(0)*tauk(1)
     ! Upper layers
@@ -546,7 +533,7 @@ contains
     enddo
 
     ! Atmospheric mixed layer
-    rad%Dmdown = - 2.0d0*stefan*atm_tmbar**3
+    rad%Dmdown = - 2.0d0*STEFAN*atm_tmbar**3
 
   end subroutine compute_perturb_rad_params
 

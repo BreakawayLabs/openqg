@@ -1,6 +1,7 @@
 module clock
 
   use ncutils, only: nc_open, nc_close, nc_get_double, nc_get_int
+  use constants, only: SECDAY, SECSYR
 
   implicit none
 
@@ -53,10 +54,6 @@ contains
     integer :: clock_id 
     double precision :: tend
 
-    double precision :: secday,daysyr,secsyr
-    parameter ( secday=86400.0d0, daysyr=365.0d0, &
-         secsyr=secday*daysyr )
-
     ! Namelist specified values
     clock_id = nc_open(filename, 'load_clock')
     load_clock%dta = nc_get_double(clock_id, 'dta', 'load_clock')
@@ -71,8 +68,8 @@ contains
     load_clock%tdto = 2.0d0*load_clock%dto
     load_clock%tdta = 2.0d0*load_clock%dta
     tend = load_clock%tini + load_clock%trun
-    load_clock%nsteps0 = nint(load_clock%tini*secsyr/load_clock%dta)
-    load_clock%nsteps = nint(tend*secsyr/load_clock%dta)
+    load_clock%nsteps0 = nint(load_clock%tini*SECSYR/load_clock%dta)
+    load_clock%nsteps = nint(tend*SECSYR/load_clock%dta)
     load_clock%ntsrun = load_clock%nsteps - load_clock%nsteps0
 
     print 201, '  Oc/atm. timestep ratio nstr = ',load_clock%nstr
@@ -102,10 +99,7 @@ contains
     double precision, intent(in) :: days
     type(clock_type), intent(in) :: clk
 
-    double precision :: secday
-    parameter ( secday=86400.0d0 )
-
-    days_to_steps = nint( days*secday/clk%dta )
+    days_to_steps = nint( days*SECDAY/clk%dta )
 
   end function days_to_steps
 

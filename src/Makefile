@@ -43,7 +43,7 @@ OBJS =	openqg.o radsubs.o valsubs.o subsampling.o forcing.o \
 	omlsubs.o core.o state.o print.o ml_monitor.o \
 	amlsubs.o coupler.o windstress.o driver.o basin.o \
 	ncutils.o bicubic.o box.o glam.o grid.o mesh.o numerics.o topog.o qg_monitor.o \
-	util.o intsubs.o mixed.o qg.o modes.o homog.o inhomog.o \
+	util.o intsubs.o constants.o mixed.o qg.o modes.o homog.o inhomog.o \
 	ekman.o clock.o vorticity.o mixed_layer.o constraint.o pressure.o
 
 EXEC := openqg
@@ -85,9 +85,12 @@ ncutils.o: util/ncutils.F90 ${MAKEFILE}
 intsubs.o: util/intsubs.F90
 	${FC} ${FFLAGS} -c util/intsubs.F90
 
+constants.o: util/constants.F90
+	${FC} ${FFLAGS} -c util/constants.F90
+
 ## GLAM
 
-mesh.o: glam/mesh.F90 ncutils.o
+mesh.o: glam/mesh.F90 ncutils.o constants.o
 	${FC} ${FFLAGS} -c glam/mesh.F90
 
 box.o: glam/box.F90 ncutils.o mesh.o
@@ -105,7 +108,7 @@ bicubic.o: glam/bicubic.F90 box.o grid.o
 glam.o: glam/glam.F90 $ ncutils.o mesh.o
 	${FC} ${FFLAGS} -c glam/glam.F90
 
-numerics.o: glam/numerics.F90 intsubs.o box.o
+numerics.o: glam/numerics.F90 intsubs.o box.o constants.o
 	${FC} ${FFLAGS} -c glam/numerics.F90
 
 #######################
@@ -115,7 +118,7 @@ numerics.o: glam/numerics.F90 intsubs.o box.o
 modes.o: qg/modes.F90 box.o topog.o
 	${FC} ${FFLAGS} -c qg/modes.F90
 
-inhomog.o: qg/inhomog.F90 box.o
+inhomog.o: qg/inhomog.F90 box.o constants.o
 	${FC} ${FFLAGS} -c qg/inhomog.F90
 
 constraint.o: qg/constraint.F90 box.o modes.o intsubs.o
@@ -152,7 +155,7 @@ mixed_layer.o: mixed/mixed_layer.F90 box.o numerics.o mixed.o
 omlsubs.o: mixed/omlsubs.F90 ${MAKEFILE} box.o mixed.o numerics.o mixed_layer.o
 	${FC} ${FFLAGS} -c mixed/omlsubs.F90
 
-radsubs.o: mixed/radsubs.F90 ${MAKEFILE} box.o grid.o ncutils.o intsubs.o mixed.o
+radsubs.o: mixed/radsubs.F90 ${MAKEFILE} box.o grid.o ncutils.o intsubs.o mixed.o constants.o
 	${FC} ${FFLAGS} -c mixed/radsubs.F90
 
 amlsubs.o: mixed/amlsubs.F90 ${MAKEFILE} ncutils.o box.o topog.o mixed.o radsubs.o numerics.o mixed_layer.o
@@ -178,7 +181,7 @@ windstress.o: windstress/windstress.F90 intsubs.o box.o grid.o bicubic.o topog.o
 
 ## Types
 
-clock.o: types/clock.F90 ncutils.o
+clock.o: types/clock.F90 ncutils.o constants.o
 	${FC} ${FFLAGS} -c types/clock.F90
 
 ## Diagnostics
@@ -217,11 +220,11 @@ basin.o: basin.F90 ${MAKEFILE} omlsubs.o ekman.o box.o qg.o amlsubs.o covsubs.o 
 state.o: state.F90 ${MAKEFILE} qg.o mixed.o box.o radsubs.o util.o ncutils.o vorsubs.o
 	${FC} ${FFLAGS} -c state.F90
 
-driver.o: driver.F90 ${MAKEFILE} coupler.o windstress.o omlsubs.o amlsubs.o core.o forcing.o basin.o
+driver.o: driver.F90 ${MAKEFILE} coupler.o windstress.o omlsubs.o amlsubs.o core.o forcing.o basin.o constants.o
 	${FC} ${FFLAGS} -c driver.F90
 
 openqg.o: openqg.F90 ${MAKEFILE}  \
-	ncutils.o glam.o omlsubs.o forcing.o mixed.o \
+	ncutils.o glam.o omlsubs.o forcing.o mixed.o constants.o \
 	qg.o modes.o homog.o inhomog.o subsampling.o clock.o vorsubs.o tavsubs.o qg_monitor.o \
 	valsubs.o covsubs.o areasubs.o vorticity.o radsubs.o constraint.o pressure.o covsubs.o \
 	amlsubs.o core.o state.o coupler.o windstress.o driver.o basin.o print.o ml_monitor.o

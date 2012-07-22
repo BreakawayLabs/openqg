@@ -1,5 +1,6 @@
 module driver
 
+  use constants, only: SECDAY, SECSYR
   use basin, only: ocn_basin_type, atm_basin_type
   use coupler, only: ocn_coupler_type, atm_coupler_type
   use qg, only: qg_type
@@ -198,13 +199,10 @@ contains
     logical :: force
     integer :: ntdone
     double precision :: tsec, tday, tyrs
-    double precision :: secday,daysyr,secsyr
-    parameter ( secday=86400.0d0, daysyr=365.0d0, &
-         secsyr=secday*daysyr )
 
     tsec = nt*clk%dta
-    tday = tsec/secday
-    tyrs = tsec/secsyr
+    tday = tsec/SECDAY
+    tyrs = tsec/SECSYR
     ntdone = nt - clk%nsteps0
     solnok = .true.
 

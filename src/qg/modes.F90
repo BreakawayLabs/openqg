@@ -255,6 +255,7 @@ contains
        i = 0
 100    index(i+1) = indtmp
     enddo
+
     ! Modal eigenvalues (barotropic is ~0; replace with exact 0)
     ! and wavespeeds (barotropic is infinite; replace with 0)
     eig_val(1) = 0.0d0

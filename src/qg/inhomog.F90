@@ -1,6 +1,7 @@
 module inhomog
 
   use box, only: box_type
+  use constants, only: PI, TWOPI
 
   use, intrinsic :: iso_c_binding
 
@@ -37,11 +38,7 @@ contains
 
     type(box_type), intent(in) :: b
 
-    double precision :: PI, TWOPI
     integer :: i
-
-    PI    = 3.14159265358979324d0
-    TWOPI = 6.28318530717958648d0
 
     init_inhomog%a = 1.0d0/( b%dy*b%dy )
 

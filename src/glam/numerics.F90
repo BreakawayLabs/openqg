@@ -2,6 +2,7 @@ module numerics
 
   use intsubs, only: trapin
   use box, only: box_type
+  use constants, only: PI
 
   implicit none
 
@@ -525,9 +526,6 @@ contains
     double precision, intent(in) ::  ymax
     double precision, intent(in) :: bar
    
-    double precision :: PI
-    parameter ( PI=3.14159265358979324D0 )
-
     sin_lat = -0.50d0*sign(bar, b%fnot)*sin( (PI/2.0d0)*(y - y0)/(ymax - y0) )
 
   end function sin_lat
