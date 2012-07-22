@@ -1,6 +1,7 @@
 module box
 
-  use mesh, only: mesh_type
+  use units, only: m_to_km
+  use mesh, only: mesh_type  
   use ncutils, only: nc_open, nc_get_double, nc_get_int, nc_get_dim
 
   implicit none
@@ -175,9 +176,9 @@ contains
     print *, ""
     print *, "Physical size"
     print *, "-------------"
-    print *, "T-grid size (dx, dy) (km): ", b%dx/1.0d3, b%dy/1.0d3
-    print *, "S-W coordinate (x0, y0) (km): ", b%x0/1.0d3, b%y0/1.0d3
-    print *, "Total size (x, y) (km): ", b%xl/1.0d3, b%yl/1.0d3
+    print *, "T-grid size (dx, dy) (km): ", m_to_km(b%dx), m_to_km(b%dy)
+    print *, "S-W coordinate (x0, y0) (km): ", m_to_km(b%x0), m_to_km(b%y0)
+    print *, "Total size (x, y) (km): ", m_to_km(b%xl), m_to_km(b%yl)
     print *, "QG layer depths (m): ", b%h
     print *, "Mixed layer depth (m): ", b%hm
     print *, "Cyclic: ", b%cyclic

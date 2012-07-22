@@ -1,6 +1,7 @@
 module topog
 
   use util, only: streq, s2s
+  use units, only: m_to_km
   use ncutils, only: nc_open, nc_get_dim, nc_create, nc_def_dim, handle_err, nc_get_text
   use ncutils, only: nc_close, nc_enddef, nc_def_double, nc_get_double, nc_put_double
   use intsubs, only: xintp
@@ -183,8 +184,8 @@ contains
     call nc_enddef(topog_id, subnam)
 
     !! Convert from m -> km
-    call nc_put_double(topog_id, xp_id, 1.0d-3*( b%xp(:) - b%x0 ), subnam)
-    call nc_put_double(topog_id, yp_id, 1.0d-3*( b%yp(:) - b%y0 ), subnam)
+    call nc_put_double(topog_id, xp_id, m_to_km(b%xp(:) - b%x0), subnam)
+    call nc_put_double(topog_id, yp_id, m_to_km(b%yp(:) - b%y0), subnam)
 
     !! Write out the topography
     call nc_put_double(topog_id, dtop_id, topo%dtop, subnam)
@@ -213,11 +214,11 @@ contains
           if (topat%dtop(i,j) /= 0.0d0) then
              print *,' Nonzero atmosphere topography over ocean'
              print *,' Problem occurs at i, j, xpa(km), ypa(km) = ', &
-                  i,j,1.0d-3*ga%xp(i),1.0d-3*ga%yp(j)
+                  i,j,m_to_km(ga%xp(i)),m_to_km(ga%yp(j))
              print '(a,2f11.2)', '  Ocean limits in x (km) are: ', &
-                  1.0d-3*ga%xp(g%nx1),1.0d-3*ga%xp(g%nx1+g%nxaooc)
+                  m_to_km(ga%xp(g%nx1)),m_to_km(ga%xp(g%nx1+g%nxaooc))
              print '(a,2f11.2)', '  Ocean limits in y (km) are: ', &
-                  1.0d-3*ga%yp(g%ny1),1.0d-3*ga%yp(g%ny1+g%nyaooc)
+                  m_to_km(ga%yp(g%ny1)),m_to_km(ga%yp(g%ny1+g%nyaooc))
              print *,' Program terminates in topset'
              stop
           endif

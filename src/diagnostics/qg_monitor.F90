@@ -1,5 +1,6 @@
 module qg_monitor
 
+  use units, only: m_to_km, m3_to_Sv
   use box, only: box_type
   use qg, only: qg_type
   use ncutils, only: nc_open_w, nc_create, nc_close, nc_def_dim, nc_def_float
@@ -376,7 +377,7 @@ contains
        mon%val(k) = maxval(ujeto(:))
 
        ! Compute total ocean circulation
-       mon%circ(k) = 1.0d-6*b%h(k)*( qg%p(1,1,k) - qg%p(1,b%nyp,k) )/b%fnot
+       mon%circ(k) = m3_to_Sv(( qg%p(1,1,k) - qg%p(1,b%nyp,k) )/b%fnot)
     enddo
     mon%ctot = sum(mon%circ(:))
 
@@ -410,9 +411,9 @@ contains
        pomax = maxval(qg%p(:,:,k))
        
        psiext = min( pomin/b%fnot, pomax/b%fnot )
-       mon%sfmin(k) = 1.0d-6*b%h(k)*( psiext - poref(k)/b%fnot )
+       mon%sfmin(k) = m3_to_Sv(b%h(k)*( psiext - poref(k)/b%fnot ))
        psiext = max( pomin/b%fnot, pomax/b%fnot )
-       mon%sfmax(k) = 1.0d-6*b%h(k)*( psiext - poref(k)/b%fnot )
+       mon%sfmax(k) = m3_to_Sv(b%h(k)*( psiext - poref(k)/b%fnot ))
        ! Compute volume transport in each layer (in Sverdrups)
     enddo
 
@@ -702,17 +703,17 @@ contains
     call nc_enddef(ncid, subnam)
 
     ! Convert height into km and store in 'zo'
-    tmp(1) = 0.5d-3*qg%b%h(1)
+    tmp(1) = 0.5d0*qg%b%h(1)
     do k=2,qg%b%nl
-       tmp(k) = tmp(k-1) + 0.5d-3*( qg%b%h(k-1) + qg%b%h(k) )
+       tmp(k) = tmp(k-1) + 0.5d0*(qg%b%h(k-1) + qg%b%h(k))
     enddo
-    call nc_put_double(ncid, l_id, tmp, subnam)
+    call nc_put_double(ncid, l_id, m_to_km(tmp), subnam)
     ! Convert height into km and store in 'zom'
-    tmp(1) = 1.0d-3*qg%b%h(1)
+    tmp(1) = qg%b%h(1)
     do k=2,qg%b%nl-1
-       tmp(k) = tmp(k-1) + 1.0d-3*qg%b%h(k)
+       tmp(k) = tmp(k-1) + qg%b%h(k)
     enddo
-    call nc_put_double(ncid, lm_id, tmp(:qg%b%nl-1), subnam)
+    call nc_put_double(ncid, lm_id, m_to_km(tmp(:qg%b%nl-1)), subnam)
 
     call nc_close(ncid)
 

@@ -1,5 +1,6 @@
 module areasubs
 
+  use units, only: m_to_km
   use ncutils, only: nc_enddef, nc_def_dim, nc_def_int, nc_def_float
   use ncutils, only: nc_put_int, nc_put_double, nc_create, nc_close, nc_open_w
 
@@ -217,7 +218,7 @@ contains
 
     print *
     print '(a,4i9)', '  area name       = ', index
-    print '(a,4f9.1)', '  xlo, xhi, ylo, yhi = ', 1.0d-3*xlo, 1.0d-3*xhi, 1.0d-3*ylo, 1.0d-3*yhi
+    print '(a,4f9.1)', '  xlo, xhi, ylo, yhi = ', m_to_km(xlo), m_to_km(xhi), m_to_km(ylo), m_to_km(yhi)
     print '(a,4i9)',   '  i1t, i2t, j1t, j2t = ', subarea%i1t, subarea%i2t, subarea%j1t, subarea%j2t
     print '(a,4f9.3)', '             weights = ', subarea%fwt, subarea%fet, subarea%fst, subarea%fnt
     print '(a,4i9)',   '  i1p, i2p, j1p, j2p = ', subarea%i1p, subarea%i2p, subarea%j1p, subarea%j2p

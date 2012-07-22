@@ -1,5 +1,6 @@
 module subsampling
 
+  use units, only: m_to_km
   use box, only: box_type
   use clock, only: clock_type, days_to_steps
   use mixed, only: mixed_type
@@ -197,14 +198,14 @@ contains
     mwk = mod(go%nxp,subsamp%nsk)
     iwk = min(mwk,1) + (go%nxp-mwk)/subsamp%nsk
     do i=1,iwk
-       xo(i) = 1.0d-3*( go%xp(1+(i-1)*subsamp%nsk) - go%xp(1) )
+       xo(i) = m_to_km(go%xp(1+(i-1)*subsamp%nsk) - go%xp(1))
     enddo
     call nc_put_double(ocpid, xop_id, xo(:iwk), subnam)
     ! T-grid points
     mwk = mod(go%nxt,subsamp%nsk)
     iwk = min(mwk,1) + (go%nxt-mwk)/subsamp%nsk
     do i=1,iwk
-       xo(i) = 1.0d-3*( go%xt(1+(i-1)*subsamp%nsk) - go%xp(1) )
+       xo(i) = m_to_km(go%xt(1+(i-1)*subsamp%nsk) - go%xp(1))
     enddo
     call nc_put_double(octid, xot_id, xo(:iwk), subnam)
 
@@ -213,28 +214,28 @@ contains
     mwk = mod(go%nyp,subsamp%nsk)
     iwk = min(mwk,1) + (go%nyp-mwk)/subsamp%nsk
     do i=1,iwk
-       yo(i) = 1.0d-3*( go%yp(1+(i-1)*subsamp%nsk) - go%yp(1) )
+       yo(i) = m_to_km(go%yp(1+(i-1)*subsamp%nsk) - go%yp(1))
     enddo
     call nc_put_double(ocpid, yop_id, yo(:iwk), subnam)
     ! T-grid points
     mwk = mod(go%nyt,subsamp%nsk)
     iwk = min(mwk,1) + (go%nyt-mwk)/subsamp%nsk
     do i=1,iwk
-       yo(i) = 1.0d-3*( go%yt(1+(i-1)*subsamp%nsk) - go%yp(1) )
+       yo(i) = m_to_km(go%yt(1+(i-1)*subsamp%nsk) - go%yp(1))
     enddo
     call nc_put_double(octid, yot_id, yo(:iwk), subnam)
 
     ! Convert mid-layer depths into km and store in 'z'
-    tmp(1) = 0.5d-3*go%h(1)
+    tmp(1) = 0.5d0*m_to_km(go%h(1))
     do i=2,go%nl
-       tmp(i) = tmp(i-1) + 0.5d-3*( go%h(i-1) + go%h(i) )
+       tmp(i) = tmp(i-1) + 0.5d0*m_to_km(go%h(i-1) + go%h(i))
     enddo
     call nc_put_double(ocpid, lo_id, tmp, subnam)
 
     ! Convert interface depths into km and store in 'zi'
-    tmp(1) = 1.0d-3*go%h(1)
+    tmp(1) = m_to_km(go%h(1))
     do i=2,go%nl-1
-       tmp(i) = tmp(i-1) + 1.0d-3*go%h(i)
+       tmp(i) = tmp(i-1) + m_to_km(go%h(i))
     enddo
     call nc_put_double(ocpid, lom_id, tmp(:go%nl-1), subnam)
 
@@ -343,14 +344,14 @@ contains
     mwk = mod(ga%nxp,subsamp%nsk)
     iwk = min(mwk,1) + (ga%nxp-mwk)/subsamp%nsk
     do i=1,iwk
-       xa(i) = 1.0d-3*ga%xp(1+(i-1)*subsamp%nsk)
+       xa(i) = m_to_km(ga%xp(1+(i-1)*subsamp%nsk))
     enddo
     call nc_put_double(atpid, xap_id, xa(:iwk), subnam)
     ! T-grid points
     mwk = mod(ga%nxt,subsamp%nsk)
     iwk = min(mwk,1) + (ga%nxt-mwk)/subsamp%nsk
     do i=1,iwk
-       xa(i) = 1.0d-3*ga%xt(1+(i-1)*subsamp%nsk)
+       xa(i) = m_to_km(ga%xt(1+(i-1)*subsamp%nsk))
     enddo
     call nc_put_double(attid, xat_id, xa(:iwk), subnam)
 
@@ -359,28 +360,28 @@ contains
     mwk = mod(ga%nyp,subsamp%nsk)
     iwk = min(mwk,1) + (ga%nyp-mwk)/subsamp%nsk
     do i=1,iwk
-       ya(i) = 1.0d-3*ga%yp(1+(i-1)*subsamp%nsk)
+       ya(i) = m_to_km(ga%yp(1+(i-1)*subsamp%nsk))
     enddo
     call nc_put_double(atpid, yap_id, ya(:iwk), subnam)
     ! T-grid points
     mwk = mod(ga%nyt,subsamp%nsk)
     iwk = min(mwk,1) + (ga%nyt-mwk)/subsamp%nsk
     do i=1,iwk
-       ya(i) = 1.0d-3*ga%yt(1+(i-1)*subsamp%nsk)
+       ya(i) = m_to_km(ga%yt(1+(i-1)*subsamp%nsk))
     enddo
     call nc_put_double(attid, yat_id, ya(:iwk), subnam)
 
     ! Convert mid-layer heights into km and store in 'z'
-    tmp(1) = 0.5d-3*ga%h(1)
+    tmp(1) = 0.5d0*m_to_km(ga%h(1))
     do i=2,ga%nl
-       tmp(i) = tmp(i-1) + 0.5d-3*( ga%h(i-1) + ga%h(i) )
+       tmp(i) = tmp(i-1) + 0.5d0*m_to_km(ga%h(i-1) + ga%h(i))
     enddo
     call nc_put_double(atpid, la_id, tmp, subnam)
 
     ! Convert interface heights into km and store in 'zi'
-    tmp(1) = 1.0d-3*ga%h(1)
+    tmp(1) = m_to_km(ga%h(1))
     do i=2,ga%nl-1
-       tmp(i) = tmp(i-1) + 1.0d-3*ga%h(i)
+       tmp(i) = tmp(i-1) + m_to_km(ga%h(i))
     enddo
     call nc_put_double(atpid, lam_id, tmp(:ga%nl-1), subnam)
 

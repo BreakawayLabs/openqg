@@ -2,6 +2,7 @@ program openqg
 
   use util, only: s2s, streq
   use constants, only: PIBY2, SECDAY, SECSYR
+  use units, only: m_to_km
   ! GLAM
   use box, only: box_type, init_box_from_mesh
   use grid, only: grid_type, load_grid, print_grid
@@ -568,13 +569,13 @@ contains
        print 207, '  Reduced gravities  (m s^-2) = ', (ocn%qg%gp(k),k=1,ocn%b%nl-1)
        print 206, '  Baroclinic wavespeeds (m/s) = ', (ocn%qg%mod%c_phase(k),k=2,ocn%b%nl)
        print 206, '  Courant number(s)           = ', ( (clk%dto/ocn%b%dx)*ocn%qg%mod%c_phase(k),k=2,ocn%b%nl)
-       print 204, '  Deformation radii      (km) = ', (1.0d-3*ocn%qg%mod%rdef(k),k=2,ocn%b%nl)
+       print 204, '  Deformation radii      (km) = ', (m_to_km(ocn%qg%mod%rdef(k)),k=2,ocn%b%nl)
        print 205, '  Gridlengths per radius      = ', (ocn%qg%mod%rdef(k)/ocn%b%dx,k=2,ocn%b%nl)
        print 213, '  Del-sqd coeffts  (m^2 s^-1) = ', (ocn%qg%ah2(k),k=1,ocn%b%nl)
        call diffts(2, ocn%b%nl, ocn%qg%ah2, ocn%b%nl, ocn%b%dx, ocn%qg%mod%rdef)
        print 213, '  Del-4th coeffts  (m^4 s^-1) = ', (ocn%qg%ah4(k),k=1,ocn%b%nl)
        call diffts(4, ocn%b%nl, ocn%qg%ah4, ocn%b%nl, ocn%b%dx, ocn%qg%mod%rdef)
-       print 204, '  Munk b.l. width scale  (km) = ', (1.0d-3*(ocn%qg%ah4(k)/ocn%b%beta)**0.2d0,k=1,ocn%b%nl)
+       print 204, '  Munk b.l. width scale  (km) = ', (m_to_km((ocn%qg%ah4(k)/ocn%b%beta)**0.2d0),k=1,ocn%b%nl)
        print 203, '  Bottom Ekm. layer thickness = ', ocn%qg%delek
        print 213, '  Bottom layer Ekman number   = ', (ocn%qg%delek/ocn%b%h(ocn%b%nl))**2
        if (ocn%qg%delek < 0.0d0) then
@@ -601,7 +602,7 @@ contains
        print 207, '  Reduced gravities  (m s^-2) = ', (atm%qg%gp(k),k=1,atm%b%nl-1)
        print 206, '  Baroclinic wavespeeds (m/s) = ', (atm%qg%mod%c_phase(k),k=2,atm%b%nl)
        print 206, '  Courant number(s)           = ', ( (clk%dta/atm%b%dx)*atm%qg%mod%c_phase(k),k=2,atm%b%nl)
-       print 204, '  Deformation radii      (km) = ', (1.0d-3*atm%qg%mod%rdef(k),k=2,atm%b%nl)
+       print 204, '  Deformation radii      (km) = ', (m_to_km(atm%qg%mod%rdef(k)),k=2,atm%b%nl)
        print 205, '  Gridlengths per radius      = ', (atm%qg%mod%rdef(k)/atm%b%dx,k=2,atm%b%nl)
        print 213, '  Del-4th coeffts  (m^4 s^-1) = ', (atm%qg%ah4(k),k=1,atm%b%nl)
        call diffts(4, atm%b%nl, atm%qg%ah4, atm%b%nl, atm%b%dx, atm%qg%mod%rdef)

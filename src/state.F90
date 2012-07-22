@@ -1,6 +1,7 @@
 module state
 
   use util, only: streq, s2s
+  use units, only: m_to_km
   use box, only: box_type
   use qg, only: qg_type
   use mixed, only: zonal_temp
@@ -101,8 +102,8 @@ contains
 
     call nc_enddef(nc_id)
 
-    call nc_put_double(nc_id, 'x', qg%b%xp/1.0d3, subnam)
-    call nc_put_double(nc_id, 'y', qg%b%yp/1.0d3, subnam)
+    call nc_put_double(nc_id, 'x', m_to_km(qg%b%xp), subnam)
+    call nc_put_double(nc_id, 'y', m_to_km(qg%b%yp), subnam)
     call nc_put_double(nc_id, 'p', qg%p, subnam)
     call nc_put_double(nc_id, 'pm', qg%pm, subnam)
 
@@ -132,8 +133,8 @@ contains
 
     call nc_enddef(nc_id)
 
-    call nc_put_double(nc_id, 'x', oml%b%xt/1.0d3, subnam)
-    call nc_put_double(nc_id, 'y', oml%b%yt/1.0d3, subnam)
+    call nc_put_double(nc_id, 'x', m_to_km(oml%b%xt), subnam)
+    call nc_put_double(nc_id, 'y', m_to_km(oml%b%yt), subnam)
     call nc_put_double(nc_id, 'sst', oml%sst%data, subnam)
     call nc_put_double(nc_id, 'sstm', oml%sst%datam, subnam)
 
@@ -165,8 +166,8 @@ contains
 
     call nc_enddef(nc_id)
 
-    call nc_put_double(nc_id, 'x', aml%b%xt/1.0d3, subnam)
-    call nc_put_double(nc_id, 'y', aml%b%yt/1.0d3, subnam)
+    call nc_put_double(nc_id, 'x', m_to_km(aml%b%xt), subnam)
+    call nc_put_double(nc_id, 'y', m_to_km(aml%b%yt), subnam)
     call nc_put_double(nc_id, 'ast', aml%ast%data, subnam)
     call nc_put_double(nc_id, 'astm', aml%ast%datam, subnam)
     call nc_put_double(nc_id, 'hmixa', aml%hmixa%data, subnam)

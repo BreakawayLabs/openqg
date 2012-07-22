@@ -1,5 +1,6 @@
 module mesh
-  
+
+  use units, only: m_to_km
   use ncutils, only: nc_open, nc_get_int, nc_get_double
   use constants, only: PI, R0, OMEGA
 
@@ -81,9 +82,9 @@ contains
     print *, ""
     print *, "Physical size"
     print *, "-------------"
-    print *, "T-grid size (dx, dy) (km): ", mesh%dx/1.0d3, mesh%dy/1.0d3
-    print *, "S-W coordinate (x0, y0) (km): ", mesh%x0/1.0d3, mesh%y0/1.0d3
-    print *, "Total size (x, y) (km): ", (mesh%nxt*mesh%dx)/1.0d3, (mesh%nyt*mesh%dy)/1.0d3
+    print *, "T-grid size (dx, dy) (km): ", m_to_km(mesh%dx), m_to_km(mesh%dy)
+    print *, "S-W coordinate (x0, y0) (km): ", m_to_km(mesh%x0), m_to_km(mesh%y0)
+    print *, "Total size (x, y) (km): ", m_to_km(mesh%nxt*mesh%dx), m_to_km(mesh%nyt*mesh%dy)
     print *, "Cyclic: ", mesh%cyclic
     print *, ""
     print *, "Coriolis"

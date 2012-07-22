@@ -1,5 +1,6 @@
 module grid
 
+  use units, only: m_to_km
   use ncutils, only: nc_open, nc_close, nc_get_int
   use box, only: box_type
 
@@ -90,8 +91,8 @@ contains
     print *,' -------------'
     print 201, '  No. of ocean QG layers  nlo = ', go%nl
     print 201, '  No. of gridcells nxto, nyto = ', go%nxt,go%nyt
-    print 204, '  Gridlength dxo         (km) = ', 1.0d-3*go%dx
-    print 203, '  Domain sizes xlo, ylo  (km) = ', 1.0d-3*go%xl,1.0d-3*go%yl
+    print 204, '  Gridlength dxo         (km) = ', m_to_km(go%dx)
+    print 203, '  Domain sizes xlo, ylo  (km) = ', m_to_km(go%xl),m_to_km(go%yl)
     print 205, '  Rossby number   Beta*ylo/f0 = ', go%beta*go%yl/abs(go%fnot)
     print 214, '  f range S -> N   (rad s^-1) = ', go%fnot+go%beta*go%yprel(1),go%fnot+go%beta*go%yprel(go%nyp)
     print 214, '  Midlatitude Coriolis param  = ', go%fnot+go%beta*0.5d0*( go%yprel(1) + go%yprel(go%nyp) )
@@ -103,8 +104,8 @@ contains
     print *,' -----------------'
     print 201, '  No. of atmos. QG layers nla = ', ga%nl
     print 201, '  No. of gridcells nxta, nyta = ', ga%nxt,ga%nyt
-    print 204, '  Gridlength dxa         (km) = ', 1.0d-3*ga%dx
-    print 203, '  Domain sizes xla, yla  (km) = ', 1.0d-3*ga%xl,1.0d-3*ga%yl
+    print 204, '  Gridlength dxa         (km) = ', m_to_km(ga%dx)
+    print 203, '  Domain sizes xla, yla  (km) = ', m_to_km(ga%xl),m_to_km(ga%yl)
     print 205, '  Rossby number   Beta*yla/f0 = ', go%beta*ga%yl/abs(ga%fnot)
     print 214, '  f range S -> N   (rad s^-1) = ', ga%fnot+ga%beta*ga%yprel(1),ga%fnot+go%beta*ga%yprel(ga%nyp)
     print 214, '  Midlatitude Coriolis param  = ', ga%fnot+ga%beta*0.5d0*( ga%yprel(1) + ga%yprel(ga%nyp) )

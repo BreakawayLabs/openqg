@@ -1,5 +1,6 @@
 module tavsubs
 
+  use units, only: m_to_km
   use box, only: box_type
   use mixed, only: mixed_type
   use qg, only: qg_type
@@ -377,30 +378,30 @@ contains
        !!  Calculate x gridpoints and store in 'x' arrays
        !!  p-grid points
        do i=1,b%nxp
-          xx(i) = 1.0d-3*( b%xp(i) - b%xp(1) )
+          xx(i) = m_to_km(b%xp(i) - b%xp(1))
        enddo
        call nc_put_double(avncid, xp_id, xx, subnam)
        !!  T-grid points
        do i=1,b%nxt
-          xx(i) = 1.0d-3*( b%xt(i) - b%xp(1) )
+          xx(i) = m_to_km(b%xt(i) - b%xp(1))
        enddo
        call nc_put_double(avncid, xt_id, xx(:b%nxt), subnam)
        !!  Calculate y gridpoints and store in 'y' arrays
        !!  p-grid points
        do j=1,b%nyp
-          yy(j) = 1.0d-3*( b%yp(j) - b%yp(1) )
+          yy(j) = m_to_km(b%yp(j) - b%yp(1))
        enddo
        call nc_put_double(avncid, yp_id, yy, subnam)
        !!  T-grid points
        do j=1,b%nyt
-          yy(j) = 1.0d-3*( b%yt(j) - b%yp(1) )
+          yy(j) = m_to_km(b%yt(j) - b%yp(1))
        enddo
        call nc_put_double(avncid, yt_id, yy(:b%nyt), subnam)
 
        !!  Convert mid-layer depth into km and store in 'z'
-       tmp(1) = 0.5d-3*b%h(1)
+       tmp(1) = 0.5d0*m_to_km(b%h(1))
        do k=2,b%nl
-          tmp(k) = tmp(k-1) + 0.5d-3*( b%h(k-1) + b%h(k) )
+          tmp(k) = tmp(k-1) + 0.5d0*m_to_km(b%h(k-1) + b%h(k))
        enddo
        call nc_put_double(avncid, l_id, tmp, subnam)
 
