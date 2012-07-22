@@ -84,7 +84,7 @@ contains
     print 201, '  Start no. of (atmos)  steps = ',load_clock%nsteps0
     print 201, '  Final no. of (atmos)  steps = ',load_clock%nsteps
     print 201, '  Total no. of (atmos)  steps = ',load_clock%ntsrun
-    if ( resday.gt.0.0d0 ) then
+    if (resday > 0.0d0) then
        print 204, '  Restart dump interval (day) = ',resday
        load_clock%noutre = days_to_steps(resday, load_clock)
     else

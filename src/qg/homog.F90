@@ -322,7 +322,7 @@ contains
     ! Compute the LU factorization of cdhoc
     ! DGETRF = NAG routine F07ADF
     call DGETRF (b%nl-1, b%nl-1, hom_box%cdhlu, b%nl-1, hom_box%ipivch, info)
-    if ( info.ne.0 ) then
+    if (info /= 0) then
        print *,'  DGETRF for ocean in homsol returns info = ',info
        print *,'  program terminates in homsol'
        stop
@@ -475,7 +475,7 @@ contains
        con%ermas(k) = edif
        ! Compute fractional error if entrainment is significant;
        ! fraction is meaningless if est1, est2 just noisy zeros
-       if ( esum.gt.(ecrit*b%xl*b%yl*tdt*gp(k)) ) then
+       if (esum > (ecrit*b%xl*b%yl*tdt*gp(k))) then
           con%emfr(k) = 2.0d0*edif/esum
        else
           con%emfr(k) = 0.0d0
@@ -553,7 +553,7 @@ contains
     ! DGETRS = NAG routine F07AEF
     call DGETRS ('Norm', b%nl-1, 1, hom_box%cdhlu, b%nl-1, &
          hom_box%ipivch, hclco, b%nl-1, info)
-    if ( info.ne.0 ) then
+    if (info /= 0) then
        print *,'  DGETRS in ocinvq returns info = ',info
        print *,'  program terminates in ocinvq'
        stop

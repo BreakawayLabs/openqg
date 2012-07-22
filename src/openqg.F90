@@ -485,9 +485,9 @@ contains
     call diagnostic_step(outdir(1:lenod), ocn, atm, clk, nt, solnok)
     do nt = clk%nsteps0+1, clk%nsteps
 
-       ocean_step    = mod(nt-1,clk%nstr).eq.0
-       ocn_supp_step = mod(nt-1,25*clk%nstr).eq.0
-       atm_supp_step = mod(nt-1,100).eq.0
+       ocean_step    = mod(nt-1,clk%nstr) == 0
+       ocn_supp_step = mod(nt-1,25*clk%nstr) == 0
+       atm_supp_step = mod(nt-1,100) == 0
        call dynamic_step(ocn, atm, stress, clk%tdto, clk%tdta, ocean_step, ocn_supp_step, atm_supp_step)
        
        ! Timestep done; do checking and diagnostics as necessary
@@ -506,7 +506,7 @@ contains
 
        ! Occasionally dump restart file
        ntdone = nt - clk%nsteps0
-       if ( mod(ntdone,clk%noutre).eq.0 ) then
+       if (mod(ntdone,clk%noutre) == 0) then
           call save_all(outdir(1:lenod), ocn, atm, "restart.nc")
        endif
     enddo
@@ -582,11 +582,11 @@ contains
        print 204, '  Munk b.l. width scale  (km) = ', (1.0d-3*(ocn%qg%ah4(k)/ocn%b%beta)**0.2d0,k=1,ocn%b%nl)
        print 203, '  Bottom Ekm. layer thickness = ', ocn%qg%delek
        print 213, '  Bottom layer Ekman number   = ', (ocn%qg%delek/ocn%b%h(ocn%b%nl))**2
-       if ( ocn%qg%delek.lt.0.0d0 ) then
+       if (ocn%qg%delek < 0.0d0) then
           print *,' Invalid -ve value of delek'         
           print *,' Program terminates'
           stop
-       else if (ocn%qg%delek.eq.0.0d0 ) then
+       else if (ocn%qg%delek == 0.0d0) then
        else
           print 203, '  Spindown timescale   (days) = ',2.0d0*ocn%b%h(ocn%b%nl)/(abs(ocn%b%fnot)*ocn%qg%delek)/secday
        endif
@@ -888,7 +888,7 @@ contains
     ! Input arguments:
     ! nord  : order of the diffusive term
     ! nl    : no. of QG layers  (=> nl-1 baroclinic modes)
-    ! coeff : vector of diffusion coefficients (should be .GE. 0)
+    ! coeff : vector of diffusion coefficients (should be >= 0)
     ! ncoef : length of coefficient vector
     ! dx    : gridlength (m)
     ! rdef  : vector of nl modal deformation radii (m)
@@ -909,7 +909,7 @@ contains
     double precision :: tdamp(nlmax),sinfac
 
     ! Check internal storage is sufficient
-    if ( nl.gt.nlmax ) then
+    if (nl > nlmax) then
        print *,' diffts has insufficient nlmax = ',nlmax
        print *,' called with nl = ',nl
        print *,' program terminates in diffts'
@@ -919,7 +919,7 @@ contains
     ! Check all diffusion coefficients are non-negative
     ! (need positive coeffts for damping)
     do k=1,ncoef
-       if ( coeff(k).lt.0.0d0 ) then
+       if (coeff(k) < 0.0d0) then
           print *,' diffts called with -ve diffusion coefft'
           print *,' coeff vector = ',(coeff(m),m=1,ncoef)
           print *,' program terminates in diffts'
@@ -933,7 +933,7 @@ contains
        sinfac = 2.0d0*sin( PIBY2*dx/rdef(m) )/dx
        ! Avoid infinities if coefft = 0
        do k=1,ncoef
-          if ( coeff(k).eq.0.0d0 ) then
+          if (coeff(k) ==  0.0d0) then
              tdamp(k) = 0.0d0
           else
              tdamp(k) = 1.0d0/( sinfac**nord*coeff(k)*dble(nord)*secday )
@@ -946,7 +946,7 @@ contains
     ! Compute decay timescale for two-gridpoint noise
     ! for each coefft, avoiding infinities if coefft = 0
     do k=1,ncoef
-       if ( coeff(k).eq.0.0d0 ) then
+       if (coeff(k) == 0.0d0) then
           tdamp(k) = 0.0d0
        else
           tdamp(k) = (0.5d0*dx)**nord/coeff(k)/3600.0d0

@@ -43,7 +43,7 @@ contains
     integer, intent(in) :: ntdone
     type(area_avg_type), intent(in) :: area_avgs
 
-    area_avg_step = area_avgs%active .and. mod(ntdone,area_avgs%nocmon).eq.0
+    area_avg_step = area_avgs%active .and. mod(ntdone,area_avgs%nocmon) == 0
 
   end function area_avg_step
 
@@ -146,7 +146,7 @@ contains
     rihi = 1.0d0 + ( xhi - 0.5d0*b%dx )/b%dx
     frlo = mod( rilo, 1.0d0 )
     subarea%i1t = int( rilo )
-    if ( frlo.ge.0.5d0 ) then
+    if (frlo >= 0.5d0) then
        frlo = frlo - 1.0d0
        subarea%i1t = subarea%i1t + 1
     endif
@@ -154,7 +154,7 @@ contains
 
     frhi = mod( rihi, 1.0d0 )
     subarea%i2t = int( rihi )
-    if ( frhi.gt.0.5d0 ) then
+    if (frhi > 0.5d0) then
        frhi = frhi - 1.0d0
        subarea%i2t = subarea%i2t + 1
     endif
@@ -164,7 +164,7 @@ contains
     rjhi = 1.0d0 + ( yhi - 0.5d0*b%dy )/b%dy
     frlo = mod( rjlo, 1.0d0 )
     subarea%j1t = int( rjlo )
-    if ( frlo.ge.0.5d0 ) then
+    if (frlo >= 0.5d0) then
        frlo = frlo - 1.0d0
        subarea%j1t = subarea%j1t + 1
     endif
@@ -172,7 +172,7 @@ contains
 
     frhi = mod( rjhi, 1.0d0 )
     subarea%j2t = int( rjhi )
-    if ( frhi.gt.0.5d0 ) then
+    if (frhi > 0.5d0) then
        frhi = frhi - 1.0d0
        subarea%j2t = subarea%j2t + 1
     endif
@@ -183,7 +183,7 @@ contains
     rihi = 1.0d0 + xhi/b%dx
     frlo = mod( rilo, 1.0d0 )
     subarea%i1p = int( rilo )
-    if ( frlo.ge.0.5d0 ) then
+    if (frlo >= 0.5d0) then
        frlo = frlo - 1.0d0
        subarea%i1p = subarea%i1p + 1
     endif
@@ -191,7 +191,7 @@ contains
 
     frhi = mod( rihi, 1.0d0 )
     subarea%i2p = int( rihi )
-    if ( frhi.gt.0.5d0 ) then
+    if (frhi > 0.5d0) then
        frhi = frhi - 1.0d0
        subarea%i2p = subarea%i2p + 1
     endif
@@ -201,7 +201,7 @@ contains
     rjhi = 1.0d0 + yhi/b%dy
     frlo = mod( rjlo, 1.0d0 )
     subarea%j1p = int( rjlo )
-    if ( frlo.ge.0.5d0 ) then
+    if (frlo >= 0.5d0) then
        frlo = frlo - 1.0d0
        subarea%j1p = subarea%j1p + 1
     endif
@@ -209,7 +209,7 @@ contains
 
     frhi = mod( rjhi, 1.0d0 )
     subarea%j2p = int( rjhi )
-    if ( frhi.gt.0.5d0 ) then
+    if (frhi > 0.5d0) then
        frhi = frhi - 1.0d0
        subarea%j2p = subarea%j2p + 1
     endif
@@ -223,16 +223,16 @@ contains
     print '(a,4i9)',   '  i1p, i2p, j1p, j2p = ', subarea%i1p, subarea%i2p, subarea%j1p, subarea%j2p
     print '(a,4f9.3)', '             weights = ', subarea%fwp, subarea%fep, subarea%fsp, subarea%fnp
 
-    if ( xlo.lt.0.0d0 .or. xlo.gt.b%xl .or. &
-         xhi.lt.0.0d0 .or. xhi.gt.b%xl ) then
+    if (xlo < 0.0d0 .or. xlo > b%xl .or. &
+        xhi < 0.0d0 .or. xhi > b%xl) then
        print *,' limits outside x range for area = ',index
        print *,' xlo, xhi = ',xlo,xhi
        print *,' limits are : ',0.0d0,b%xl
        print *,' program terminates in areavg'
        stop
     endif
-    if ( ylo.lt.0.0d0 .or. ylo.gt.b%yl .or. &
-         yhi.lt.0.0d0 .or. yhi.gt.b%yl ) then
+    if (ylo < 0.0d0 .or. ylo > b%yl .or. &
+        yhi < 0.0d0 .or. yhi > b%yl) then
        print *,' limits outside y range for area = ',index
        print *,' ylo, yhi = ',ylo,yhi
        print *,' limits are : ',0.0d0,b%yl
@@ -240,29 +240,29 @@ contains
        stop
     endif
     ! Check subscript values
-    if ( subarea%i1t.lt.1 .or. subarea%i1t.gt.b%nxt .or. &
-         subarea%i2t.lt.1 .or. subarea%i2t.gt.b%nxt ) then
+    if (subarea%i1t < 1 .or. subarea%i1t > b%nxt .or. &
+        subarea%i2t < 1 .or. subarea%i2t > b%nxt) then
        print *,' invalid subscript for area = ',index
        print *,' i1t, i2t = ',subarea%i1t,subarea%i2t
        print *,' program terminates in areavg'
        stop
     endif
-    if ( subarea%j1t.lt.1 .or. subarea%j1t.gt.b%nyt .or. &
-         subarea%j2t.lt.1 .or. subarea%j2t.gt.b%nyt ) then
+    if (subarea%j1t < 1 .or. subarea%j1t > b%nyt .or. &
+        subarea%j2t < 1 .or. subarea%j2t > b%nyt) then
        print *,' invalid subscript for area = ',index
        print *,' j1t, j2t = ',subarea%j1t,subarea%j2t
        print *,' program terminates in areavg'
        stop
     endif
-    if ( subarea%i1p.lt.1 .or. subarea%i1p.gt.b%nxp .or. &
-         subarea%i2p.lt.1 .or. subarea%i2p.gt.b%nxp ) then
+    if (subarea%i1p < 1 .or. subarea%i1p > b%nxp .or. &
+        subarea%i2p < 1 .or. subarea%i2p > b%nxp) then
        print *,' invalid subscript for area = ',index
        print *,' i1p, i2p = ',subarea%i1p,subarea%i2p
        print *,' program terminates in areavg'
        stop
     endif
-    if ( subarea%j1p.lt.1 .or. subarea%j1p.gt.b%nyp .or. &
-         subarea%j2p.lt.1 .or. subarea%j2p.gt.b%nyp ) then
+    if (subarea%j1p < 1 .or. subarea%j1p > b%nyp .or. &
+        subarea%j2p < 1 .or. subarea%j2p > b%nyp) then
        print *,' invalid subscript for area = ',index
        print *,' j1p, j2p = ',subarea%j1p,subarea%j2p
        print *,' program terminates in areavg'

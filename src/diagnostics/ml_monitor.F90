@@ -132,7 +132,7 @@ contains
     type(oml_monitor_type), intent(in) :: oml_mon
     logical, intent(in) :: force
 
-    oml_monitor_step = oml_mon%active .and. (force .or. mod(ntdone,oml_mon%nocmon).eq.0 )
+    oml_monitor_step = oml_mon%active .and. (force .or. mod(ntdone,oml_mon%nocmon) == 0)
 
   end function oml_monitor_step
 
@@ -141,7 +141,7 @@ contains
     type(aml_monitor_type), intent(in) :: aml_mon
     logical, intent(in) :: force
 
-    aml_monitor_step = aml_mon%active .and. (force .or. mod(ntdone,aml_mon%nocmon).eq.0 )
+    aml_monitor_step = aml_mon%active .and. (force .or. mod(ntdone,aml_mon%nocmon) == 0)
 
   end function aml_monitor_step
 

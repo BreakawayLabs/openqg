@@ -39,7 +39,7 @@ contains
     integer, intent(in) :: ntdone
     logical, intent(in) :: force
 
-    print_step = print%active .and. (force .or. mod(ntdone,print%nocmon).eq.0 )
+    print_step = print%active .and. (force .or. mod(ntdone,print%nocmon) == 0)
 
   end function print_step
 

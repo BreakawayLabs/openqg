@@ -81,7 +81,7 @@ contains
 
     ! MONITORING - extra section for arlaav
     natlan = ga%nxt*ga%nyt - natocn
-    if (natlan.eq.0) then
+    if (natlan == 0) then
        aml%arlaav = 0.0d0
     else
        aml%arlaav = aml%rad%Dup(0)*arlasm/dble(natlan)
@@ -150,7 +150,7 @@ contains
     do io=1,nxoc
        iam(io) = int( 1.0d0 + dxainv*( xo(io) - xa(1) ) )
        iap(io) = iam(io) + 1
-       if ( iam(io).ge.1 ) then
+       if (iam(io) >=  1) then
           xam = xa(iam(io))
        else
           xam = xa(1) - ga%dx

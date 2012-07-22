@@ -58,7 +58,7 @@ contains
     if ( init_basin_average%active ) then
        print 204, '  Averaging int. (day) = ',dtav
        print 201, '  No. of steps in avg. inter. = ',init_basin_average%ntav
-       if ( mod(clk%ntsrun,init_basin_average%ntav).ne.0 .or. mod(init_basin_average%ntav,2).ne.0 ) then
+       if (mod(clk%ntsrun,init_basin_average%ntav) /= 0 .or. mod(init_basin_average%ntav,2) /= 0) then
           print *,' Unsuitable choice of dtav; program stops'
           stop 1
        endif
@@ -301,7 +301,7 @@ contains
     integer :: avncid
 
     if (avg%active) then
-       if ( avg%nsum.eq.0 ) then
+       if (avg%nsum == 0) then
           rns = 0.0d0
        else
           rns = 1.0d0/dble(avg%nsum)

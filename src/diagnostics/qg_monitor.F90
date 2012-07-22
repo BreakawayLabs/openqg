@@ -136,7 +136,7 @@ contains
     logical, intent(in) :: force
     integer, intent(in) :: ntdone
 
-    qg_monitor_step = qg_mon%active .and. (force .or. mod(ntdone,qg_mon%nocmon).eq.0 )
+    qg_monitor_step = qg_mon%active .and. (force .or. mod(ntdone,qg_mon%nocmon) == 0)
 
   end function qg_monitor_step
 
@@ -290,7 +290,7 @@ contains
        mon%tsec = tsec
        ! Compute integral of eta*e
        ! We are assuming all entrainment is across interface 1.
-       if ( k.eq.1 ) then
+       if (k == 1) then
           pkeint = genint(eta(:,:)*ent(:,:,1), b%nxp, b%nyp, 0.5d0, 0.5d0)
           mon%pken = qg%rho*qg%gp(1)*pkeint*b%norm
        endif
@@ -393,11 +393,11 @@ contains
     mon%btdg = 0.5d0*qg%rho*qg%delek*abs(b%fnot)*( u2diss + v2diss )*b%norm
 
     ! Define reference pressures on equatorward side of domain
-    if ( b%fnot.gt.0.0d0 ) then
+    if (b%fnot > 0.0d0) then
        do k=1,b%nl
           poref(k) = qg%p(1,1,k)
        enddo
-    else if ( b%fnot.lt.0.0d0 ) then
+    else if (b%fnot < 0.0d0) then
        do k=1,b%nl
           poref(k) = qg%p(1,b%nyp,k)
        enddo
@@ -803,21 +803,21 @@ contains
     print 217, '  CFL |v|(k) = ',(vmax(k)*dt/qg%b%dx,k=1,qg%b%nl)
     ! If have bad CFL values, scan for and print locations
     do k=1,qg%b%nl
-       if ( umax(k)*dt/qg%b%dx.ge.cflcrit ) then
+       if (umax(k)*dt/qg%b%dx >= cflcrit) then
           do j=1,qg%b%nyp-1
              do i=1,qg%b%nxp
                 uabs = (dt/qg%b%dx)*abs(ugeos(i,j,k))
-                if ( uabs.ge.cflcrit ) then
+                if (uabs >= cflcrit) then
                    print 250, '  Bad |u|; CFL, i, j, k = ',uabs,i,j,k
                 endif
              enddo
           enddo
        endif
-       if ( vmax(k)*dt/qg%b%dx.ge.cflcrit ) then
+       if (vmax(k)*dt/qg%b%dx >= cflcrit) then
           do j=1,qg%b%nyp
              do i=1,qg%b%nxp-1
                 vabs = (dt/qg%b%dx)*abs(vgeos(i,j,k))
-                if ( vabs.ge.cflcrit ) then
+                if (vabs >= cflcrit) then
                    print 250, '  Bad |v|; CFL, i, j, k = ',vabs,i,j,k
                 endif
              enddo

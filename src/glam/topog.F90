@@ -69,14 +69,14 @@ contains
        ! First check that the dimensions are correct
        idim = nc_get_dim(tempid, 'xp', subnam)
        jdim = nc_get_dim(tempid, 'yp', subnam)
-       if ( idim.ne.b%nxp ) then
+       if (idim /= b%nxp) then
           print *,' topography netCDF file error'
           print *,' xp dimension not equal to nxp:'
           print *,' dimensions are: ',idim,b%nxp
           print *,' Program terminates in topset'
           stop
        endif
-       if ( jdim.ne.b%nyp ) then
+       if (jdim /= b%nyp) then
           print *,' topography netCDF file error'
           print *,' yp dimension not equal to nyp:'
           print *,' dimensions are: ',jdim,b%nyp
@@ -92,7 +92,7 @@ contains
     ! ------------------------------------------------------------
     if (b%cyclic) then
        do j=1,b%nyp
-          if ( topo%dtop(1,j).ne.topo%dtop(b%nxp,j) ) then
+          if (topo%dtop(1,j) /= topo%dtop(b%nxp,j)) then
              print *,' *** WARNING *** problem with specified topography'
              print *,' Topography not exactly cyclic for j = ',j
              print *,' dtop values are: ',topo%dtop(1,j),topo%dtop(b%nxp,j)
@@ -210,7 +210,7 @@ contains
 
     do j=g%ny1,g%ny1+g%nyaooc
        do i=g%nx1,g%nx1+g%nxaooc
-          if ( topat%dtop(i,j).ne.0.0d0 ) then
+          if (topat%dtop(i,j) /= 0.0d0) then
              print *,' Nonzero atmosphere topography over ocean'
              print *,' Problem occurs at i, j, xpa(km), ypa(km) = ', &
                   i,j,1.0d-3*ga%xp(i),1.0d-3*ga%yp(j)

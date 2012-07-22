@@ -32,7 +32,7 @@ contains
     integer, intent(in) :: ntdone
     type(valids_type), intent(in) :: valids
 
-    valid_step = valids%active .and. mod(ntdone,valids%nvalid).eq.0
+    valid_step = valids%active .and. mod(ntdone,valids%nvalid) == 0
 
   end function valid_step
 
@@ -127,8 +127,8 @@ contains
           call scan2D (ek%wekt, qg%b%nxt, qg%b%nyt, wekmax, 'wekt maximum')
        endif
     endif
-    if ( abs(txmin).ge.val%tauext .or. abs(txmax).ge.val%tauext .or. &
-         abs(tymin).ge.val%tauext .or. abs(tymax).ge.val%tauext ) then
+    if (abs(txmin) >= val%tauext .or. abs(txmax) >= val%tauext .or. &
+        abs(tymin) >= val%tauext .or. abs(tymax) >= val%tauext ) then
        print *,' '
        print *,' Invalid values of taux or tauy found by valids'
        print *,' taux: min, max = ',txmin,txmax
@@ -155,7 +155,7 @@ contains
 
     do j=1,ny
        do i=1,nx
-          if ( array(i,j).eq.extrem ) then
+          if (array(i,j) == extrem) then
              print '(2x,a,a,2i7)', string,' located at i, j = ',i,j
              im = i
              jm = j
@@ -193,7 +193,7 @@ contains
     do k=1,nl
        do j=1,ny
           do i=1,nx
-             if ( bad_count < 20 .and. array(i,j,k).eq.extrem ) then
+             if (bad_count < 20 .and. array(i,j,k) == extrem) then
                 print '(2x,a,a,3i7)', string,' located at i, j, k = ',i,j,k
                 im = i
                 jm = j

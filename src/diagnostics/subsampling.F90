@@ -95,7 +95,7 @@ contains
     type(subsampling_type), intent(in) :: subsamp
     logical, intent(in) :: force
 
-    subsamp_step = subsamp%active .and. (force .or. mod(ntdone,subsamp%nout).eq.0 )
+    subsamp_step = subsamp%active .and. (force .or. mod(ntdone,subsamp%nout) == 0)
 
   end function subsamp_step
 

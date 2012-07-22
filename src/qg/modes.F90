@@ -249,7 +249,7 @@ contains
        c2temp = c2rabs(indtmp)
        ! Order m-th entry w.r.t. previous (already sorted) ones
        do i=m-1,1,-1
-          if ( c2rabs(index(i)).le.c2temp ) goto 100
+          if (c2rabs(index(i)) <=  c2temp) goto 100
           index(i+1) = index(i)
        enddo
        i = 0
@@ -416,7 +416,7 @@ contains
     integer, intent(in) :: info
     character, intent(in) :: routine*(*)
 
-    if ( info.ne.0 ) then
+    if (info /= 0) then
        print *,' Problem in ', routine, ', INFO = ', info
        print *,' program terminates in eigmod'
        stop 1

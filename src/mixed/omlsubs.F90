@@ -42,7 +42,7 @@ contains
 
     ! Check heat-flux boundary conditions
     if (fluxs) then
-       if ( b%fnot.lt.0.0d0 ) then
+       if (b%fnot < 0.0d0) then
           print *,' '
           print *,' Southern boundary o.m.l. heat-flux activated'
           print *,' Sign of fnot -> running in southern hemisphere'
@@ -52,7 +52,7 @@ contains
        endif
     endif
     if (fluxn) then
-       if ( b%fnot.gt.0.0d0 ) then
+       if (b%fnot > 0.0d0) then
           print *,' '
           print *,' Northern boundary o.m.l. heat-flux activated'
           print *,' Sign of fnot -> running in northern hemisphere'

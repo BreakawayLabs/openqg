@@ -83,7 +83,7 @@ contains
     load_rad%tabsat = T_abs
 
     ! Derive signed perturbation coefficient
-    if ( load_rad%fspamp.lt.0.0d0 ) then
+    if (load_rad%fspamp < 0.0d0) then
        print *,' Sign of fspamp appears incorrect'
        print *,' Program terminates in radiat'
        stop 1
@@ -293,14 +293,14 @@ contains
     atm_tmbar = atm_tmbar + 0.75d0*deltm
     iter = iter + 1
 
-    if ( iter.gt.nitmax ) then
+    if (iter > nitmax) then
        print *,' iteration for tmbara not converged'
        print *,' max. no. of iterations nitmax = ',nitmax
        print *,' deltm, tmbara = ',deltm,atm_tmbar
        print *,' program terminates in radiat'
        stop 1
     endif
-    if ( abs( deltm ).gt.tmbtol ) goto 100
+    if (abs(deltm) > tmbtol) goto 100
 
   end subroutine compute_ml_mean_temp
 
@@ -328,14 +328,14 @@ contains
     compute_oml_mean_temp = rhstoc/( rad%xlamda + stefan*tocold**3 )
     iter = iter + 1
 
-    if ( iter.gt.nitmax ) then
+    if (iter > nitmax) then
        print *,' iteration for tmbaro not converged'
        print *,' max. no. of iterations nitmax = ',nitmax
        print *,' tocold, tmbaro = ',tocold,compute_oml_mean_temp
        print *,' program terminates in radiat'
        stop 1
     endif
-    if ( abs( compute_oml_mean_temp - tocold ).gt.tmbtol ) goto 150
+    if (abs(compute_oml_mean_temp - tocold) > tmbtol) goto 150
 
   end function compute_oml_mean_temp
 
@@ -638,7 +638,7 @@ contains
     ! Compute the LU factorization of rbalar
     ! DGETRF = NAG routine F07ADF
     call DGETRF (ga%nl, ga%nl, rballu, ga%nl, ipivrb, info)
-    if ( info.ne.0 ) then
+    if (info /= 0) then
        print *,'  DGETRF in radiat returns info = ',info
        print *,'  program terminates in radiat'
        stop 1
@@ -649,7 +649,7 @@ contains
     ! Solve the linear system using the LU factorised matrix rballu
     ! DGETRS = NAG routine F07AEF
     call DGETRS ('Norm', ga%nl, 1, rballu, ga%nl, ipivrb, rbafac, ga%nl, info)
-    if ( info.ne.0 ) then
+    if (info /= 0) then
        print *,'  DGETRS in radiat returns info = ',info
        print *,'  program terminates in radiat'
        stop 1
@@ -659,7 +659,7 @@ contains
     call DGERFS ('Norm', ga%nl, 1, rbalar, ga%nl, rballu, ga%nl, &
          ipivrb, balrhs, ga%nl, rbafac, ga%nl, ferr, berr, &
          work, iwork, info)
-    if ( info.ne.0 ) then
+    if (info /= 0) then
        print *,'  DGERFS in radiat returns info = ',info
        print *,'  program terminates in radiat'
        stop 1

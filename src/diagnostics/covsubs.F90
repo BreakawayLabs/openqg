@@ -83,7 +83,7 @@ contains
        cov%avgp(:) = 0.0d0
        cov%avgt(:) = 0.0d0
 
-       if ( mod(b%nxt,cov%ns).ne.0 .or. mod(b%nyt,cov%ns).ne.0 ) then
+       if (mod(b%nxt,cov%ns) /= 0 .or. mod(b%nyt,cov%ns) /= 0) then
           print *,' '
           print *,' nxt, nyt, ns = ',b%nxt,b%nyt,cov%ns
           print *,' Need nxt, nyt both to be integer multiples of'
@@ -125,7 +125,7 @@ contains
     call psampl (qg%p(:,:,1), qg%b%nxp, qg%b%nyp, cov%ns, u, cov%nv)
     ! Update covariance matrix
     call dssp (u, cov%avgp, cov%covp, 1.0d0, cov%swtp, cov%nv, cov%nup, ifault)
-    if ( ifault.ne.0 ) then
+    if (ifault /= 0) then
        print *,' dssp problem in update_cov on p; ifault = ',ifault
     endif
 
@@ -134,7 +134,7 @@ contains
        call tsampl (st%data, qg%b%nxt, qg%b%nyt, cov%ns, u, cov%nv)
        ! Update covariance matrix
        call dssp (u, cov%avgt, cov%covt, 1.0d0, cov%swtt, cov%nv, cov%nut, ifault)
-       if ( ifault.ne.0 ) then
+       if (ifault /= 0) then
           print *,' dssp problem in update_cov on st; ifault = ',ifault
        endif
     endif
@@ -200,7 +200,7 @@ contains
     integer :: is,js,ivs,id,id1,id2,jd,jd1,jd2
     double precision :: sumd,sumi
     ivs = 0
-    if ( nsi.gt.1 ) then
+    if (nsi > 1) then
        ! Subsample the data by computing the arithmetic mean
        do js=1,(ny/nsi)
           jd1 = 1 + (js-1)*nsi
@@ -220,7 +220,7 @@ contains
              dsamt(ivs) = sumd
           enddo
        enddo
-    else if ( nsi.eq.1 ) then
+    else if (nsi == 1) then
        ! Just copy the data into the subsample array
        do jd=1,ny
           do id=1,nx
@@ -232,7 +232,7 @@ contains
        print *,' WARNING: tsampl called with invalid nsi = ',nsi
     endif
     ivs = (nx/nsi)*(ny/nsi)
-    if ( ivs.ne.nsvec ) then
+    if (ivs /= nsvec) then
        print *,' WARNING: inconsistent subsample vector in tsampl'
        print *,' nsvec, final ivs = ',nsvec,ivs
     endif
@@ -282,7 +282,7 @@ contains
        enddo
     enddo
     ivs = (nx/nsi)*(ny/nsi)
-    if ( ivs.ne.nsvec ) then
+    if (ivs /= nsvec) then
        print *,' WARNING: inconsistent subsample vector in psampl'
        print *,' nsvec, final ivs = ',nsvec,ivs
     endif
@@ -296,12 +296,12 @@ contains
     ! and the matrix of corrected sums of squares and products xssp
     ! (length nvar(nvar+1)/2, stored by lower triangle), when a
     ! data vector x (length nvar) with weight wt is either included
-    ! (wt.gt.0) or excluded (wt.lt.0).  sumwt is the current sum of
+    ! (wt > 0) or excluded (wt < 0).  sumwt is the current sum of
     ! weights on entry and the updated sum on exit and nunit is
     ! the current and updated sample size.  ifault=0 indicates normal
     ! exit,  ifault=1 indicates zero or negative value of sumwt,
     ! ifault=2 indicates zero or negative nunit, ifault=3 indicates
-    ! nvar.lt.1.  Note that x, xmean, xssp, wt and sumwt are double
+    ! nvar < 1.  Note that x, xmean, xssp, wt and sumwt are double
     ! precision and must be declared as such in the calling program.
 
     double precision, intent(inout) ::  x(*)
@@ -321,29 +321,29 @@ contains
 
     ! Check variates, weights and sample size
     ifault = 0
-    if ( nvar.lt.1 ) then
+    if (nvar < 1) then
        ifault = 3
        return
     endif
-    if ( wt.lt.0.0d0 ) then
+    if (wt < 0.0d0) then
        nunit = nunit-1
-    else if ( wt.eq.0.0d0 ) then
+    else if (wt == 0.0d0) then
        return
-    else if ( wt.gt.0.0d0 ) then
+    else if (wt > 0.0d0) then
        nunit = nunit+1
     endif
     sumwt = sumwt+wt
-    if ( sumwt.le.co ) then
+    if (sumwt <= co) then
        ifault = 1
        return
     endif
     b = wt/sumwt
-    if ( nunit.lt.1 ) then
+    if (nunit < 1) then
        ifault = 2
-    else if ( nunit.eq.1 ) then
+    else if (nunit == 1) then
        ! Initialise means and ssp for sample size  =  1
        do i = 1,nvar
-          if ( wt.lt.co ) then
+          if (wt < co) then
              xmean(i) = xmean(i) + b*(x(i)-xmean(i))
           else
              xmean(i) = x(i)
@@ -355,7 +355,7 @@ contains
              xssp(k) = co
           enddo
        enddo
-    else if ( nunit.gt.1 ) then
+    else if (nunit > 1) then
        ! Update means and ssp for sample size greater than 1
        c = wt - b*wt
        do i = 1,nvar
