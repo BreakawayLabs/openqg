@@ -184,11 +184,11 @@ contains
     call nc_enddef(topog_id, subnam)
 
     !! Convert from m -> km
-    call nc_put_double(topog_id, xp_id, m_to_km(b%xp(:) - b%x0), subnam)
-    call nc_put_double(topog_id, yp_id, m_to_km(b%yp(:) - b%y0), subnam)
+    call nc_put_double(topog_id, 'xp', m_to_km(b%xp(:) - b%x0), subnam)
+    call nc_put_double(topog_id, 'yp', m_to_km(b%yp(:) - b%y0), subnam)
 
     !! Write out the topography
-    call nc_put_double(topog_id, dtop_id, topo%dtop, subnam)
+    call nc_put_double(topog_id, 'dtop', topo%dtop, subnam)
 
     call nc_close(topog_id, subnam)
 

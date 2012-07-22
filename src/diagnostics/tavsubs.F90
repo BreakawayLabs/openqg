@@ -380,40 +380,40 @@ contains
        do i=1,b%nxp
           xx(i) = m_to_km(b%xp(i) - b%xp(1))
        enddo
-       call nc_put_double(avncid, xp_id, xx, subnam)
+       call nc_put_double(avncid, 'xp', xx, subnam)
        !!  T-grid points
        do i=1,b%nxt
           xx(i) = m_to_km(b%xt(i) - b%xp(1))
        enddo
-       call nc_put_double(avncid, xt_id, xx(:b%nxt), subnam)
+       call nc_put_double(avncid, 'xt', xx(:b%nxt), subnam)
        !!  Calculate y gridpoints and store in 'y' arrays
        !!  p-grid points
        do j=1,b%nyp
           yy(j) = m_to_km(b%yp(j) - b%yp(1))
        enddo
-       call nc_put_double(avncid, yp_id, yy, subnam)
+       call nc_put_double(avncid, 'yp', yy, subnam)
        !!  T-grid points
        do j=1,b%nyt
           yy(j) = m_to_km(b%yt(j) - b%yp(1))
        enddo
-       call nc_put_double(avncid, yt_id, yy(:b%nyt), subnam)
+       call nc_put_double(avncid, 'yt', yy(:b%nyt), subnam)
 
        !!  Convert mid-layer depth into km and store in 'z'
        tmp(1) = 0.5d0*m_to_km(b%h(1))
        do k=2,b%nl
           tmp(k) = tmp(k-1) + 0.5d0*m_to_km(b%h(k-1) + b%h(k))
        enddo
-       call nc_put_double(avncid, l_id, tmp, subnam)
+       call nc_put_double(avncid, 'z', tmp, subnam)
 
-       call nc_put_double(avncid, st_id, avg%stav, subnam)
-       call nc_put_double(avncid, wekt_id, avg%wtav, subnam)
-       call nc_put_double(avncid, fm_id, avg%fmav, subnam)
-       call nc_put_double(avncid, tx_id, avg%txav, subnam)
-       call nc_put_double(avncid, ty_id, avg%tyav, subnam)
-       call nc_put_double(avncid, p_id, avg%pav, subnam)
-       call nc_put_double(avncid, q_id, avg%qav, subnam)
-       call nc_put_double(avncid, ut_id, uptp, subnam)
-       call nc_put_double(avncid, vt_id, vptp, subnam)
+       call nc_put_double(avncid, 'st', avg%stav, subnam)
+       call nc_put_double(avncid, 'wekt', avg%wtav, subnam)
+       call nc_put_double(avncid, 'fnet', avg%fmav, subnam)
+       call nc_put_double(avncid, 'taux', avg%txav, subnam)
+       call nc_put_double(avncid, 'tauy', avg%tyav, subnam)
+       call nc_put_double(avncid, 'p', avg%pav, subnam)
+       call nc_put_double(avncid, 'q', avg%qav, subnam)
+       call nc_put_double(avncid, 'uptp', uptp, subnam)
+       call nc_put_double(avncid, 'vptp', vptp, subnam)
 
        call nc_close(avncid, subnam)
 

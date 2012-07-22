@@ -658,7 +658,7 @@ contains
     parameter ( subnam = 'qg_monnc_init' )
 
     integer :: timedim, ldim, lmdim
-    integer :: l_id, lm_id, k
+    integer :: k
     double precision :: tmp(qg%b%nl)
 
     ncid = nc_create(outdir, filename, subnam)
@@ -669,8 +669,8 @@ contains
     
     tmp_id = nc_def_float(ncid, 'time', timedim, 'years', subnam, 'Time')
 
-    l_id = nc_def_float(ncid, 'z', ldim, 'km', subnam, 'mid-layer depth axis')
-    lm_id = nc_def_float(ncid, 'zm', lmdim, 'km', subnam, 'interface depth axis')
+    tmp_id = nc_def_float(ncid, 'z', ldim, 'km', subnam, 'mid-layer depth axis')
+    tmp_id = nc_def_float(ncid, 'zm', lmdim, 'km', subnam, 'interface depth axis')
 
     tmp_id = nc_def_float(ncid, 'wepm', timedim, 'm/s', subnam, 'Average Ekman velocity (p-grid)')
     tmp_id = nc_def_float(ncid, 'wapm', timedim, 'm/s', subnam, 'Absolute Ekman velocity (p-grid)')
@@ -707,13 +707,13 @@ contains
     do k=2,qg%b%nl
        tmp(k) = tmp(k-1) + 0.5d0*(qg%b%h(k-1) + qg%b%h(k))
     enddo
-    call nc_put_double(ncid, l_id, m_to_km(tmp), subnam)
+    call nc_put_double(ncid, 'z', m_to_km(tmp), subnam)
     ! Convert height into km and store in 'zom'
     tmp(1) = qg%b%h(1)
     do k=2,qg%b%nl-1
        tmp(k) = tmp(k-1) + qg%b%h(k)
     enddo
-    call nc_put_double(ncid, lm_id, m_to_km(tmp(:qg%b%nl-1)), subnam)
+    call nc_put_double(ncid, 'zm', m_to_km(tmp(:qg%b%nl-1)), subnam)
 
     call nc_close(ncid)
 

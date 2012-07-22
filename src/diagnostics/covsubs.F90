@@ -173,12 +173,12 @@ contains
        call nc_enddef(covncid, subnam)
 
        !! Write data to arrays
-       call nc_put_double(covncid, covp_id, cov%covp, subnam)
-       call nc_put_double(covncid, covt_id, cov%covt, subnam)
-       call nc_put_double(covncid, avgp_id, cov%avgp, subnam)
-       call nc_put_double(covncid, avgt_id, cov%avgt, subnam)
-       call nc_put_double(covncid, swtp_id, (/cov%swtp/), subnam)
-       call nc_put_double(covncid, swtt_id, (/cov%swtt/), subnam)
+       call nc_put_double(covncid, 'covp', cov%covp, subnam)
+       call nc_put_double(covncid, 'covt', cov%covt, subnam)
+       call nc_put_double(covncid, 'avgp', cov%avgp, subnam)
+       call nc_put_double(covncid, 'avgt', cov%avgt, subnam)
+       call nc_put_double(covncid, 'swtp', (/cov%swtp/), subnam)
+       call nc_put_double(covncid, 'swtt', (/cov%swtt/), subnam)
 
        call nc_close(covncid, subnam)
     endif
