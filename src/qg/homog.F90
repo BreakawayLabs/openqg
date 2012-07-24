@@ -16,13 +16,9 @@ module homog
 
   type homog_box_type
 
-     double precision, allocatable :: ochom_(:,:,:)
-     !*     ochom_ contains the homogeneous baroclinic
+     double precision, allocatable :: hom_sol_bc(:,:,:)
+     !*     hom_sol_bc contains the homogeneous baroclinic
      !*     solutions, computed in the main program
-
-     double precision, allocatable :: aipohs(:)
-     !*     aipohs contains the area integrals of
-     !*     the homogeneous baroclinic solutions
 
      double precision, allocatable :: cdhoc(:,:),LU(:,:)
      integer, allocatable :: ipiv(:)
@@ -100,8 +96,7 @@ contains
 
        allocate(init_homog%cyc%aipch(b%nl-1))
     else
-       allocate(init_homog%box%ochom_(b%nxp, b%nyp, b%nl-1))
-       allocate(init_homog%box%aipohs(b%nl-1))
+       allocate(init_homog%box%hom_sol_bc(b%nxp, b%nyp, b%nl-1))
 
        allocate(init_homog%box%cdhoc(b%nl-1,b%nl-1))
        allocate(init_homog%box%LU(b%nl-1,b%nl-1))
@@ -268,6 +263,9 @@ contains
     double precision bb(b%nxt-1)
     integer :: k, m
 
+    ! the area integrals of the homogeneous baroclinic solutions
+    double precision :: aipohs(b%nl-1)
+
     ! Finite box ocean
     ! ----------------
     print *
@@ -281,16 +279,16 @@ contains
        ! with the usual boundary condition p = 0
        ! These are baroclinic solutions for use in ocinvq
        ! Setup RHS.
-       hom_box%ochom_(:,:,m) = 1.0d0
+       hom_box%hom_sol_bc(:,:,m) = 1.0d0
        ! Solve for sol0 in ochom.
        bb(:) = inhom%bd2(:) - mod%rdm2(m+1)
-       call hsbx (inhom, b, hom_box%ochom_(1,1,m), bb)
+       call hsbx (inhom, b, hom_box%hom_sol_bc(:,:,m), bb)
        ! Add constant offset
-       hom_box%ochom_(:,:,m) = 1.0d0 + mod%rdm2(m+1)*hom_box%ochom_(:,:,m)
+       hom_box%hom_sol_bc(:,:,m) = 1.0d0 + mod%rdm2(m+1)*hom_box%hom_sol_bc(:,:,m)
        ! Area integral of full homogeneous solution
-       hom_box%aipohs(m) = xintp(hom_box%ochom_(:,:,m), b%nxp, b%nyp)
-       hom_box%aipohs(m) = hom_box%aipohs(m)*b%dx*b%dy
-       print 240, '  aipohs = ',hom_box%aipohs(m)
+       aipohs(m) = xintp(hom_box%hom_sol_bc(:,:,m), b%nxp, b%nyp)
+       aipohs(m) = aipohs(m)*b%dx*b%dy
+       print 240, '  aipohs = ',aipohs(m)
     enddo
     ! Compute the matrices used in the mass constraint equation
     ! dpioc(k) = Area integral of pressure diff ( po(k+1) - po(k) )
@@ -304,7 +302,7 @@ contains
           hom_box%cdiffo(m,k) = mod%ctm2l(m,k+1) - mod%ctm2l(m,k)
        enddo
        do m=1,b%nl-1
-          hom_box%cdhoc(k,m) = ( mod%ctm2l(m+1,k+1) - mod%ctm2l(m+1,k) )*hom_box%aipohs(m)
+          hom_box%cdhoc(k,m) = ( mod%ctm2l(m+1,k+1) - mod%ctm2l(m+1,k) )*aipohs(m)
        enddo
     enddo
     ! Compute the LU factorization of cdhoc
@@ -549,7 +547,7 @@ contains
     homcor(:,:,1) = 0.0d0
     ! Baroclinic modes including homogeneous contribution
     do m=2,b%nl
-       homcor(:,:,m) = hclco(m-1)*hom_box%ochom_(:,:,m-1)
+       homcor(:,:,m) = hclco(m-1)*hom_box%hom_sol_bc(:,:,m-1)
     enddo
 
   end subroutine box_homog
