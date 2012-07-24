@@ -372,12 +372,12 @@ contains
 
   end subroutine cyclic_homog
 
-  subroutine compute_correction_coeffs(c_bc1, c_bc2, c_bt, wrk, hom_cyc, mod, cs, cn, b)
+  subroutine compute_correction_coeffs(c_bc1, c_bc2, c_bt, inhomog, hom_cyc, mod, cs, cn, b)
     type(box_type), intent(in) :: b
     double precision, intent(out) :: c_bc1(2:b%nl)
     double precision, intent(out) :: c_bc2(2:b%nl)
     double precision, intent(out) :: c_bt
-    double precision, intent(in) :: wrk(b%nxp,b%nyp,b%nl)
+    double precision, intent(in) :: inhomog(b%nxp,b%nyp,b%nl)
     type(homog_cyclic_type), intent(in) :: hom_cyc
     type(modes_type), intent(in) :: mod
     double precision, intent(in) :: cs(b%nl), cn(b%nl)
@@ -391,8 +391,8 @@ contains
        ! Compute line integrals of p_y for new modal solutions
        ! Integrate along south & north boundaries for all modes
        ! -point formulation, but values on bdy are exactly zero
-       ayis = trapin(wrk(:,2,m), b%nxp, b%dx)
-       ayin = trapin(wrk(:,b%nyp-1,m), b%nxp, b%dx)
+       ayis = trapin(inhomog(:,2,m), b%nxp, b%dx)
+       ayin = trapin(inhomog(:,b%nyp-1,m), b%nxp, b%dx)
        ! Compute LHSs for the c_bc1, c_bc2 equations
        clhss(m) = sum(mod%ctl2m(:,m)*cs(:)) + ayis/b%dy
        clhsn(m) = sum(mod%ctl2m(:,m)*cn(:)) + ayin/b%dy
@@ -407,11 +407,11 @@ contains
     enddo
   end subroutine compute_correction_coeffs
 
-  subroutine compute_layer_pressure(aiplay, b, wrk, c_bc1, c_bc2, c_bt, hom_cyc, mod)
+  subroutine compute_layer_pressure(aiplay, b, inhomog, c_bc1, c_bc2, c_bt, hom_cyc, mod)
 
     type(box_type), intent(in) :: b
     double precision, intent(out) :: aiplay(b%nl)
-    double precision, intent(in) ::  wrk(b%nxp,b%nyp,b%nl)
+    double precision, intent(in) ::  inhomog(b%nxp,b%nyp,b%nl)
     double precision, intent(in) :: c_bc1(2:b%nl)
     double precision, intent(in) :: c_bc2(2:b%nl)
     double precision, intent(in) :: c_bt
@@ -426,7 +426,7 @@ contains
     ! Integrals of modal pressures
     do m=1,b%nl
        ! Compute area integral of new inhomogeneous solution
-       xinhom(m) = int_P_dA(wrk(:,:,m), b)
+       xinhom(m) = int_P_dA(inhomog(:,:,m), b)
     enddo
 
     aipmod(1) = xinhom(1) + c_bt*hom_cyc%int_sol_bt
