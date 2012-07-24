@@ -35,22 +35,22 @@ module homog
 
   type homog_cyclic_type
 
-     double precision, allocatable :: pch1(:,:), pch2(:,:)
-     double precision, allocatable :: pbh(:)
+     double precision, allocatable :: hom_sol_bc1(:,:), hom_sol_bc2(:,:)
+     double precision, allocatable :: hom_sol_bt(:)
 
      double precision, allocatable :: hc1s(:), hc2s(:), hc1n(:), hc2n(:)
 
-     double precision :: hbsi, aipbh
-     double precision, allocatable :: aipch(:)
+     double precision :: hbsi, int_sol_bt
+     double precision, allocatable :: int_sol_bc(:)
 
-     ! *     pch1at, pch2at are the two homogeneous solutions for each baroclinic
+     ! *     hom_sol_bc1, hom_sol_bc2 are the two homogeneous solutions for each baroclinic
      ! *     mode, computed in subroutine homsol. They are functions of y only
-     ! *     (tabulated at p points). aipcha is the area integral of these
+     ! *     (tabulated at p points). int_sol_bc is the area integral of these
      ! *     solutions for each mode (both modes have the same area integral)
      ! *
-     ! *     pbhat is the homogeneous barotropic mode solution, computed in
+     ! *     hom_sol_bt is the homogeneous barotropic mode solution, computed in
      ! *     subroutine homsol. There is only one barotropic homogeneous
-     ! *     mode, which is a function of y only. aipbha is its area integral
+     ! *     mode, which is a function of y only. int_sol_bt is its area integral
      ! *
      ! *     hc1sat, hc2sat, hc1nat, hc2nat are boundary integrals of the
      ! *     homogeneous baroclinic solutions above, which arise in the momentum
@@ -84,17 +84,17 @@ contains
     type(box_type), intent(in) :: b
 
     if (b%cyclic) then
-       allocate(init_homog%cyc%pch1(b%nyp,b%nl-1))
-       allocate(init_homog%cyc%pch2(b%nyp,b%nl-1))
+       allocate(init_homog%cyc%hom_sol_bc1(b%nyp,b%nl-1))
+       allocate(init_homog%cyc%hom_sol_bc2(b%nyp,b%nl-1))
 
-       allocate(init_homog%cyc%pbh(b%nyp))
+       allocate(init_homog%cyc%hom_sol_bt(b%nyp))
 
        allocate(init_homog%cyc%hc1s(b%nl-1))
        allocate(init_homog%cyc%hc2s(b%nl-1))
        allocate(init_homog%cyc%hc1n(b%nl-1))
        allocate(init_homog%cyc%hc2n(b%nl-1))
 
-       allocate(init_homog%cyc%aipch(b%nl-1))
+       allocate(init_homog%cyc%int_sol_bc(b%nl-1))
     else
        allocate(init_homog%box%hom_sol_bc(b%nxp, b%nyp, 2:b%nl))
 
@@ -158,14 +158,14 @@ contains
     ! boundary, and to vanish on the Northern boundary.
     ! We then apply the constraint at the Southern boundary
     do j=1,b%nyp
-       hom_cyc%pbh(j) = dble(b%nyp-j)/dble(b%nyp-1)
+       hom_cyc%hom_sol_bt(j) = dble(b%nyp-j)/dble(b%nyp-1)
     enddo
     ! hbs = integral of y-derivative along Southern bdy
     hom_cyc%hbsi = b%yl/b%xl
-    hom_cyc%aipbh = 0.5d0*b%xl*b%yl
+    hom_cyc%int_sol_bt = 0.5d0*b%xl*b%yl
     print *,' '
     print *, ' Homogeneous barotropic solution:'
-    print 240, '  aipbh         = ',hom_cyc%aipbh
+    print 240, '  int_sol_bt    = ',hom_cyc%int_sol_bt
     print 240, '  hbsi          = ',hom_cyc%hbsi
     
     ! Now compute baroclinic solutions for use in atinvq
@@ -181,15 +181,15 @@ contains
        ! pch = L(y) + rdm2*sol0, where L(y) is linear in y,
        ! and sol0 satisfies Del-sqd(sol0) - rdm2*sol0 = L(y)
        ! with the usual solid boundary condition p = 0.
-       ! For pch1at, L(y) = 1.0 on S bdy; = 0.0 on N bdy
-       ! For pch2at, L(y) = 0.0 on S bdy; = 1.0 on N bdy
+       ! For hom_sol_bc1, L(y) = 1.0 on S bdy; = 0.0 on N bdy
+       ! For hom_sol_bc2, L(y) = 0.0 on S bdy; = 1.0 on N bdy
        ! Specify RHSs
        do j=1,b%nyp
-          hom_cyc%pch1(j,m) = ( b%yp(b%nyp)-b%yp(j) )/b%yl
-          hom_cyc%pch2(j,m) = ( b%yp(  j )-b%yp(1) )/b%yl
+          hom_cyc%hom_sol_bc1(j,m) = ( b%yp(b%nyp)-b%yp(j) )/b%yl
+          hom_cyc%hom_sol_bc2(j,m) = ( b%yp(  j )-b%yp(1) )/b%yl
           do i=1,b%nxp
-             wk1(i,j) = hom_cyc%pch1(j,m)
-             wk2(i,j) = hom_cyc%pch2(j,m)
+             wk1(i,j) = hom_cyc%hom_sol_bc1(j,m)
+             wk2(i,j) = hom_cyc%hom_sol_bc2(j,m)
           enddo
        enddo
 
@@ -202,31 +202,31 @@ contains
        ! independent of i, so just save solution for one i value
        do j=1,b%nyp
           do i=1,b%nxp
-             wk1(i,j) = hom_cyc%pch1(j,m) + mod%rdm2(m+1)*wk1(i,j)
-             wk2(i,j) = hom_cyc%pch2(j,m) + mod%rdm2(m+1)*wk2(i,j)
+             wk1(i,j) = hom_cyc%hom_sol_bc1(j,m) + mod%rdm2(m+1)*wk1(i,j)
+             wk2(i,j) = hom_cyc%hom_sol_bc2(j,m) + mod%rdm2(m+1)*wk2(i,j)
           enddo
-          hom_cyc%pch1(j,m) = wk1(1,j)
-          hom_cyc%pch2(j,m) = wk2(1,j)
+          hom_cyc%hom_sol_bc1(j,m) = wk1(1,j)
+          hom_cyc%hom_sol_bc2(j,m) = wk2(1,j)
        enddo
-       ! Compute area integrals of pch1 and pch2
+       ! Compute area integrals of hom_sol_bc1 and hom_sol_bc2
        aipch1 = xintp(wk1, b%nxp, b%nyp)
        aipch2 = xintp(wk2, b%nxp, b%nyp)
        ! Both solutions should have the same area integral
-       hom_cyc%aipch(m) = 0.5d0*(aipch1+aipch2)*b%dx*b%dy
+       hom_cyc%int_sol_bc(m) = 0.5d0*(aipch1+aipch2)*b%dx*b%dy
        
        ! Compute dp/dy half a gridpoint in from the north
        ! and south boundaries, and "integrate" in x
        ! Since these solutions are independent of x,
        ! x integration means just multiply by xla
-       pch1ys = ( hom_cyc%pch1(  2 ,m) - hom_cyc%pch1(   1  ,m) )/b%dy
-       pch2ys = ( hom_cyc%pch2(  2 ,m) - hom_cyc%pch2(   1  ,m) )/b%dy
-       pch1yn = ( hom_cyc%pch1(b%nyp,m) - hom_cyc%pch1(b%nyp-1,m) )/b%dy
-       pch2yn = ( hom_cyc%pch2(b%nyp,m) - hom_cyc%pch2(b%nyp-1,m) )/b%dy
+       pch1ys = ( hom_cyc%hom_sol_bc1(  2 ,m) - hom_cyc%hom_sol_bc1(   1  ,m) )/b%dy
+       pch2ys = ( hom_cyc%hom_sol_bc2(  2 ,m) - hom_cyc%hom_sol_bc2(   1  ,m) )/b%dy
+       pch1yn = ( hom_cyc%hom_sol_bc1(b%nyp,m) - hom_cyc%hom_sol_bc1(b%nyp-1,m) )/b%dy
+       pch2yn = ( hom_cyc%hom_sol_bc2(b%nyp,m) - hom_cyc%hom_sol_bc2(b%nyp-1,m) )/b%dy
        ! Correction for baroclinic modes
-       pch1ys = -pch1ys + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%pch1(  1 ,m)
-       pch2ys = -pch2ys + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%pch2(  1 ,m)
-       pch1yn =  pch1yn + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%pch1(b%nyp,m)
-       pch2yn =  pch2yn + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%pch2(b%nyp,m)
+       pch1ys = -pch1ys + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%hom_sol_bc1(  1 ,m)
+       pch2ys = -pch2ys + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%hom_sol_bc2(  1 ,m)
+       pch1yn =  pch1yn + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%hom_sol_bc1(b%nyp,m)
+       pch2yn =  pch2yn + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%hom_sol_bc2(b%nyp,m)
        ! Convert to line integrals
        pch1ys = b%xl*pch1ys
        pch2ys = b%xl*pch2ys
@@ -241,7 +241,7 @@ contains
        hom_cyc%hc2n(m) = pch2yn/pchdet
        print *
        print 240, '  aipch1, aipch2 = ',aipch1,aipch2
-       print 240, '  aipch          = ',hom_cyc%aipch(m)
+       print 240, '  int_sol_bc     = ',hom_cyc%int_sol_bc(m)
        print 240, '  pch1ys, pch1yn = ',pch1ys,pch1yn
        print 240, '  pch2ys, pch2yn = ',pch2ys,pch2yn
        print 240, '  pchdet         = ',pchdet
@@ -429,9 +429,9 @@ contains
        xinhom(m) = int_P_dA(wrk(:,:,m), b)
     enddo
 
-    aipmod(1) = xinhom(1) + c3*hom_cyc%aipbh
+    aipmod(1) = xinhom(1) + c3*hom_cyc%int_sol_bt
     do m=2,b%nl
-       aipmod(m) = xinhom(m) + ( c1(m-1) + c2(m-1) )*hom_cyc%aipch(m-1)
+       aipmod(m) = xinhom(m) + ( c1(m-1) + c2(m-1) )*hom_cyc%int_sol_bc(m-1)
     enddo
     ! Integrals of layer pressures
     do k=1,b%nl
@@ -493,10 +493,10 @@ contains
 
     ! Compute homogeneous corrections (indep. of i)
     ! Barotropic mode
-    homcor(:,1) = c3*hom_cyc%pbh(:)
+    homcor(:,1) = c3*hom_cyc%hom_sol_bt(:)
     ! Baroclinic modes
     do m=2,nl
-       homcor(:,m) = c1(m-1)*hom_cyc%pch1(:,m-1) + c2(m-1)*hom_cyc%pch2(:,m-1)
+       homcor(:,m) = c1(m-1)*hom_cyc%hom_sol_bc1(:,m-1) + c2(m-1)*hom_cyc%hom_sol_bc2(:,m-1)
     enddo
 
   end subroutine homogeneous_correction
