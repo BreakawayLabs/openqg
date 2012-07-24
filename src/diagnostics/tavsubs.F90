@@ -295,9 +295,7 @@ contains
     double precision :: rns,uptp(b%nxp,b%nyt),vptp(b%nxt,b%nyp)
 
     integer :: scadim,dims(2),pdims(3)
-    integer :: xpdim,ypdim,ldim,xtdim,ytdim,xp_id,xt_id
-    integer :: yp_id,yt_id,l_id,st_id,wekt_id,fm_id,tx_id
-    integer :: ty_id,p_id,q_id,ut_id,vt_id
+    integer :: xpdim,ypdim,ldim,xtdim,ytdim
     double precision :: xx(b%nxp),yy(b%nyp),tmp(b%nl)
     integer :: avncid
 
@@ -346,30 +344,30 @@ contains
        xtdim = nc_def_dim(avncid, 'xt', b%nxt, subnam)
        ytdim = nc_def_dim(avncid, 'yt', b%nyt, subnam)
 
-       xp_id = nc_def_double(avncid, 'xp', xpdim, 'km', subnam, 'X axis (p-grid)')
-       xt_id = nc_def_double(avncid, 'xt', xtdim, 'km', subnam, 'X axis (T-grid)')
-       yp_id = nc_def_double(avncid, 'yp', ypdim, 'km', subnam, 'Y axis (p-grid)')
-       yt_id = nc_def_double(avncid, 'yt', ytdim, 'km', subnam, 'Y axis (T-grid)')
-       l_id = nc_def_double(avncid, 'z', ldim, 'km', subnam, 'depth axis')
+       call nc_def_double(avncid, 'xp', xpdim, 'km', subnam, 'X axis (p-grid)')
+       call nc_def_double(avncid, 'xt', xtdim, 'km', subnam, 'X axis (T-grid)')
+       call nc_def_double(avncid, 'yp', ypdim, 'km', subnam, 'Y axis (p-grid)')
+       call nc_def_double(avncid, 'yt', ytdim, 'km', subnam, 'Y axis (T-grid)')
+       call nc_def_double(avncid, 'z', ldim, 'km', subnam, 'depth axis')
 
        dims = (/xtdim, ytdim/)
-       st_id = nc_def_double(avncid, 'st', dims, 'K', subnam, 'surface temperature')
-       wekt_id = nc_def_double(avncid, 'wekt', dims, 'm/s', subnam, 'Ekman velocity (T-grid)')
-       fm_id = nc_def_double(avncid, 'fnet', dims, 'W/m^2', subnam, 'surface forcing (T-grid)')
+       call nc_def_double(avncid, 'st', dims, 'K', subnam, 'surface temperature')
+       call nc_def_double(avncid, 'wekt', dims, 'm/s', subnam, 'Ekman velocity (T-grid)')
+       call nc_def_double(avncid, 'fnet', dims, 'W/m^2', subnam, 'surface forcing (T-grid)')
 
        dims = (/xpdim, ypdim/)
-       tx_id = nc_def_double(avncid, 'taux', dims, 'm^2/s^2', subnam, 'surface x stress (p-grid)')
-       ty_id = nc_def_double(avncid, 'tauy', dims, 'm^2/s^2', subnam, 'surface y stress (p-grid)')
+       call nc_def_double(avncid, 'taux', dims, 'm^2/s^2', subnam, 'surface x stress (p-grid)')
+       call nc_def_double(avncid, 'tauy', dims, 'm^2/s^2', subnam, 'surface y stress (p-grid)')
        
        pdims = (/xpdim, ypdim, ldim/)
-       p_id = nc_def_double(avncid, 'p', dims, 'm^2/s^2', subnam, 'dynamic pressure')
-       q_id = nc_def_double(avncid, 'q', dims, 's^-1', subnam, 'vorticity')
+       call nc_def_double(avncid, 'p', dims, 'm^2/s^2', subnam, 'dynamic pressure')
+       call nc_def_double(avncid, 'q', dims, 's^-1', subnam, 'vorticity')
 
        dims = (/xpdim, ytdim/)
-       ut_id = nc_def_double(avncid, 'uptp', dims, 'K.m/s', subnam, '<upTp>')
+       call nc_def_double(avncid, 'uptp', dims, 'K.m/s', subnam, '<upTp>')
 
        dims = (/xtdim, ypdim/)
-       vt_id = nc_def_double(avncid, 'vptp', dims, 'K.m/s', subnam, '<vpTp>')
+       call nc_def_double(avncid, 'vptp', dims, 'K.m/s', subnam, '<vpTp>')
 
        !! Leave definition mode: entering data mode.
        call nc_enddef(avncid, subnam)

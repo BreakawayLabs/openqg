@@ -167,7 +167,6 @@ contains
     parameter ( subnam = 'topout_nc' )
 
     integer :: xpdim,ypdim
-    integer :: xp_id,yp_id,dtop_id
     integer :: topog_id
     
     topog_id = nc_create(outdir, filename, subnam)
@@ -176,9 +175,9 @@ contains
     xpdim = nc_def_dim(topog_id, 'xp', b%nxp, subnam)
     ypdim = nc_def_dim(topog_id, 'yp', b%nyp, subnam)
 
-    xp_id = nc_def_double(topog_id, 'xp', xpdim, 'km', subnam)
-    yp_id = nc_def_double(topog_id, 'yp', ypdim, 'km', subnam)
-    dtop_id = nc_def_double(topog_id, 'dtop', (/ xpdim, ypdim /), 'm', subnam)
+    call nc_def_double(topog_id, 'xp', xpdim, 'km', subnam)
+    call nc_def_double(topog_id, 'yp', ypdim, 'km', subnam)
+    call nc_def_double(topog_id, 'dtop', (/ xpdim, ypdim /), 'm', subnam)
 
     !! Leave definition mode: entering data mode.
     call nc_enddef(topog_id, subnam)

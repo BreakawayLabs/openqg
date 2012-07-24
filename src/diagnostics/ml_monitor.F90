@@ -284,7 +284,7 @@ contains
     integer, intent(in) :: numoutsteps
     character (len=*), intent(in) :: filename
 
-    integer :: tmp_id, monncid
+    integer :: monncid
 
     character :: subnam*(*)
     parameter ( subnam = 'monnc_init' )
@@ -294,22 +294,22 @@ contains
     monncid = nc_create(outdir, filename, subnam)
 
     timedim = nc_def_dim(monncid, 'time', numoutsteps, subnam)
-    tmp_id = nc_def_float(monncid, 'time', timedim, 'years', subnam, 'Time')
+    call nc_def_float(monncid, 'time', timedim, 'years', subnam, 'Time')
 
     ! Atmosphere diagnostics from diagno
-    tmp_id = nc_def_float(monncid, 'wetmat', timedim, 'm/s', subnam, 'Average atmospheric Ekman velocity (T-grid)')
-    tmp_id = nc_def_float(monncid, 'watmat', timedim, 'm/s', subnam, 'Absolute atmospheric Ekman velocity (T-grid)')
-    tmp_id = nc_def_float(monncid, 'tmlmat', timedim, 'K', subnam, 'Average atmospheric mixed layer temperature')
-    tmp_id = nc_def_float(monncid, 'hmlmat', timedim, 'm', subnam, 'Average atmospheric mixed layer thickness')
-    tmp_id = nc_def_float(monncid, 'hcmlat', timedim, 'K.m^3', subnam, 'Total heat content of atmospheric mixed layer')
-    tmp_id = nc_def_float(monncid, 'tmaooc', timedim, 'K', subnam, 'Mean atmospheric mixed layer temperature over ocean')
-    tmp_id = nc_def_float(monncid, 'olrtop', timedim, 'W/m^2', subnam, 'Outgoing longwave radiation')
+    call nc_def_float(monncid, 'wetmat', timedim, 'm/s', subnam, 'Average atmospheric Ekman velocity (T-grid)')
+    call nc_def_float(monncid, 'watmat', timedim, 'm/s', subnam, 'Absolute atmospheric Ekman velocity (T-grid)')
+    call nc_def_float(monncid, 'tmlmat', timedim, 'K', subnam, 'Average atmospheric mixed layer temperature')
+    call nc_def_float(monncid, 'hmlmat', timedim, 'm', subnam, 'Average atmospheric mixed layer thickness')
+    call nc_def_float(monncid, 'hcmlat', timedim, 'K.m^3', subnam, 'Total heat content of atmospheric mixed layer')
+    call nc_def_float(monncid, 'tmaooc', timedim, 'K', subnam, 'Mean atmospheric mixed layer temperature over ocean')
+    call nc_def_float(monncid, 'olrtop', timedim, 'W/m^2', subnam, 'Outgoing longwave radiation')
 
     ! Flux diagnostics from xforc
-    tmp_id = nc_def_float(monncid, 'slhfav', timedim, 'W/m^2', subnam, 'Average oceanic sensible and latent heat flux')
-    tmp_id = nc_def_float(monncid, 'oradav', timedim, 'W/m^2', subnam, 'Average oceanic radiative heat flux')
-    tmp_id = nc_def_float(monncid, 'arocav', timedim, 'W/m^2', subnam, 'Average atmospheric radiative heat flux (over ocean)')
-    tmp_id = nc_def_float(monncid, 'arlaav', timedim, 'W/m^2', subnam, 'Average atmospheric radiative heat flux (over land)')
+    call nc_def_float(monncid, 'slhfav', timedim, 'W/m^2', subnam, 'Average oceanic sensible and latent heat flux')
+    call nc_def_float(monncid, 'oradav', timedim, 'W/m^2', subnam, 'Average oceanic radiative heat flux')
+    call nc_def_float(monncid, 'arocav', timedim, 'W/m^2', subnam, 'Average atmospheric radiative heat flux (over ocean)')
+    call nc_def_float(monncid, 'arlaav', timedim, 'W/m^2', subnam, 'Average atmospheric radiative heat flux (over land)')
     
     ! Leave definition mode: entering data mode.
     call nc_enddef(monncid, subnam)
@@ -324,7 +324,7 @@ contains
     integer, intent(in) :: numoutsteps
     character (len=*), intent(in) :: filename
 
-    integer :: tmp_id, monncid
+    integer :: monncid
 
     character :: subnam*(*)
     parameter ( subnam = 'monnc_init' )
@@ -334,13 +334,13 @@ contains
     monncid = nc_create(outdir, filename, subnam)
 
     timedim = nc_def_dim(monncid, 'time', numoutsteps, subnam)
-    tmp_id = nc_def_float(monncid, 'time', timedim, 'years', subnam, 'Time')
+    call nc_def_float(monncid, 'time', timedim, 'years', subnam, 'Time')
 
     ! Ocean diagnostics from diagno
-    tmp_id = nc_def_float(monncid, 'wetmoc', timedim, 'm/s', subnam, 'Average oceanic Ekman velocity (T-grid)')
-    tmp_id = nc_def_float(monncid, 'watmoc', timedim, 'm/s', subnam, 'Absolute oceanic Ekman velocity (T-grid)')
-    tmp_id = nc_def_float(monncid, 'tmlmoc', timedim, 'K', subnam, 'Average oceanic mixed layer temperature')
-    tmp_id = nc_def_float(monncid, 'hfmloc', timedim, 'W/m^2', subnam, 'Heat flux at bottom of ocean mixed layer')
+    call nc_def_float(monncid, 'wetmoc', timedim, 'm/s', subnam, 'Average oceanic Ekman velocity (T-grid)')
+    call nc_def_float(monncid, 'watmoc', timedim, 'm/s', subnam, 'Absolute oceanic Ekman velocity (T-grid)')
+    call nc_def_float(monncid, 'tmlmoc', timedim, 'K', subnam, 'Average oceanic mixed layer temperature')
+    call nc_def_float(monncid, 'hfmloc', timedim, 'W/m^2', subnam, 'Heat flux at bottom of ocean mixed layer')
 
     ! Leave definition mode: entering data mode.
     call nc_enddef(monncid, subnam)

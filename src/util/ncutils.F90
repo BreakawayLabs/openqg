@@ -255,7 +255,7 @@ contains
     
   end subroutine nc_enddef
 
-  integer function nc_def_float(ncid, varname, dim, units, subnam, longname)
+  subroutine nc_def_float(ncid, varname, dim, units, subnam, longname)
 
     integer, intent(in) :: ncid
     character (len=*), intent(in) :: varname
@@ -264,20 +264,20 @@ contains
     character (len=*), intent(in), optional :: subnam
     character (len=*), intent(in), optional :: longname
 
-    integer :: ncstat
+    integer :: ncstat, var_id
 
-    ncstat = nf90_def_var(ncid, varname, NF90_FLOAT, dim, nc_def_float)
+    ncstat = nf90_def_var(ncid, varname, NF90_FLOAT, dim, var_id)
     if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
-    ncstat = nf90_put_att(ncid, nc_def_float, 'units', units)
+    ncstat = nf90_put_att(ncid, var_id, 'units', units)
     if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
     if (present(longname)) then
-       ncstat = nf90_put_att(ncid, nc_def_float, 'long_name', longname)
+       ncstat = nf90_put_att(ncid, var_id, 'long_name', longname)
        if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
     endif
 
-  end function nc_def_float
+  end subroutine nc_def_float
 
-  integer function nc_def_float_nd(ncid, varname, dims, units, subnam, longname)
+  subroutine nc_def_float_nd(ncid, varname, dims, units, subnam, longname)
     integer, intent(in) :: ncid
     character (len=*), intent(in) :: varname
     integer, intent(in) :: dims(:)
@@ -285,18 +285,18 @@ contains
     character (len=*), intent(in), optional :: subnam
     character (len=*), intent(in), optional :: longname
 
-    integer :: ncstat 
+    integer :: ncstat, var_id
 
-    ncstat = nf90_def_var(ncid, varname, NF90_FLOAT, dims, nc_def_float_nd)
+    ncstat = nf90_def_var(ncid, varname, NF90_FLOAT, dims, var_id)
     if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
-    ncstat = nf90_put_att(ncid, nc_def_float_nd, 'units', units)
+    ncstat = nf90_put_att(ncid, var_id, 'units', units)
     if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
     if (present(longname)) then
-       ncstat = nf90_put_att(ncid, nc_def_float_nd, 'long_name', longname)
+       ncstat = nf90_put_att(ncid, var_id, 'long_name', longname)
        if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
     endif
 
-  end function nc_def_float_nd
+  end subroutine nc_def_float_nd
 
   integer function nc_def_int(ncid, varname, dims, units, subnam, longname)
     integer, intent(in) :: ncid
@@ -319,7 +319,7 @@ contains
 
   end function nc_def_int
 
-  integer function nc_def_double(ncid, varname, dim, units, subnam, longname)
+  subroutine nc_def_double(ncid, varname, dim, units, subnam, longname)
 
     integer, intent(in) :: ncid
     character (len=*), intent(in) :: varname
@@ -328,20 +328,20 @@ contains
     character (len=*), intent(in), optional :: subnam
     character (len=*), intent(in), optional :: longname
 
-    integer :: ncstat
+    integer :: ncstat, var_id
 
-    ncstat = nf90_def_var(ncid, varname, NF90_DOUBLE, dim, nc_def_double)
+    ncstat = nf90_def_var(ncid, varname, NF90_DOUBLE, dim, var_id)
     if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
-    ncstat = nf90_put_att(ncid, nc_def_double, 'units', units)
+    ncstat = nf90_put_att(ncid, var_id, 'units', units)
     if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
     if (present(longname)) then
-       ncstat = nf90_put_att(ncid, nc_def_double, 'long_name', longname)
+       ncstat = nf90_put_att(ncid, var_id, 'long_name', longname)
        if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
     endif
 
-  end function nc_def_double
+  end subroutine nc_def_double
 
-  integer function nc_def_double_nd(ncid, varname, dims, units, subnam, longname)
+  subroutine nc_def_double_nd(ncid, varname, dims, units, subnam, longname)
 
     integer, intent(in) :: ncid
     character (len=*), intent(in) :: varname
@@ -350,18 +350,18 @@ contains
     character (len=*), intent(in), optional :: subnam
     character (len=*), intent(in), optional :: longname
 
-    integer :: ncstat
+    integer :: ncstat, var_id
 
-    ncstat = nf90_def_var(ncid, varname, NF90_DOUBLE, dims, nc_def_double_nd)
+    ncstat = nf90_def_var(ncid, varname, NF90_DOUBLE, dims, var_id)
     if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
-    ncstat = nf90_put_att(ncid, nc_def_double_nd, 'units', units)
+    ncstat = nf90_put_att(ncid, var_id, 'units', units)
     if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
     if (present(longname)) then
-       ncstat = nf90_put_att(ncid, nc_def_double_nd, 'long_name', longname)
+       ncstat = nf90_put_att(ncid, var_id, 'long_name', longname)
        if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
     endif
 
-  end function nc_def_double_nd
+  end subroutine nc_def_double_nd
 
   integer function nc_get_int(ncid, varname, subnam)
 

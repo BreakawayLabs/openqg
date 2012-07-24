@@ -102,7 +102,7 @@ contains
     integer, intent(in) :: numoutsteps
 
     integer :: m, nc_id, tmp(narea)    
-    integer :: timedim, nocdim, noc_id, ocdat_id, tim_id
+    integer :: timedim, nocdim, noc_id
 
     character :: subnam*(*)
     parameter ( subnam = 'init_area_avg' )
@@ -119,8 +119,8 @@ contains
     timedim = nc_def_dim(nc_id, 'time', numoutsteps, subnam)
     nocdim = nc_def_dim(nc_id, 'nare', narea, subnam)
     noc_id = nc_def_int(nc_id, 'nare', (/nocdim/), ' ', subnam, 'Areas')
-    tim_id = nc_def_float(nc_id, 'time', (/timedim/),'years', subnam, 'Time')
-    ocdat_id = nc_def_float(nc_id, 'data', (/nocdim, timedim/),'K', subnam, 'Area averaged temperature')
+    call nc_def_float(nc_id, 'time', (/timedim/),'years', subnam, 'Time')
+    call nc_def_float(nc_id, 'data', (/nocdim, timedim/),'K', subnam, 'Area averaged temperature')
     call nc_enddef(nc_id, subnam)
     do m=1,narea
        tmp(m) = m

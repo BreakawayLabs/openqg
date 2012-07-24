@@ -85,7 +85,7 @@ contains
     character (len=*), intent(in) :: filename
     type(qg_type), intent(in) :: qg
 
-    integer :: nc_id, xdim, ydim, zdim, tmp_id
+    integer :: nc_id, xdim, ydim, zdim
     character subnam*(*)
     parameter ( subnam = 'save_qg' )
 
@@ -95,10 +95,10 @@ contains
     ydim = nc_def_dim(nc_id, "nyp", qg%b%nyp, subnam)
     zdim = nc_def_dim(nc_id, "nl", qg%b%nl, subnam)
 
-    tmp_id = nc_def_double(nc_id, 'x', xdim, 'km', subnam)
-    tmp_id = nc_def_double(nc_id, 'y', ydim, 'km', subnam)
-    tmp_id = nc_def_double(nc_id, 'p', (/xdim,ydim,zdim/), 'Current pressure', subnam)
-    tmp_id = nc_def_double(nc_id, 'pm', (/xdim,ydim,zdim/), 'Previous pressure', subnam)
+    call nc_def_double(nc_id, 'x', xdim, 'km', subnam)
+    call nc_def_double(nc_id, 'y', ydim, 'km', subnam)
+    call nc_def_double(nc_id, 'p', (/xdim,ydim,zdim/), 'Current pressure', subnam)
+    call nc_def_double(nc_id, 'pm', (/xdim,ydim,zdim/), 'Previous pressure', subnam)
 
     call nc_enddef(nc_id)
 
@@ -117,7 +117,7 @@ contains
     character (len=*), intent(in) :: filename
     type(ocean_mixed_type), intent(in) :: oml
 
-    integer :: nc_id, xdim, ydim, tmp_id
+    integer :: nc_id, xdim, ydim
     character subnam*(*)
     parameter ( subnam = 'save_oml' )
 
@@ -126,10 +126,10 @@ contains
     xdim = nc_def_dim(nc_id, "nxt", oml%b%nxt, subnam)
     ydim = nc_def_dim(nc_id, "nyt", oml%b%nyt, subnam)
 
-    tmp_id = nc_def_double(nc_id, 'x', xdim, 'km', subnam)
-    tmp_id = nc_def_double(nc_id, 'y', ydim, 'km', subnam)
-    tmp_id = nc_def_double(nc_id, 'sst', (/xdim,ydim/), 'Current mixed layer temp', subnam)
-    tmp_id = nc_def_double(nc_id, 'sstm', (/xdim,ydim/), 'Previous mixed layer temp', subnam)
+    call nc_def_double(nc_id, 'x', xdim, 'km', subnam)
+    call nc_def_double(nc_id, 'y', ydim, 'km', subnam)
+    call nc_def_double(nc_id, 'sst', (/xdim,ydim/), 'Current mixed layer temp', subnam)
+    call nc_def_double(nc_id, 'sstm', (/xdim,ydim/), 'Previous mixed layer temp', subnam)
 
     call nc_enddef(nc_id)
 
@@ -148,7 +148,7 @@ contains
     character (len=*), intent(in) :: filename
     type(atmos_mixed_type), intent(in) :: aml
 
-    integer :: nc_id, xdim, ydim, tmp_id
+    integer :: nc_id, xdim, ydim
     character subnam*(*)
     parameter ( subnam = 'save_aml' )
 
@@ -157,12 +157,12 @@ contains
     xdim = nc_def_dim(nc_id, "nxt", aml%b%nxt, subnam)
     ydim = nc_def_dim(nc_id, "nyt", aml%b%nyt, subnam)
 
-    tmp_id = nc_def_double(nc_id, 'x', xdim, 'km', subnam)
-    tmp_id = nc_def_double(nc_id, 'y', ydim, 'km', subnam)
-    tmp_id = nc_def_double(nc_id, 'ast', (/xdim,ydim/), 'Current mixed layer temp', subnam)
-    tmp_id = nc_def_double(nc_id, 'astm', (/xdim,ydim/), 'Previous mixed layer temp', subnam)
-    tmp_id = nc_def_double(nc_id, 'hmixa', (/xdim,ydim/), 'Current mixed layer height', subnam)
-    tmp_id = nc_def_double(nc_id, 'hmixam', (/xdim,ydim/), 'Previous mixed layer height', subnam)
+    call nc_def_double(nc_id, 'x', xdim, 'km', subnam)
+    call nc_def_double(nc_id, 'y', ydim, 'km', subnam)
+    call nc_def_double(nc_id, 'ast', (/xdim,ydim/), 'Current mixed layer temp', subnam)
+    call nc_def_double(nc_id, 'astm', (/xdim,ydim/), 'Previous mixed layer temp', subnam)
+    call nc_def_double(nc_id, 'hmixa', (/xdim,ydim/), 'Current mixed layer height', subnam)
+    call nc_def_double(nc_id, 'hmixam', (/xdim,ydim/), 'Previous mixed layer height', subnam)
 
     call nc_enddef(nc_id)
 

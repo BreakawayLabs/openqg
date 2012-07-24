@@ -150,8 +150,7 @@ contains
     parameter ( subnam = 'covout' )
 
     integer :: idim
-    integer :: ncdim,nvdim,covp_id,covt_id
-    integer :: avgp_id,avgt_id,swtp_id,swtt_id
+    integer :: ncdim,nvdim
     integer :: covncid
 
     if (cov%active) then
@@ -162,12 +161,12 @@ contains
 
        ncdim = nc_def_dim(covncid, 'nc', cov%nc, subnam)
        nvdim = nc_def_dim(covncid, 'nv', cov%nv, subnam)
-       covp_id = nc_def_float(covncid, 'covp', ncdim, ' ', subnam)
-       covt_id = nc_def_float(covncid, 'covt', ncdim, ' ', subnam)
-       avgp_id = nc_def_float(covncid, 'avgp', ncdim, ' ', subnam)
-       avgt_id = nc_def_float(covncid, 'avgt', ncdim, ' ', subnam)
-       swtp_id = nc_def_float(covncid, 'swtp', ncdim, ' ', subnam)
-       swtt_id = nc_def_float(covncid, 'swtt', ncdim, ' ', subnam)
+       call nc_def_float(covncid, 'covp', ncdim, ' ', subnam)
+       call nc_def_float(covncid, 'covt', ncdim, ' ', subnam)
+       call nc_def_float(covncid, 'avgp', ncdim, ' ', subnam)
+       call nc_def_float(covncid, 'avgt', ncdim, ' ', subnam)
+       call nc_def_float(covncid, 'swtp', ncdim, ' ', subnam)
+       call nc_def_float(covncid, 'swtt', ncdim, ' ', subnam)
 
        !! Leave definition mode: entering data mode.
        call nc_enddef(covncid, subnam)

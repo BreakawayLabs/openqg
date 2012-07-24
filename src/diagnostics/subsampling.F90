@@ -113,8 +113,7 @@ contains
     parameter ( subnam = 'ocnc_init' )
 
     integer :: timopdim, xopdim, yopdim, lodim, lomdim
-    integer :: timotdim, xotdim, yotdim, tmp_id
-    integer :: xop_id, yop_id, xot_id, yot_id, lo_id, lom_id
+    integer :: timotdim, xotdim, yotdim
 
     double precision :: xo(go%nxp),yo(go%nyp),tmp(go%nl)
     integer :: i, iwk, mwk
@@ -154,36 +153,36 @@ contains
     yotdim = nc_def_dim(octid, 'yt', iwk, subnam)
 
     ! Grid variable definitions for p-grid files
-    xop_id = nc_def_float(ocpid, 'xp', xopdim, 'km', subnam, 'Ocean X axis (p-grid)')
-    yop_id = nc_def_float(ocpid, 'yp', yopdim, 'km', subnam, 'Ocean Y axis (p-grid)')
-    lo_id = nc_def_float(ocpid, 'z', lodim, 'km', subnam, 'Ocean mid-layer depth axis')
-    lom_id = nc_def_float(ocpid, 'zi', lomdim, 'km', subnam, 'Ocean interface depth axis')
+    call nc_def_float(ocpid, 'xp', xopdim, 'km', subnam, 'Ocean X axis (p-grid)')
+    call nc_def_float(ocpid, 'yp', yopdim, 'km', subnam, 'Ocean Y axis (p-grid)')
+    call nc_def_float(ocpid, 'z', lodim, 'km', subnam, 'Ocean mid-layer depth axis')
+    call nc_def_float(ocpid, 'zi', lomdim, 'km', subnam, 'Ocean interface depth axis')
       
     ! Grid variable definitions for T-grid files
-    xot_id = nc_def_float(octid, 'xt', xotdim, 'km', subnam, 'Ocean X axis (T-grid)')
-    yot_id = nc_def_float(octid, 'yt', yotdim, 'km', subnam, 'Ocean Y axis (T-grid)')
+    call nc_def_float(octid, 'xt', xotdim, 'km', subnam, 'Ocean X axis (T-grid)')
+    call nc_def_float(octid, 'yt', yotdim, 'km', subnam, 'Ocean Y axis (T-grid)')
 
-    tmp_id = nc_def_float(ocpid, 'time', timopdim, 'years', subnam, 'Time axis')
-    tmp_id = nc_def_float(octid, 'time', timotdim, 'years', subnam,'Time axis')
+    call nc_def_float(ocpid, 'time', timopdim, 'years', subnam, 'Time axis')
+    call nc_def_float(octid, 'time', timotdim, 'years', subnam,'Time axis')
 
     if ( subsamp%outfl(1) ) then
-       tmp_id = nc_def_float(octid, 'sst', (/xotdim,yotdim,timotdim/),'K', subnam, 'Ocean surface temperature')
+       call nc_def_float(octid, 'sst', (/xotdim,yotdim,timotdim/),'K', subnam, 'Ocean surface temperature')
     endif
     if ( subsamp%outfl(2) ) then
-       tmp_id = nc_def_float(ocpid, 'p', (/xopdim,yopdim,lodim,timopdim/), 'm^2/s^2', subnam, 'Ocean dynamic pressure')
+       call nc_def_float(ocpid, 'p', (/xopdim,yopdim,lodim,timopdim/), 'm^2/s^2', subnam, 'Ocean dynamic pressure')
     endif
     if ( subsamp%outfl(3) ) then
-       tmp_id = nc_def_float(ocpid, 'q', (/xopdim,yopdim,lodim,timopdim/), 's^-1', subnam, 'Ocean potential vorticity')
+       call nc_def_float(ocpid, 'q', (/xopdim,yopdim,lodim,timopdim/), 's^-1', subnam, 'Ocean potential vorticity')
     endif
     if ( subsamp%outfl(4) ) then
-       tmp_id = nc_def_float(octid, 'wekt', (/xotdim,yotdim,timotdim/), 'm/s', subnam, 'Ocean Ekman velocity (T-grid)')
+       call nc_def_float(octid, 'wekt', (/xotdim,yotdim,timotdim/), 'm/s', subnam, 'Ocean Ekman velocity (T-grid)')
     endif
     if ( subsamp%outfl(5) ) then
-       tmp_id = nc_def_float(ocpid, 'h', (/xopdim,yopdim,lomdim,timopdim/), 'm', subnam, 'Ocean interface displacement')
+       call nc_def_float(ocpid, 'h', (/xopdim,yopdim,lomdim,timopdim/), 'm', subnam, 'Ocean interface displacement')
     endif
     if ( subsamp%outfl(6) ) then
-       tmp_id = nc_def_float(ocpid, 'taux', (/xopdim,yopdim,timopdim/), 'm^2/s^2', subnam,'Zonal dynamic wind stress')
-       tmp_id = nc_def_float(ocpid, 'tauy', (/xopdim,yopdim,timopdim/), 'm^2/s^2', subnam,'Meridional dynamic wind stress')
+       call nc_def_float(ocpid, 'taux', (/xopdim,yopdim,timopdim/), 'm^2/s^2', subnam,'Zonal dynamic wind stress')
+       call nc_def_float(ocpid, 'tauy', (/xopdim,yopdim,timopdim/), 'm^2/s^2', subnam,'Meridional dynamic wind stress')
     endif
 
     ! The oceanic mixed layer thickness is fixed in this
@@ -260,12 +259,10 @@ contains
     ! netCDF variables used locally
     integer :: timapdim, xapdim, yapdim, ladim, lamdim
     integer :: timatdim, xatdim, yatdim
-    integer :: xap_id, yap_id, xat_id, yat_id, la_id, lam_id
 
     ! Other variables used locally
     double precision xa(ga%nxp),ya(ga%nyp),tmp(ga%nl)
     integer i, iwk, mwk
-    integer :: tmp_id
 
     atpid = nc_create(outdir, subsamp%filename_p, subnam)
     print *,' atpa.nc file created'
@@ -301,38 +298,38 @@ contains
     iwk = min(mwk,1) + (ga%nyt-mwk)/subsamp%nsk
     yatdim = nc_def_dim(attid, 'yt', iwk, subnam)
 
-    xap_id = nc_def_float(atpid, 'xp', xapdim, 'km', subnam, 'Atmosphere X axis (p-grid)')
-    xat_id = nc_def_float(attid, 'xt', xatdim, 'km', subnam, 'Atmosphere X axis (T-grid)')
-    yap_id = nc_def_float(atpid, 'yp', yapdim, 'km', subnam, 'Atmosphere Y axis (p-grid)')
-    yat_id = nc_def_float(attid, 'yt', yatdim, 'km', subnam, 'Atmosphere Y axis (T-grid)')
+    call nc_def_float(atpid, 'xp', xapdim, 'km', subnam, 'Atmosphere X axis (p-grid)')
+    call nc_def_float(attid, 'xt', xatdim, 'km', subnam, 'Atmosphere X axis (T-grid)')
+    call nc_def_float(atpid, 'yp', yapdim, 'km', subnam, 'Atmosphere Y axis (p-grid)')
+    call nc_def_float(attid, 'yt', yatdim, 'km', subnam, 'Atmosphere Y axis (T-grid)')
 
-    la_id = nc_def_float(atpid, 'z', ladim, 'km', subnam, 'Atmosphere mid-layer height axis')
-    lam_id = nc_def_float(atpid, 'zi', lamdim, 'km', subnam, 'Atmosphere interface height axis')
+    call nc_def_float(atpid, 'z', ladim, 'km', subnam, 'Atmosphere mid-layer height axis')
+    call nc_def_float(atpid, 'zi', lamdim, 'km', subnam, 'Atmosphere interface height axis')
 
-    tmp_id = nc_def_float(atpid, 'time', timapdim, 'years', subnam, 'Time axis')
-    tmp_id = nc_def_float(attid, 'time', timatdim, 'years', subnam, 'Time axis')
+    call nc_def_float(atpid, 'time', timapdim, 'years', subnam, 'Time axis')
+    call nc_def_float(attid, 'time', timatdim, 'years', subnam, 'Time axis')
 
     if ( subsamp%outfl(1) ) then
-       tmp_id = nc_def_float(attid, 'ast', (/xatdim,yatdim, timatdim/), 'K', subnam, 'Atmosphere surface temperature')
+       call nc_def_float(attid, 'ast', (/xatdim,yatdim, timatdim/), 'K', subnam, 'Atmosphere surface temperature')
     endif
     if ( subsamp%outfl(2) ) then
-       tmp_id = nc_def_float(atpid, 'p', (/xapdim,yapdim,ladim,timapdim/), 'm^2/s^2', subnam, 'Atmosphere dynamic pressure')
+       call nc_def_float(atpid, 'p', (/xapdim,yapdim,ladim,timapdim/), 'm^2/s^2', subnam, 'Atmosphere dynamic pressure')
     endif
     if ( subsamp%outfl(3) ) then
-       tmp_id = nc_def_float(atpid, 'q', (/xapdim,yapdim,ladim,timapdim/), 's^-1', subnam, 'Atmosphere potential vorticity')
+       call nc_def_float(atpid, 'q', (/xapdim,yapdim,ladim,timapdim/), 's^-1', subnam, 'Atmosphere potential vorticity')
     endif
     if ( subsamp%outfl(4) ) then
-       tmp_id = nc_def_float(attid, 'wekt', (/xatdim,yatdim,timatdim/), 'm/s', subnam, 'Atmosphere Ekman velocity (T-grid)')
+       call nc_def_float(attid, 'wekt', (/xatdim,yatdim,timatdim/), 'm/s', subnam, 'Atmosphere Ekman velocity (T-grid)')
     endif
     if ( subsamp%outfl(5) ) then
-       tmp_id = nc_def_float(atpid, 'h', (/xapdim,yapdim,lamdim,timapdim/), 'm', subnam, 'Atmosphere interface displacement')
+       call nc_def_float(atpid, 'h', (/xapdim,yapdim,lamdim,timapdim/), 'm', subnam, 'Atmosphere interface displacement')
     endif
     if ( subsamp%outfl(6) ) then
-       tmp_id = nc_def_float(atpid, 'taux', (/xapdim,yapdim,timapdim/), 'm^2/s^2', subnam, 'Zonal wind stress')
-       tmp_id = nc_def_float(atpid, 'tauy', (/xapdim,yapdim,timapdim/), 'm^2/s^2', subnam, 'Meridional wind stress')
+       call nc_def_float(atpid, 'taux', (/xapdim,yapdim,timapdim/), 'm^2/s^2', subnam, 'Zonal wind stress')
+       call nc_def_float(atpid, 'tauy', (/xapdim,yapdim,timapdim/), 'm^2/s^2', subnam, 'Meridional wind stress')
     endif
     if ( subsamp%outfl(7) ) then
-       tmp_id = nc_def_float(attid, 'hmixa', (/xatdim,yatdim,timatdim/), 'm', subnam, 'Mixed layer interface height')
+       call nc_def_float(attid, 'hmixa', (/xatdim,yatdim,timatdim/), 'm', subnam, 'Mixed layer interface height')
     endif
 
     ! Leave definition mode: entering data mode
