@@ -6,6 +6,7 @@ module homog
   use numerics, only: int_P_dA
   use constraint, only: core_constr_type, constraint_type
   use constraint, only: step_constraints
+  use linalg, only: LU_factor, solve_Ax_b
 
   use inhomog, only: inhomog_type, hscy, hsbx
 
@@ -23,16 +24,16 @@ module homog
      !*     aipohs contains the area integrals of
      !*     the homogeneous baroclinic solutions
 
-     double precision, allocatable :: cdhoc(:,:),cdhlu(:,:)
-     integer, allocatable :: ipivch(:)
+     double precision, allocatable :: cdhoc(:,:),LU(:,:)
+     integer, allocatable :: ipiv(:)
      double precision, allocatable :: cdiffo(:,:)
      !*     cdiffo and cdhoc contain (constant) matrices used in the
      !*     mass constraint equation applied in subroutine ocinvq
      !*     cdiffo(m,k) contains the coefficient of the mode m
      !*     contribution to the interface k constraint equation
      !*
-     !*     cdhlu contains the LU factorisation of cdhoc
-     !*     ipivch contains the pivot indices for cdhlu
+     !*     LU contains the LU factorisation of cdhoc
+     !*     ipiv contains the pivot indices for LU
 
   end type homog_box_type
 
@@ -103,8 +104,8 @@ contains
        allocate(init_homog%box%aipohs(b%nl-1))
 
        allocate(init_homog%box%cdhoc(b%nl-1,b%nl-1))
-       allocate(init_homog%box%cdhlu(b%nl-1,b%nl-1))
-       allocate(init_homog%box%ipivch(b%nl-1))
+       allocate(init_homog%box%LU(b%nl-1,b%nl-1))
+       allocate(init_homog%box%ipiv(b%nl-1))
        allocate(init_homog%box%cdiffo(b%nl,b%nl-1))
     endif
 
@@ -265,7 +266,7 @@ contains
     type(inhomog_type), intent(inout) :: inhom
 
     double precision bb(b%nxt-1)
-    integer :: k, m, info
+    integer :: k, m
 
     ! Finite box ocean
     ! ----------------
@@ -304,9 +305,11 @@ contains
        enddo
        do m=1,b%nl-1
           hom_box%cdhoc(k,m) = ( mod%ctm2l(m+1,k+1) - mod%ctm2l(m+1,k) )*hom_box%aipohs(m)
-          hom_box%cdhlu(k,m) = hom_box%cdhoc(k,m)
        enddo
     enddo
+    ! Compute the LU factorization of cdhoc
+    call LU_factor(hom_box%cdhoc, hom_box%LU, hom_box%ipiv)
+
     print *
     print *, ' Mass constraint matrices:'
     print *
@@ -319,22 +322,14 @@ contains
     do k=1,b%nl-1
        print '(2x,i2,1x,1p,9d17.9)', k,(hom_box%cdhoc(k,m),m=1,b%nl-1)
     enddo
-    ! Compute the LU factorization of cdhoc
-    ! DGETRF = NAG routine F07ADF
-    call DGETRF (b%nl-1, b%nl-1, hom_box%cdhlu, b%nl-1, hom_box%ipivch, info)
-    if (info /= 0) then
-       print *,'  DGETRF for ocean in homsol returns info = ',info
-       print *,'  program terminates in homsol'
-       stop
-    endif
     print *
-    print *, ' cdhlu:'
+    print *, ' LU:'
     do k=1,b%nl-1
-       print '(2x,i2,1x,1p,9d17.9)', k,(hom_box%cdhlu(k,m),m=1,b%nl-1)
+       print '(2x,i2,1x,1p,9d17.9)', k,(hom_box%LU(k,m),m=1,b%nl-1)
     enddo
     print *
-    print *, ' ipivch:'
-    print '(4x,9i4)', (hom_box%ipivch(k),k=1,b%nl-1)
+    print *, ' ipiv:'
+    print '(4x,9i4)', (hom_box%ipiv(k),k=1,b%nl-1)
 
 240 format(a,1p,9d21.13)
 
@@ -520,9 +515,7 @@ contains
     double precision, intent(out) :: homcor(b%nxp,b%nyp,b%nl)
 
     double precision :: aient(b%nl-1), xinhom(b%nl), rhs(b%nl-1)
-    double precision :: hclco(b%nl-1), aitmp, berr, ferr
-    integer :: info,iwork(b%nl)
-    double precision :: work(3*b%nl)
+    double precision :: hclco(b%nl-1), aitmp
 
     integer :: k, m
 
@@ -546,25 +539,11 @@ contains
        con%dpip(k) = aitmp
        rhs(k) = con%dpi(k) - sum(hom_box%cdiffo(:,k)*xinhom(:))
     enddo
-    hclco(:) = rhs(:)
+
     ! Matrix equation is cdhoc*hclco = rhs
     ! Solve equation for homogeneous solution coeffts using LAPACK
-    ! Solve the linear system using the LU factorised matrix cdhlu
-    ! DGETRS = NAG routine F07AEF
-    call DGETRS ('Norm', b%nl-1, 1, hom_box%cdhlu, b%nl-1, &
-         hom_box%ipivch, hclco, b%nl-1, info)
-    if (info /= 0) then
-       print *,'  DGETRS in ocinvq returns info = ',info
-       print *,'  program terminates in ocinvq'
-       stop
-    endif
-    ! Improve the solution by iterative refinement
-    ! DGERFS = NAG routine F07AHF
-    call DGERFS ('Norm', b%nl-1, 1, hom_box%cdhoc, b%nl-1, &
-         hom_box%cdhlu, b%nl-1, &
-         hom_box%ipivch, rhs, b%nl-1, hclco, b%nl-1, ferr, &
-         berr, &
-         work, iwork, info)
+    ! Solve the linear system using the LU factorised matrix
+    call solve_Ax_b(hom_box%cdhoc, hom_box%LU, hom_box%ipiv, rhs, hclco)
          
     ! Barotropic mode               
     homcor(:,:,1) = 0.0d0

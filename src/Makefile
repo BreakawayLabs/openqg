@@ -39,7 +39,7 @@ FFTW = -L/usr/local/lib -lfftw3
 MAKEFILE = Makefile
 
 OBJS =	openqg.o radsubs.o valsubs.o subsampling.o forcing.o \
-	tavsubs.o areasubs.o covsubs.o vorsubs.o \
+	tavsubs.o areasubs.o covsubs.o vorsubs.o linalg.o \
 	omlsubs.o core.o state.o print.o ml_monitor.o \
 	amlsubs.o coupler.o windstress.o driver.o basin.o \
 	ncutils.o bicubic.o box.o glam.o grid.o mesh.o numerics.o topog.o qg_monitor.o \
@@ -91,6 +91,9 @@ constants.o: util/constants.F90
 units.o: util/units.F90
 	${FC} ${FFLAGS} -c util/units.F90
 
+linalg.o: util/linalg.F90
+	${FC} ${FFLAGS} -c util/linalg.F90
+
 ## GLAM
 
 mesh.o: glam/mesh.F90 ncutils.o constants.o units.o
@@ -127,7 +130,7 @@ inhomog.o: qg/inhomog.F90 box.o constants.o
 constraint.o: qg/constraint.F90 box.o modes.o intsubs.o
 	${FC} ${FFLAGS} -c qg/constraint.F90
 
-homog.o: qg/homog.F90 box.o modes.o intsubs.o numerics.o constraint.o inhomog.o 
+homog.o: qg/homog.F90 box.o modes.o intsubs.o numerics.o constraint.o inhomog.o linalg.o
 	${FC} ${FFLAGS} -c qg/homog.F90
 
 qg.o: qg/qg.F90 util.o ncutils.o box.o numerics.o intsubs.o topog.o modes.o homog.o inhomog.o
@@ -158,7 +161,7 @@ mixed_layer.o: mixed/mixed_layer.F90 box.o numerics.o mixed.o
 omlsubs.o: mixed/omlsubs.F90 ${MAKEFILE} box.o mixed.o numerics.o mixed_layer.o
 	${FC} ${FFLAGS} -c mixed/omlsubs.F90
 
-radsubs.o: mixed/radsubs.F90 ${MAKEFILE} box.o grid.o ncutils.o intsubs.o mixed.o constants.o
+radsubs.o: mixed/radsubs.F90 ${MAKEFILE} box.o grid.o ncutils.o intsubs.o mixed.o constants.o linalg.o
 	${FC} ${FFLAGS} -c mixed/radsubs.F90
 
 amlsubs.o: mixed/amlsubs.F90 ${MAKEFILE} ncutils.o box.o topog.o mixed.o radsubs.o numerics.o mixed_layer.o

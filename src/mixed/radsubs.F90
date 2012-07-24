@@ -6,6 +6,7 @@ module radsubs
   use intsubs, only: trapin
   use mixed, only: temp_type, init_temp_from_rad
   use constants, only: PI, STEFAN, SIGOV2
+  use linalg, only: LU_factor, solve_Ax_b
 
   implicit none
 
@@ -580,12 +581,10 @@ contains
     type(radiate_type), intent(inout) :: rad
     double precision, intent(inout) :: rbtmoc, rbtmat
 
-    integer :: ipivrb(ga%nl),iwork(ga%nl)
-    double precision :: rbalar(ga%nl,ga%nl),rballu(ga%nl,ga%nl)
-    double precision :: balrhs(ga%nl)
-    double precision :: berr, ferr
-    integer :: info
-    double precision :: rbafac(ga%nl),work(3*ga%nl)
+    integer :: ipiv(ga%nl)
+    double precision :: rbalar(ga%nl,ga%nl),LU(ga%nl,ga%nl)
+    double precision :: rhs(ga%nl)
+    double precision :: rbafac(ga%nl)
     
     integer :: i, k
 
@@ -599,7 +598,6 @@ contains
     ! the last entry is the coefficient of Tm'
     ! Zero the matrices
     rbalar(:,:) = 0.0d0
-    rballu(:,:) = 0.0d0
     ! Compute the matrices from the radiation coefficients
     ! 1st equation is balance for layer 1
     do i=1,ga%nl-1
@@ -618,40 +616,16 @@ contains
        rbalar(ga%nl,i) = rad%Aup(ga%nl,i)
     enddo
     rbalar(ga%nl,ga%nl) = rad%Dup(ga%nl)
-    ! Setup RHS & make copy for LU factorisation
-    balrhs(:) = -1.0d0
-    rbafac(:) = balrhs(:)
-    rballu(:,:) = rbalar(:,:)
+
+    ! Setup RHS
+    rhs(:) = -1.0d0
 
     ! Compute the LU factorization of rbalar
-    ! DGETRF = NAG routine F07ADF
-    call DGETRF (ga%nl, ga%nl, rballu, ga%nl, ipivrb, info)
-    if (info /= 0) then
-       print *,'  DGETRF in radiat returns info = ',info
-       print *,'  program terminates in radiat'
-       stop 1
-    endif
-    print *,' '
+    call LU_factor(rbalar, LU, ipiv)
 
     ! Solve matrix equation for radiative balance coeffts using LAPACK
-    ! Solve the linear system using the LU factorised matrix rballu
-    ! DGETRS = NAG routine F07AEF
-    call DGETRS ('Norm', ga%nl, 1, rballu, ga%nl, ipivrb, rbafac, ga%nl, info)
-    if (info /= 0) then
-       print *,'  DGETRS in radiat returns info = ',info
-       print *,'  program terminates in radiat'
-       stop 1
-    endif
-    ! Improve the solution in rbafac by iterative refinement
-    ! DGERFS = NAG routine F07AHF
-    call DGERFS ('Norm', ga%nl, 1, rbalar, ga%nl, rballu, ga%nl, &
-         ipivrb, balrhs, ga%nl, rbafac, ga%nl, ferr, berr, &
-         work, iwork, info)
-    if (info /= 0) then
-       print *,'  DGERFS in radiat returns info = ',info
-       print *,'  program terminates in radiat'
-       stop 1
-    endif
+    ! Solve the linear system using the LU factorised matrix.
+    call solve_Ax_b(rbalar, LU, ipiv, rhs, rbafac)
 
     do k=1,ga%nl-1
        rad%rbetat(k) = rbafac(k)
@@ -666,9 +640,9 @@ contains
        print '(2x,i2,1x,1p,5d17.9)', k,(rbalar(k,i),i=1,ga%nl)
     enddo
     print *
-    print *, ' rballu:'
+    print *, ' LU:'
     do k=1,ga%nl
-       print '(2x,i2,1x,1p,5d17.9)', k,(rballu(k,i),i=1,ga%nl)
+       print '(2x,i2,1x,1p,5d17.9)', k,(LU(k,i),i=1,ga%nl)
     enddo
     print *
     print *,' Radiative balance initialisation coeffts:'
