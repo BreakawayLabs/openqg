@@ -8,7 +8,7 @@ module homog
   use constraint, only: step_constraints
   use linalg, only: LU_factor, solve_Ax_b
 
-  use inhomog, only: inhomog_type, hscy, hsbx
+  use inhomog, only: inhomog_type, solve_inhomog_eqn
 
   implicit none
 
@@ -128,17 +128,16 @@ contains
     type(inhomog_type), intent(inout) :: inhom
 
     if (b%cyclic) then
-       call homsol_cyclic(b, mod, hom%cyc, inhom)
+       call homsol_cyclic(b, hom%cyc, inhom)
     else
        call homsol_box(b, mod, hom%box, inhom)
     endif
 
   end subroutine homsol
 
-  subroutine homsol_cyclic(b, mod, hom_cyc, inhom)
+  subroutine homsol_cyclic(b, hom_cyc, inhom)
 
     type(box_type), intent(in) :: b
-    type(modes_type), intent(in) :: mod
     type(homog_cyclic_type), intent(inout) :: hom_cyc
     type(inhomog_type), intent(inout) :: inhom
 
@@ -192,15 +191,15 @@ contains
        enddo
 
        ! Invert these RHSs for baroclinic homog. solutions (sol0 above)
-       call hscy (inhom, b, rhs1, inhom%bd2(:) - mod%rdm2(m), wk1)
-       call hscy (inhom, b, rhs2, inhom%bd2(:) - mod%rdm2(m), wk2)
+       wk1(:,:) = solve_inhomog_eqn(inhom, b, m, rhs1)
+       wk2(:,:) = solve_inhomog_eqn(inhom, b, m, rhs2)
        ! Add Helmholtz solution to L(y) to get full solutions
        ! Solutions in wk1, wk2 are functions of y only, i.e.
        ! independent of i, so just save solution for one i value
        do j=1,b%nyp
           do i=1,b%nxp
-             wk1(i,j) = hom_cyc%hom_sol_bc1(j,m) + mod%rdm2(m)*wk1(i,j)
-             wk2(i,j) = hom_cyc%hom_sol_bc2(j,m) + mod%rdm2(m)*wk2(i,j)
+             wk1(i,j) = hom_cyc%hom_sol_bc1(j,m) + inhom%rdm2(m)*wk1(i,j)
+             wk2(i,j) = hom_cyc%hom_sol_bc2(j,m) + inhom%rdm2(m)*wk2(i,j)
           enddo
           hom_cyc%hom_sol_bc1(j,m) = wk1(1,j)
           hom_cyc%hom_sol_bc2(j,m) = wk2(1,j)
@@ -220,10 +219,10 @@ contains
        pch1yn = ( hom_cyc%hom_sol_bc1(b%nyp,m) - hom_cyc%hom_sol_bc1(b%nyp-1,m) )/b%dy
        pch2yn = ( hom_cyc%hom_sol_bc2(b%nyp,m) - hom_cyc%hom_sol_bc2(b%nyp-1,m) )/b%dy
        ! Correction for baroclinic modes
-       pch1ys = -pch1ys + 0.5d0*b%dy*mod%rdm2(m)*hom_cyc%hom_sol_bc1(  1 ,m)
-       pch2ys = -pch2ys + 0.5d0*b%dy*mod%rdm2(m)*hom_cyc%hom_sol_bc2(  1 ,m)
-       pch1yn =  pch1yn + 0.5d0*b%dy*mod%rdm2(m)*hom_cyc%hom_sol_bc1(b%nyp,m)
-       pch2yn =  pch2yn + 0.5d0*b%dy*mod%rdm2(m)*hom_cyc%hom_sol_bc2(b%nyp,m)
+       pch1ys = -pch1ys + 0.5d0*b%dy*inhom%rdm2(m)*hom_cyc%hom_sol_bc1(  1 ,m)
+       pch2ys = -pch2ys + 0.5d0*b%dy*inhom%rdm2(m)*hom_cyc%hom_sol_bc2(  1 ,m)
+       pch1yn =  pch1yn + 0.5d0*b%dy*inhom%rdm2(m)*hom_cyc%hom_sol_bc1(b%nyp,m)
+       pch2yn =  pch2yn + 0.5d0*b%dy*inhom%rdm2(m)*hom_cyc%hom_sol_bc2(b%nyp,m)
        ! Convert to line integrals
        pch1ys = b%xl*pch1ys
        pch2ys = b%xl*pch2ys
@@ -279,10 +278,10 @@ contains
        rhs(:,:) = 1.0d0
 
        ! Solve for sol0 in ochom.
-       call hsbx (inhom, b, rhs(:,:), inhom%bd2(:) - mod%rdm2(m), hom_box%hom_sol_bc(:,:,m))
+       hom_box%hom_sol_bc(:,:,m) = solve_inhomog_eqn(inhom, b, m, rhs(:,:))
 
        ! Add constant offset
-       hom_box%hom_sol_bc(:,:,m) = 1.0d0 + mod%rdm2(m)*hom_box%hom_sol_bc(:,:,m)
+       hom_box%hom_sol_bc(:,:,m) = 1.0d0 + inhom%rdm2(m)*hom_box%hom_sol_bc(:,:,m)
        ! Area integral of full homogeneous solution
        aipohs(m) = xintp(hom_box%hom_sol_bc(:,:,m), b%nxp, b%nyp)
        aipohs(m) = aipohs(m)*b%dx*b%dy

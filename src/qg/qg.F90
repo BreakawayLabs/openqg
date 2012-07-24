@@ -95,10 +95,10 @@ contains
     init_qg%pm(:,:,:) = 0.0d0
 
     init_qg%mod = init_modes(init_qg%b%nl)
-    init_qg%hom = init_homog(init_qg%b)
-    init_qg%inhom = init_inhomog(init_qg%b)
-
     call eigmod(init_qg%b, init_qg%gp, init_qg%mod)
+
+    init_qg%hom = init_homog(init_qg%b)
+    init_qg%inhom = init_inhomog(init_qg%b, init_qg%mod)
     call homsol(init_qg%b, init_qg%mod, init_qg%hom, init_qg%inhom)
 
     init_qg%con = init_core_constr(init_qg%b%nl)

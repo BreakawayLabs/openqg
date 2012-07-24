@@ -1,6 +1,7 @@
 module inhomog
 
   use box, only: box_type
+  use modes, only: modes_type
   use constants, only: PI, TWOPI
 
   use, intrinsic :: iso_c_binding
@@ -15,6 +16,7 @@ module inhomog
 
      double precision :: a
      double precision, allocatable :: bd2(:)
+     double precision, allocatable :: rdm2(:)
 
      type(C_PTR) :: ocn_plan_f
      type(C_PTR) :: ocn_plan_b
@@ -28,19 +30,21 @@ module inhomog
 
   public inhomog_type
   public init_inhomog
-
-  public hsbx
-  public hscy
+  public solve_inhomog_eqn
 
 contains
 
-  type(inhomog_type) function init_inhomog(b)
+  type(inhomog_type) function init_inhomog(b, mod)
 
     type(box_type), intent(in) :: b
+    type(modes_type), intent(in) :: mod
 
     integer :: i
 
     init_inhomog%a = 1.0d0/( b%dy*b%dy )
+
+    allocate(init_inhomog%rdm2(b%nl))
+    init_inhomog%rdm2(:) = mod%rdm2(:)
 
     if (b%cyclic) then
        allocate(init_inhomog%bd2(b%nxt/2 + 1))
@@ -86,7 +90,22 @@ contains
 
   end function init_inhomog
 
-  subroutine hsbx (inhom, b, rhs, bb, inhomog)
+  function solve_inhomog_eqn(inhom, b, m, rhs)
+    type(inhomog_type), intent(inout) :: inhom
+    type(box_type), intent(in) :: b
+    integer, intent(in) :: m
+    double precision, intent(in) :: rhs(b%nxp,b%nyp)
+    double precision :: solve_inhomog_eqn(b%nxp,b%nyp)
+
+    if (b%cyclic) then
+       call hscy(inhom, b, rhs, m, solve_inhomog_eqn)
+    else
+       call hsbx(inhom, b, rhs, m, solve_inhomog_eqn)
+    endif
+
+  end function solve_inhomog_eqn
+
+  subroutine hsbx (inhom, b, rhs, m, inhomog)
 
     ! Solves the inhomogeneous Helmholtz equation for
     ! given rhs in a domain with meridional boundaries
@@ -101,8 +120,9 @@ contains
 
     type(inhomog_type), intent(inout) :: inhom
     type(box_type), intent(in) :: b
-    double precision, intent(inout) :: rhs(b%nxp,b%nyp)
-    double precision, intent(in) :: bb(b%nxt-1)
+    double precision, intent(in) :: rhs(b%nxp,b%nyp)
+
+    integer, intent(in) :: m
     double precision, intent(inout) :: inhomog(b%nxp,b%nyp)
 
     double precision ftnorm
@@ -110,6 +130,9 @@ contains
     integer j
    
     double precision gam(b%nxp-2,b%nyp-2),betinv(b%nxp-2),uvec(b%nxp-2,b%nyp-2)
+    double precision :: bb(b%nxt-1)
+
+    bb(:) = inhom%bd2(:) - inhom%rdm2(m)
 
     ftnorm = 0.5d0/b%nxt! FIXME: nxt -1
  
@@ -156,7 +179,7 @@ contains
 
   end subroutine hsbx
 
-  subroutine hscy (inhom, b, rhs, bb, inhomog)
+  subroutine hscy (inhom, b, rhs, m, inhomog)
 
     ! Solves the inhomogeneous Helmholtz equation
     ! for given rhs in a zonally periodic domain.
@@ -170,7 +193,7 @@ contains
     type(inhomog_type), intent(inout) :: inhom
     type(box_type), intent(in) :: b
     double precision, intent(in) :: rhs(b%nxp,b%nyp)
-    double precision, intent(in) :: bb(b%nxt/2 + 1)
+    integer, intent(in) :: m
     double precision, intent(out) :: inhomog(b%nxp,b%nyp)
 
     double precision :: ftnorm
@@ -178,6 +201,9 @@ contains
     integer :: j
     double precision :: gam(b%nxt/2+1,b%nyp-2),betinv(b%nxt/2+1)
     double complex :: uvec(b%nxt/2+1,b%nyp-2)
+
+    double precision :: bb(b%nxt/2 + 1)
+    bb(:) = inhom%bd2(:) - inhom%rdm2(m)
 
     ftnorm = 1.0d0/b%nxt
 

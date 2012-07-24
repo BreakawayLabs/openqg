@@ -6,7 +6,7 @@ module pressure
   use topog, only: topog_type
 
   use modes, only: p_modes_rhs, modes_to_layers
-  use inhomog, only: hscy, hsbx
+  use inhomog, only: solve_inhomog_eqn
   use homog, only: cyclic_homog, box_homog
 
   implicit none
@@ -40,12 +40,7 @@ contains
 
     do m=1,b%nl
        ! Compute Helmholtz operator for mode m
-       ! Overwrite wrk with new modal pressure
-       if (b%cyclic) then
-          call hscy(qg%inhom, b, rhs(:,:,m), qg%inhom%bd2(:) - qg%mod%rdm2(m), inhomog(:,:,m))
-       else
-          call hsbx(qg%inhom, b, rhs(:,:,m), qg%inhom%bd2(:) - qg%mod%rdm2(m), inhomog(:,:,m))
-       endif
+       inhomog(:,:,m) = solve_inhomog_eqn(qg%inhom, b, m, rhs(:,:,m))
     enddo
     ! Have solved inhomogeneous modal problem
     ! with po = 0 on all solid boundaries
