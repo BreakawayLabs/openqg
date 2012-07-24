@@ -174,7 +174,7 @@ contains
 
     print *
     print *, ' Homogeneous (baroclinic) solutions:'
-    do m=1,b%nl-1
+    do m=2,b%nl
        print *
        print '(a,i2)', '  Mode: ',m
 
@@ -185,45 +185,45 @@ contains
        ! For hom_sol_bc2, L(y) = 0.0 on S bdy; = 1.0 on N bdy
        ! Specify RHSs
        do j=1,b%nyp
-          hom_cyc%hom_sol_bc1(j,m+1) = ( b%yp(b%nyp)-b%yp(j) )/b%yl
-          hom_cyc%hom_sol_bc2(j,m+1) = ( b%yp(  j )-b%yp(1) )/b%yl
-          rhs1(:,j) = hom_cyc%hom_sol_bc1(j,m+1)
-          rhs2(:,j) = hom_cyc%hom_sol_bc2(j,m+1)
+          hom_cyc%hom_sol_bc1(j,m) = ( b%yp(b%nyp)-b%yp(j) )/b%yl
+          hom_cyc%hom_sol_bc2(j,m) = ( b%yp(  j )-b%yp(1) )/b%yl
+          rhs1(:,j) = hom_cyc%hom_sol_bc1(j,m)
+          rhs2(:,j) = hom_cyc%hom_sol_bc2(j,m)
        enddo
 
        ! Invert these RHSs for baroclinic homog. solutions (sol0 above)
-       call hscy (inhom, b, rhs1, inhom%bd2(:) - mod%rdm2(m+1), wk1)
-       call hscy (inhom, b, rhs2, inhom%bd2(:) - mod%rdm2(m+1), wk2)
+       call hscy (inhom, b, rhs1, inhom%bd2(:) - mod%rdm2(m), wk1)
+       call hscy (inhom, b, rhs2, inhom%bd2(:) - mod%rdm2(m), wk2)
        ! Add Helmholtz solution to L(y) to get full solutions
        ! Solutions in wk1, wk2 are functions of y only, i.e.
        ! independent of i, so just save solution for one i value
        do j=1,b%nyp
           do i=1,b%nxp
-             wk1(i,j) = hom_cyc%hom_sol_bc1(j,m+1) + mod%rdm2(m+1)*wk1(i,j)
-             wk2(i,j) = hom_cyc%hom_sol_bc2(j,m+1) + mod%rdm2(m+1)*wk2(i,j)
+             wk1(i,j) = hom_cyc%hom_sol_bc1(j,m) + mod%rdm2(m)*wk1(i,j)
+             wk2(i,j) = hom_cyc%hom_sol_bc2(j,m) + mod%rdm2(m)*wk2(i,j)
           enddo
-          hom_cyc%hom_sol_bc1(j,m+1) = wk1(1,j)
-          hom_cyc%hom_sol_bc2(j,m+1) = wk2(1,j)
+          hom_cyc%hom_sol_bc1(j,m) = wk1(1,j)
+          hom_cyc%hom_sol_bc2(j,m) = wk2(1,j)
        enddo
        ! Compute area integrals of hom_sol_bc1 and hom_sol_bc2
        aipch1 = xintp(wk1, b%nxp, b%nyp)
        aipch2 = xintp(wk2, b%nxp, b%nyp)
        ! Both solutions should have the same area integral
-       hom_cyc%int_sol_bc(m+1) = 0.5d0*(aipch1+aipch2)*b%dx*b%dy
+       hom_cyc%int_sol_bc(m) = 0.5d0*(aipch1+aipch2)*b%dx*b%dy
        
        ! Compute dp/dy half a gridpoint in from the north
        ! and south boundaries, and "integrate" in x
        ! Since these solutions are independent of x,
        ! x integration means just multiply by xla
-       pch1ys = ( hom_cyc%hom_sol_bc1(  2 ,m+1) - hom_cyc%hom_sol_bc1(   1  ,m+1) )/b%dy
-       pch2ys = ( hom_cyc%hom_sol_bc2(  2 ,m+1) - hom_cyc%hom_sol_bc2(   1  ,m+1) )/b%dy
-       pch1yn = ( hom_cyc%hom_sol_bc1(b%nyp,m+1) - hom_cyc%hom_sol_bc1(b%nyp-1,m+1) )/b%dy
-       pch2yn = ( hom_cyc%hom_sol_bc2(b%nyp,m+1) - hom_cyc%hom_sol_bc2(b%nyp-1,m+1) )/b%dy
+       pch1ys = ( hom_cyc%hom_sol_bc1(  2 ,m) - hom_cyc%hom_sol_bc1(   1  ,m) )/b%dy
+       pch2ys = ( hom_cyc%hom_sol_bc2(  2 ,m) - hom_cyc%hom_sol_bc2(   1  ,m) )/b%dy
+       pch1yn = ( hom_cyc%hom_sol_bc1(b%nyp,m) - hom_cyc%hom_sol_bc1(b%nyp-1,m) )/b%dy
+       pch2yn = ( hom_cyc%hom_sol_bc2(b%nyp,m) - hom_cyc%hom_sol_bc2(b%nyp-1,m) )/b%dy
        ! Correction for baroclinic modes
-       pch1ys = -pch1ys + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%hom_sol_bc1(  1 ,m+1)
-       pch2ys = -pch2ys + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%hom_sol_bc2(  1 ,m+1)
-       pch1yn =  pch1yn + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%hom_sol_bc1(b%nyp,m+1)
-       pch2yn =  pch2yn + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%hom_sol_bc2(b%nyp,m+1)
+       pch1ys = -pch1ys + 0.5d0*b%dy*mod%rdm2(m)*hom_cyc%hom_sol_bc1(  1 ,m)
+       pch2ys = -pch2ys + 0.5d0*b%dy*mod%rdm2(m)*hom_cyc%hom_sol_bc2(  1 ,m)
+       pch1yn =  pch1yn + 0.5d0*b%dy*mod%rdm2(m)*hom_cyc%hom_sol_bc1(b%nyp,m)
+       pch2yn =  pch2yn + 0.5d0*b%dy*mod%rdm2(m)*hom_cyc%hom_sol_bc2(b%nyp,m)
        ! Convert to line integrals
        pch1ys = b%xl*pch1ys
        pch2ys = b%xl*pch2ys
@@ -232,18 +232,18 @@ contains
        ! The above are (for each mode m) the quantities in square
        ! brackets on the RHS of (B.14) and (B.15)
        pchdet = pch1ys*pch2yn - pch2ys*pch1yn
-       hom_cyc%hc1s(m+1) = pch1ys/pchdet
-       hom_cyc%hc2s(m+1) = pch2ys/pchdet
-       hom_cyc%hc1n(m+1) = pch1yn/pchdet
-       hom_cyc%hc2n(m+1) = pch2yn/pchdet
+       hom_cyc%hc1s(m) = pch1ys/pchdet
+       hom_cyc%hc2s(m) = pch2ys/pchdet
+       hom_cyc%hc1n(m) = pch1yn/pchdet
+       hom_cyc%hc2n(m) = pch2yn/pchdet
        print *
        print 240, '  aipch1, aipch2 = ',aipch1,aipch2
-       print 240, '  int_sol_bc     = ',hom_cyc%int_sol_bc(m+1)
+       print 240, '  int_sol_bc     = ',hom_cyc%int_sol_bc(m)
        print 240, '  pch1ys, pch1yn = ',pch1ys,pch1yn
        print 240, '  pch2ys, pch2yn = ',pch2ys,pch2yn
        print 240, '  pchdet         = ',pchdet
-       print 240, '  hc1s, hc2s = ',hom_cyc%hc1s(m+1),hom_cyc%hc2s(m+1)
-       print 240, '  hc1n, hc2n = ',hom_cyc%hc1n(m+1),hom_cyc%hc2n(m+1)
+       print 240, '  hc1s, hc2s = ',hom_cyc%hc1s(m),hom_cyc%hc2s(m)
+       print 240, '  hc1n, hc2n = ',hom_cyc%hc1n(m),hom_cyc%hc2n(m)
     enddo
 
 240 format(a,1p,9d21.13)
