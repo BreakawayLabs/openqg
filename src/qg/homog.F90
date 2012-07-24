@@ -96,7 +96,7 @@ contains
 
        allocate(init_homog%cyc%aipch(b%nl-1))
     else
-       allocate(init_homog%box%hom_sol_bc(b%nxp, b%nyp, b%nl-1))
+       allocate(init_homog%box%hom_sol_bc(b%nxp, b%nyp, 2:b%nl))
 
        allocate(init_homog%box%cdhoc(b%nl-1,b%nl-1))
        allocate(init_homog%box%LU(b%nl-1,b%nl-1))
@@ -264,13 +264,13 @@ contains
     integer :: k, m
 
     ! the area integrals of the homogeneous baroclinic solutions
-    double precision :: aipohs(b%nl-1)
+    double precision :: aipohs(2:b%nl)
 
     ! Finite box ocean
     ! ----------------
     print *
     print *, ' Homogeneous (baroclinic) solutions:'
-    do m=1,b%nl-1
+    do m=2,b%nl
        print *
        print '(a,i2)', '  Mode: ',m
 
@@ -281,10 +281,10 @@ contains
        ! Setup RHS.
        hom_box%hom_sol_bc(:,:,m) = 1.0d0
        ! Solve for sol0 in ochom.
-       bb(:) = inhom%bd2(:) - mod%rdm2(m+1)
+       bb(:) = inhom%bd2(:) - mod%rdm2(m)
        call hsbx (inhom, b, hom_box%hom_sol_bc(:,:,m), bb)
        ! Add constant offset
-       hom_box%hom_sol_bc(:,:,m) = 1.0d0 + mod%rdm2(m+1)*hom_box%hom_sol_bc(:,:,m)
+       hom_box%hom_sol_bc(:,:,m) = 1.0d0 + mod%rdm2(m)*hom_box%hom_sol_bc(:,:,m)
        ! Area integral of full homogeneous solution
        aipohs(m) = xintp(hom_box%hom_sol_bc(:,:,m), b%nxp, b%nyp)
        aipohs(m) = aipohs(m)*b%dx*b%dy
@@ -302,7 +302,7 @@ contains
           hom_box%cdiffo(m,k) = mod%ctm2l(m,k+1) - mod%ctm2l(m,k)
        enddo
        do m=1,b%nl-1
-          hom_box%cdhoc(k,m) = ( mod%ctm2l(m+1,k+1) - mod%ctm2l(m+1,k) )*aipohs(m)
+          hom_box%cdhoc(k,m) = ( mod%ctm2l(m+1,k+1) - mod%ctm2l(m+1,k) )*aipohs(m+1)
        enddo
     enddo
     ! Compute the LU factorization of cdhoc
@@ -547,7 +547,7 @@ contains
     homcor(:,:,1) = 0.0d0
     ! Baroclinic modes including homogeneous contribution
     do m=2,b%nl
-       homcor(:,:,m) = hclco(m-1)*hom_box%hom_sol_bc(:,:,m-1)
+       homcor(:,:,m) = hclco(m-1)*hom_box%hom_sol_bc(:,:,m)
     enddo
 
   end subroutine box_homog
