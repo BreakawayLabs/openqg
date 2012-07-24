@@ -56,7 +56,7 @@ contains
             qg%hom%cyc, qg%mod, qg%con, qg%gp, &
             ent_xn, homcor)
     else
-       call box_homog(b, tdt, inhomog, qg%hom%box, qg%con, qg%gp, ent_xn, homcor)
+       call box_homog(b, tdt, inhomog, qg%hom%box, qg%con, qg%gp, ent_xn, qg%mod, homcor)
     endif
 
     ! Add suitable multiple of homogeneous solutions and unpack modal

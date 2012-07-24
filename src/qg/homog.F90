@@ -22,11 +22,8 @@ module homog
 
      double precision, allocatable :: cdhoc(:,:),LU(:,:)
      integer, allocatable :: ipiv(:)
-     double precision, allocatable :: cdiffo(:,:)
-     !*     cdiffo and cdhoc contain (constant) matrices used in the
+     !*     cdhoc contains (constant) matrices used in the
      !*     mass constraint equation applied in subroutine ocinvq
-     !*     cdiffo(m,k) contains the coefficient of the mode m
-     !*     contribution to the interface k constraint equation
      !*
      !*     LU contains the LU factorisation of cdhoc
      !*     ipiv contains the pivot indices for LU
@@ -101,7 +98,6 @@ contains
        allocate(init_homog%box%cdhoc(b%nl-1,b%nl-1))
        allocate(init_homog%box%LU(b%nl-1,b%nl-1))
        allocate(init_homog%box%ipiv(b%nl-1))
-       allocate(init_homog%box%cdiffo(b%nl,b%nl-1))
     endif
 
     ! Compute tridiagonal coefficients for Helmholtz equations
@@ -289,14 +285,9 @@ contains
     ! Compute the matrices used in the mass constraint equation
     ! dpioc(k) = Area integral of pressure diff ( po(k+1) - po(k) )
     ! Choose sign of dpioc so that +ve dpioc(k) -> +ve eta(k)
-    ! cdiffo(m,k) is  coefficient which multiplies the mode
-    ! m amplitude to give its contribution to dpioc(k)
     ! cdhoc(k,m) is  coefficient which multiplies a homogeneous
     ! baroclinic mode coefficient to give its contribution to dpioc(k)
     do k=1,b%nl-1
-       do m=1,b%nl
-          hom_box%cdiffo(m,k) = mod%ctm2l(m,k+1) - mod%ctm2l(m,k)
-       enddo
        do m=1,b%nl-1
           hom_box%cdhoc(k,m) = ( mod%ctm2l(m+1,k+1) - mod%ctm2l(m+1,k) )*aipohs(m+1)
        enddo
@@ -306,11 +297,6 @@ contains
 
     print *
     print *, ' Mass constraint matrices:'
-    print *
-    print *, ' cdiffo:'
-    do k=1,b%nl-1
-       print '(2x,i2,1x,1p,9d17.9)', k,(hom_box%cdiffo(m,k),m=1,b%nl)
-    enddo
     print *
     print *, ' cdhoc:'
     do k=1,b%nl-1
@@ -346,7 +332,7 @@ contains
     double precision, intent(in) :: ent_xn(b%nl-1)
     double precision, intent(out) :: homcor(b%nxp,b%nyp,b%nl)
 
-    double precision :: aiplay(b%nl)
+    double precision :: int_p(b%nl)
     double precision :: c_bc1(2:b%nl), c_bc2(2:b%nl), c_bt
     double precision :: homcor_2d(b%nyp,b%nl)
 
@@ -359,11 +345,12 @@ contains
     call compute_correction_coeffs(c_bc1, c_bc2, c_bt, inhomog, hom_cyc, &
          mod, constr%cs, constr%cn, b)
 
-    call compute_layer_pressure(aiplay, b, inhomog, c_bc1, c_bc2, c_bt, hom_cyc, mod)
+    ! Check continuity
+    int_p(:) = compute_layer_pressure(b, inhomog, c_bc1, c_bc2, c_bt, hom_cyc, mod)
+    call check_continuity(con, gp, b, tdt, int_p, ent_xn)
 
-    call check_continuity(con, gp, b, tdt, aiplay, ent_xn)
-
-    call homogeneous_correction(homcor_2d(:,:), hom_cyc, c_bc1, c_bc2, c_bt, b%nyp, b%nl)
+    ! Compute homogenous term
+    homcor_2d(:,:) = homogeneous_correction(hom_cyc, c_bc1, c_bc2, c_bt, b%nyp, b%nl)
     homcor(:,:,:) = spread(homcor_2d, 1, b%nxp)
 
   end subroutine cyclic_homog
@@ -403,47 +390,47 @@ contains
     enddo
   end subroutine compute_correction_coeffs
 
-  subroutine compute_layer_pressure(aiplay, b, inhomog, c_bc1, c_bc2, c_bt, hom_cyc, mod)
+  pure function compute_layer_pressure(b, inhomog, c_bc1, c_bc2, c_bt, hom_cyc, mod)
 
     type(box_type), intent(in) :: b
-    double precision, intent(out) :: aiplay(b%nl)
     double precision, intent(in) ::  inhomog(b%nxp,b%nyp,b%nl)
     double precision, intent(in) :: c_bc1(2:b%nl)
     double precision, intent(in) :: c_bc2(2:b%nl)
     double precision, intent(in) :: c_bt
+    double precision :: compute_layer_pressure(b%nl)
 
     type(homog_cyclic_type), intent(in) :: hom_cyc
     type(modes_type), intent(in) :: mod
 
     integer :: m, k
-    double precision :: xinhom(b%nl), aipmod(b%nl)
+    double precision :: int_inhom_m(b%nl), aipmod(b%nl)
     ! Compute area integrals of pressures
     ! -----------------------------------
     ! Integrals of modal pressures
     do m=1,b%nl
        ! Compute area integral of new inhomogeneous solution
-       xinhom(m) = int_P_dA(inhomog(:,:,m), b)
+       int_inhom_m(m) = int_P_dA(inhomog(:,:,m), b)
     enddo
 
-    aipmod(1) = xinhom(1) + c_bt*hom_cyc%int_sol_bt
+    aipmod(1) = int_inhom_m(1) + c_bt*hom_cyc%int_sol_bt
     do m=2,b%nl
-       aipmod(m) = xinhom(m) + ( c_bc1(m) + c_bc2(m) )*hom_cyc%int_sol_bc(m)
+       aipmod(m) = int_inhom_m(m) + ( c_bc1(m) + c_bc2(m) )*hom_cyc%int_sol_bc(m)
     enddo
     ! Integrals of layer pressures
     do k=1,b%nl
-       aiplay(k) = sum(mod%ctm2l(:,k)*aipmod(:))
+       compute_layer_pressure(k) = sum(mod%ctm2l(:,k)*aipmod(:))
     enddo
 
-  end subroutine compute_layer_pressure
+  end function compute_layer_pressure
 
-  pure subroutine check_continuity(con, gp, b, tdt, aiplay, ent_xn)
+  pure subroutine check_continuity(con, gp, b, tdt, int_p, ent_xn)
     ! Check continuity is satisfied at each interface
     ! Update continuity measures at each interface
     type(core_constr_type), intent(inout) :: con
     type(box_type), intent(in) :: b
     double precision, intent(in) :: gp(b%nl-1)
     double precision, intent(in) :: tdt
-    double precision, intent(in) :: aiplay(b%nl)
+    double precision, intent(in) :: int_p(b%nl)
     double precision, intent(in) :: ent_xn(b%nl-1)
 
     integer :: k
@@ -457,7 +444,7 @@ contains
        ! Check continuity is satisfied at each interface
        ! MONITORING - extra section for ermaso, emfroc
        ! Compute alternative estimates of new dpioc
-       est1 = b%dz_sign*(aiplay(k) - aiplay(k+1))
+       est1 = b%dz_sign*(int_p(k) - int_p(k+1))
        est2 = con%dpip(k) - tdt*gp(k)*ent_xn(k)
        edif = est1 - est2
        esum = abs(est1) + abs(est2)
@@ -471,33 +458,33 @@ contains
        endif
        ! Update continuity constants
        con%dpip(k) = con%dpi(k)
-       con%dpi(k) = b%dz_sign*(aiplay(k) - aiplay(k+1))
+       con%dpi(k) = b%dz_sign*(int_p(k) - int_p(k+1))
     enddo
 
   end subroutine check_continuity
 
-  pure subroutine homogeneous_correction(homcor, hom_cyc, c_bc1, c_bc2, c_bt, nyp, nl)
+  pure function homogeneous_correction(hom_cyc, c_bc1, c_bc2, c_bt, nyp, nl)
 
-    double precision, intent(out) :: homcor(nyp,nl)
     type(homog_cyclic_type), intent(in) :: hom_cyc
     double precision, intent(in) :: c_bc1(2:nl)
     double precision, intent(in) :: c_bc2(2:nl)
     double precision, intent(in) :: c_bt
     integer, intent(in) :: nyp, nl
+    double precision :: homogeneous_correction(nyp,nl)
 
     integer :: m
 
     ! Compute homogeneous corrections (indep. of i)
     ! Barotropic mode
-    homcor(:,1) = c_bt*hom_cyc%hom_sol_bt(:)
+    homogeneous_correction(:,1) = c_bt*hom_cyc%hom_sol_bt(:)
     ! Baroclinic modes
     do m=2,nl
-       homcor(:,m) = c_bc1(m)*hom_cyc%hom_sol_bc1(:,m) + c_bc2(m)*hom_cyc%hom_sol_bc2(:,m)
+       homogeneous_correction(:,m) = c_bc1(m)*hom_cyc%hom_sol_bc1(:,m) + c_bc2(m)*hom_cyc%hom_sol_bc2(:,m)
     enddo
 
-  end subroutine homogeneous_correction
+  end function homogeneous_correction
 
-  subroutine box_homog(b, tdt, inhomog, hom_box, con, gp, ent_xn, homcor)
+  subroutine box_homog(b, tdt, inhomog, hom_box, con, gp, ent_xn, mod, homcor)
 
     type(box_type), intent(in) :: b
     double precision, intent(in) :: tdt
@@ -506,32 +493,30 @@ contains
     type(core_constr_type), intent(inout) :: con
     double precision, intent(in) :: gp(b%nl-1)
     double precision, intent(in) :: ent_xn(b%nl-1)
+    type(modes_type), intent(in) :: mod
     double precision, intent(out) :: homcor(b%nxp,b%nyp,b%nl)
 
-    double precision :: aient(b%nl-1), xinhom(b%nl), rhs(b%nl-1)
-    double precision :: hclco(b%nl-1), aitmp
+    double precision :: int_inhom_m(b%nl), int_inhom_k(b%nl), rhs(b%nl-1)
+    double precision :: hclco(b%nl-1), aitmp(b%nl-1)
 
     integer :: k, m
 
     ! Get multiples of homogeneous solutions to conserve thickness
-    ! aient(k) = Area integral of oceanic entrainment e(k)
-    aient(1) = ent_xn(1)
-    ! N.B. xon(1) is now zero by construction of entoc in oml
-    ! All other entrainments assumed exactly zero in the ocean
-    do k=2,b%nl-1
-       aient(k) = 0.0d0
-    enddo
+    ! ent_xn(k) = Area integral of oceanic entrainment e(k)
+    aitmp(:) = con%dpi(:)
+    con%dpi(:) = con%dpip(:) - tdt*gp(:)*ent_xn(:)
+    con%dpip(:) = aitmp(:)
+
     ! Area integral of d(eta(k))/dt = - Area integral of entrainment e(k)
     do m=1,b%nl
        ! Compute area integral of new inhomogeneous solution
-       xinhom(m) = int_P_dA(inhomog(:,:,m), b)
+       int_inhom_m(m) = int_P_dA(inhomog(:,:,m), b)
     enddo
-
+    do k=1,b%nl
+       int_inhom_k(k) = sum(mod%ctm2l(:,k)*int_inhom_m(:))
+    enddo
     do k=1,b%nl-1
-       aitmp = con%dpi(k)
-       con%dpi(k) = con%dpip(k) - tdt*gp(k)*aient(k)
-       con%dpip(k) = aitmp
-       rhs(k) = con%dpi(k) - sum(hom_box%cdiffo(:,k)*xinhom(:))
+       rhs(k) = con%dpi(k) - (int_inhom_k(k+1) - int_inhom_k(k))
     enddo
 
     ! Matrix equation is cdhoc*hclco = rhs
