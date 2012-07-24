@@ -652,7 +652,7 @@ contains
     type(qg_type), intent(in) :: qg
     integer, intent(in) :: numoutsteps
 
-    integer :: tmp_id, ncid
+    integer :: ncid
 
     character :: subnam*(*)
     parameter ( subnam = 'qg_monnc_init' )
@@ -685,7 +685,7 @@ contains
     call nc_def_float(ncid, 'enam', timedim, 'm/s', subnam, 'Absolute entrainment')
     call nc_def_float(ncid, 'pken', timedim, 'W/m^2', subnam, 'Average eta*e')
     call nc_def_float(ncid, 'pket', (/lmdim,timedim/), 'W/m^2', subnam, 'Average eta*eta_t')
-    tmp_id = nc_def_int(ncid,'pos',(/ldim,timedim/), 'gridsquare', subnam, 'Position of maximum velocity (gridsquare)')
+    call nc_def_int(ncid,'pos',(/ldim,timedim/), 'gridsquare', subnam, 'Position of maximum velocity (gridsquare)')
     call nc_def_float(ncid, 'val', (/ldim,timedim/), 'm/s', subnam, 'Maximum velocity')
     call nc_def_float(ncid, 'ekei', (/ldim,timedim/), 'J/m^2', subnam, 'Average kinetic energy')
     call nc_def_float(ncid, 'ah2d', (/ldim,timedim/), 'W/m^2', subnam, 'Average dissipation (sqd)')

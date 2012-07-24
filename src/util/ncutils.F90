@@ -53,7 +53,6 @@ module ncutils
 
   interface nc_put_int
      module procedure nc_put_int
-     module procedure nc_put_int_id
      module procedure nc_put_int_simple
   end interface
 
@@ -298,7 +297,7 @@ contains
 
   end subroutine nc_def_float_nd
 
-  integer function nc_def_int(ncid, varname, dims, units, subnam, longname)
+  subroutine nc_def_int(ncid, varname, dims, units, subnam, longname)
     integer, intent(in) :: ncid
     character (len=*), intent(in) :: varname
     integer, intent(in) :: dims(:)
@@ -306,18 +305,18 @@ contains
     character (len=*), intent(in), optional :: subnam
     character (len=*), intent(in), optional :: longname
 
-    integer :: ncstat 
+    integer :: ncstat, var_id
 
-    ncstat = nf90_def_var(ncid, varname, NF90_INT, dims, nc_def_int)
+    ncstat = nf90_def_var(ncid, varname, NF90_INT, dims, var_id)
     if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
-    ncstat = nf90_put_att(ncid, nc_def_int, 'units', units)
+    ncstat = nf90_put_att(ncid, var_id, 'units', units)
     if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
     if (present(longname)) then
-       ncstat = nf90_put_att(ncid, nc_def_int, 'long_name', longname)
+       ncstat = nf90_put_att(ncid, var_id, 'long_name', longname)
        if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
     endif
 
-  end function nc_def_int
+  end subroutine nc_def_int
 
   subroutine nc_def_double(ncid, varname, dim, units, subnam, longname)
 
@@ -424,29 +423,15 @@ contains
 
   end subroutine nc_put_int
 
-  subroutine nc_put_int_id(nc_id, varid, start, count, data, subnam)
+  subroutine nc_put_int_simple(nc_id, varname, data, subnam)
     integer, intent(in) :: nc_id
-    integer, intent(in) :: varid
-    integer, intent(in) :: start(:)
-    integer, intent(in) :: count(:)
+    character (len=*), intent(in) :: varname
     integer, intent(in) :: data(:)
     character (len=*), intent(in) :: subnam
 
-    integer :: ncstat
+    integer :: ncstat, varid
 
-    ncstat = nf90_put_var(nc_id, varid, data, start, count)
-    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
-
-  end subroutine nc_put_int_id
-
-  subroutine nc_put_int_simple(nc_id, varid, data, subnam)
-    integer, intent(in) :: nc_id
-    integer, intent(in) :: varid
-    integer, intent(in) :: data(:)
-    character (len=*), intent(in) :: subnam
-
-    integer :: ncstat
-
+    varid = nc_inq_varid(nc_id, varname, subnam)
     ncstat = nf90_put_var(nc_id, varid, data)
     if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
