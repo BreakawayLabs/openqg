@@ -115,8 +115,8 @@ contains
     integer :: timopdim, xopdim, yopdim, lodim, lomdim
     integer :: timotdim, xotdim, yotdim
 
-    double precision :: xo(go%nxp),yo(go%nyp),tmp(go%nl)
-    integer :: i, iwk, mwk
+    double precision :: tmp(go%nl)
+    integer :: i
 
     ! Definition section: define dimensions and variables
     ! Define four dimensions: x, y, z, time
@@ -129,12 +129,8 @@ contains
     timopdim = nc_def_dim(ocpid, 'time', numoutsteps, subnam)
 
     ! x and y dimensions for the (subsampled) p-grid
-    mwk = mod(go%nxp,subsamp%nsk)
-    iwk = min(mwk,1) + (go%nxp-mwk)/subsamp%nsk
-    xopdim = nc_def_dim(ocpid, 'xp', iwk, subnam)
-    mwk = mod(go%nyp,subsamp%nsk)
-    iwk = min(mwk,1) + (go%nyp-mwk)/subsamp%nsk
-    yopdim = nc_def_dim(ocpid, 'yp', iwk, subnam)
+    xopdim = nc_def_dim(ocpid, 'xp', size(go%xp(::subsamp%nsk)), subnam)
+    yopdim = nc_def_dim(ocpid, 'yp', size(go%yp(::subsamp%nsk)), subnam)
 
     ! And here the z dimension
     lodim = nc_def_dim(ocpid, 'z', go%nl, subnam)
@@ -145,12 +141,8 @@ contains
     timotdim = nc_def_dim(octid, 'time', numoutsteps, subnam)
 
     ! x and y dimensions for the (subsampled) T-grid
-    mwk = mod(go%nxt,subsamp%nsk)
-    iwk = min(mwk,1) + (go%nxt-mwk)/subsamp%nsk
-    xotdim = nc_def_dim(octid, 'xt', iwk, subnam)
-    mwk = mod(go%nyt,subsamp%nsk)
-    iwk = min(mwk,1) + (go%nyt-mwk)/subsamp%nsk
-    yotdim = nc_def_dim(octid, 'yt', iwk, subnam)
+    xotdim = nc_def_dim(octid, 'xt', size(go%xt(::subsamp%nsk)), subnam)
+    yotdim = nc_def_dim(octid, 'yt', size(go%yt(::subsamp%nsk)), subnam)
 
     ! Grid variable definitions for p-grid files
     call nc_def_float(ocpid, 'xp', xopdim, 'km', subnam, 'Ocean X axis (p-grid)')
@@ -193,50 +185,26 @@ contains
     call nc_enddef(octid, subnam)
 
     ! Calculate x gridpoints and store in 'x' arrays
-    ! p-grid points
-    mwk = mod(go%nxp,subsamp%nsk)
-    iwk = min(mwk,1) + (go%nxp-mwk)/subsamp%nsk
-    do i=1,iwk
-       xo(i) = m_to_km(go%xp(1+(i-1)*subsamp%nsk) - go%xp(1))
-    enddo
-    call nc_put_double(ocpid, 'xp', xo(:iwk), subnam)
-    ! T-grid points
-    mwk = mod(go%nxt,subsamp%nsk)
-    iwk = min(mwk,1) + (go%nxt-mwk)/subsamp%nsk
-    do i=1,iwk
-       xo(i) = m_to_km(go%xt(1+(i-1)*subsamp%nsk) - go%xp(1))
-    enddo
-    call nc_put_double(octid, 'xt', xo(:iwk), subnam)
+    call nc_put_double(ocpid, 'xp', m_to_km(go%xp(::subsamp%nsk) - go%xp(1)), subnam)
+    call nc_put_double(octid, 'xt', m_to_km(go%xt(::subsamp%nsk) - go%xp(1)), subnam)
 
     ! Calculate y gridpoints and store in 'y' arrays
-    ! p-grid points
-    mwk = mod(go%nyp,subsamp%nsk)
-    iwk = min(mwk,1) + (go%nyp-mwk)/subsamp%nsk
-    do i=1,iwk
-       yo(i) = m_to_km(go%yp(1+(i-1)*subsamp%nsk) - go%yp(1))
-    enddo
-    call nc_put_double(ocpid, 'yp', yo(:iwk), subnam)
-    ! T-grid points
-    mwk = mod(go%nyt,subsamp%nsk)
-    iwk = min(mwk,1) + (go%nyt-mwk)/subsamp%nsk
-    do i=1,iwk
-       yo(i) = m_to_km(go%yt(1+(i-1)*subsamp%nsk) - go%yp(1))
-    enddo
-    call nc_put_double(octid, 'yt', yo(:iwk), subnam)
+    call nc_put_double(ocpid, 'yp', m_to_km(go%yp(::subsamp%nsk) - go%yp(1)), subnam)
+    call nc_put_double(octid, 'yt', m_to_km(go%yt(::subsamp%nsk) - go%yp(1)), subnam)
 
     ! Convert mid-layer depths into km and store in 'z'
-    tmp(1) = 0.5d0*m_to_km(go%h(1))
+    tmp(1) = 0.5d0*go%h(1)
     do i=2,go%nl
-       tmp(i) = tmp(i-1) + 0.5d0*m_to_km(go%h(i-1) + go%h(i))
+       tmp(i) = tmp(i-1) + 0.5d0*(go%h(i-1) + go%h(i))
     enddo
-    call nc_put_double(ocpid, 'z', tmp, subnam)
+    call nc_put_double(ocpid, 'z', m_to_km(tmp), subnam)
 
     ! Convert interface depths into km and store in 'zi'
-    tmp(1) = m_to_km(go%h(1))
+    tmp(1) = go%h(1)
     do i=2,go%nl-1
-       tmp(i) = tmp(i-1) + m_to_km(go%h(i))
+       tmp(i) = tmp(i-1) + go%h(i)
     enddo
-    call nc_put_double(ocpid, 'zi', tmp(:go%nl-1), subnam)
+    call nc_put_double(ocpid, 'zi', m_to_km(tmp(:go%nl-1)), subnam)
 
     print *,' Ocean netCDF files initialised'
     call nc_close(ocpid)
@@ -261,8 +229,8 @@ contains
     integer :: timatdim, xatdim, yatdim
 
     ! Other variables used locally
-    double precision xa(ga%nxp),ya(ga%nyp),tmp(ga%nl)
-    integer i, iwk, mwk
+    double precision tmp(ga%nl)
+    integer i
 
     atpid = nc_create(outdir, subsamp%filename_p, subnam)
     print *,' atpa.nc file created'
@@ -275,12 +243,8 @@ contains
 
     ! Note that x and y are designed for subsampling
     ! Here are the x and y dimensions for the p-grid
-    mwk = mod(ga%nxp,subsamp%nsk)
-    iwk = min(mwk,1) + (ga%nxp-mwk)/subsamp%nsk
-    xapdim = nc_def_dim(atpid, 'xp', iwk, subnam)
-    mwk = mod(ga%nyp,subsamp%nsk)
-    iwk = min(mwk,1) + (ga%nyp-mwk)/subsamp%nsk
-    yapdim = nc_def_dim(atpid, 'yp', iwk, subnam)
+    xapdim = nc_def_dim(atpid, 'xp', size(ga%xp(::subsamp%nsk)), subnam)
+    yapdim = nc_def_dim(atpid, 'yp', size(ga%yp(::subsamp%nsk)), subnam)
 
     ! And here the z dimension
     ladim = nc_def_dim(atpid, 'z', ga%nl, subnam)
@@ -291,12 +255,8 @@ contains
     timatdim = nc_def_dim(attid, 'time', numoutsteps, subnam)
 
     ! Here are the x and y dimensions for the T-grid
-    mwk = mod(ga%nxt,subsamp%nsk)
-    iwk = min(mwk,1) + (ga%nxt-mwk)/subsamp%nsk
-    xatdim = nc_def_dim(attid, 'xt', iwk, subnam)
-    mwk = mod(ga%nyt,subsamp%nsk)
-    iwk = min(mwk,1) + (ga%nyt-mwk)/subsamp%nsk
-    yatdim = nc_def_dim(attid, 'yt', iwk, subnam)
+    xatdim = nc_def_dim(attid, 'xt', size(ga%xt(::subsamp%nsk)), subnam)
+    yatdim = nc_def_dim(attid, 'yt', size(ga%yt(::subsamp%nsk)), subnam)
 
     call nc_def_float(atpid, 'xp', xapdim, 'km', subnam, 'Atmosphere X axis (p-grid)')
     call nc_def_float(attid, 'xt', xatdim, 'km', subnam, 'Atmosphere X axis (T-grid)')
@@ -337,50 +297,26 @@ contains
     call nc_enddef(attid, subnam)
 
     ! Calculate x gridpoints and store in 'x' arrays
-    ! p-grid points
-    mwk = mod(ga%nxp,subsamp%nsk)
-    iwk = min(mwk,1) + (ga%nxp-mwk)/subsamp%nsk
-    do i=1,iwk
-       xa(i) = m_to_km(ga%xp(1+(i-1)*subsamp%nsk))
-    enddo
-    call nc_put_double(atpid, 'xp', xa(:iwk), subnam)
-    ! T-grid points
-    mwk = mod(ga%nxt,subsamp%nsk)
-    iwk = min(mwk,1) + (ga%nxt-mwk)/subsamp%nsk
-    do i=1,iwk
-       xa(i) = m_to_km(ga%xt(1+(i-1)*subsamp%nsk))
-    enddo
-    call nc_put_double(attid, 'xt', xa(:iwk), subnam)
+    call nc_put_double(atpid, 'xp', m_to_km(ga%xp(::subsamp%nsk)), subnam)
+    call nc_put_double(attid, 'xt', m_to_km(ga%xt(::subsamp%nsk)), subnam)
 
     ! Calculate y gridpoints and store in 'y' arrays
-    ! p-grid points
-    mwk = mod(ga%nyp,subsamp%nsk)
-    iwk = min(mwk,1) + (ga%nyp-mwk)/subsamp%nsk
-    do i=1,iwk
-       ya(i) = m_to_km(ga%yp(1+(i-1)*subsamp%nsk))
-    enddo
-    call nc_put_double(atpid, 'yp', ya(:iwk), subnam)
-    ! T-grid points
-    mwk = mod(ga%nyt,subsamp%nsk)
-    iwk = min(mwk,1) + (ga%nyt-mwk)/subsamp%nsk
-    do i=1,iwk
-       ya(i) = m_to_km(ga%yt(1+(i-1)*subsamp%nsk))
-    enddo
-    call nc_put_double(attid, 'yt', ya(:iwk), subnam)
+    call nc_put_double(atpid, 'yp', m_to_km(ga%yp(::subsamp%nsk)), subnam)
+    call nc_put_double(attid, 'yt', m_to_km(ga%yt(::subsamp%nsk)), subnam)
 
     ! Convert mid-layer heights into km and store in 'z'
-    tmp(1) = 0.5d0*m_to_km(ga%h(1))
+    tmp(1) = 0.5d0*ga%h(1)
     do i=2,ga%nl
-       tmp(i) = tmp(i-1) + 0.5d0*m_to_km(ga%h(i-1) + ga%h(i))
+       tmp(i) = tmp(i-1) + 0.5d0*(ga%h(i-1) + ga%h(i))
     enddo
-    call nc_put_double(atpid, 'z', tmp, subnam)
+    call nc_put_double(atpid, 'z', m_to_km(tmp), subnam)
 
     ! Convert interface heights into km and store in 'zi'
-    tmp(1) = m_to_km(ga%h(1))
+    tmp(1) = ga%h(1)
     do i=2,ga%nl-1
-       tmp(i) = tmp(i-1) + m_to_km(ga%h(i))
+       tmp(i) = tmp(i-1) + ga%h(i)
     enddo
-    call nc_put_double(atpid, 'zi', tmp(:ga%nl-1), subnam)
+    call nc_put_double(atpid, 'zi', m_to_km(tmp(:ga%nl-1)), subnam)
 
     print *,' Atmos. netCDF files initialised'
     call nc_close(atpid)
@@ -402,10 +338,8 @@ contains
     character :: subnam*(*)
     parameter ( subnam = 'ocnc_out' )
 
-    integer :: start
+    integer :: start, k, ocpid, octid
     double precision :: eta(go%nxp,go%nyp,go%nl-1)
-    integer :: k,ipwk,jpwk,itwk,jtwk,mwk
-    integer :: ocpid, octid
 
     ocpid = nc_open_w(outdir, subsamp%filename_p, subnam)
     octid = nc_open_w(outdir, subsamp%filename_t, subnam)
@@ -417,44 +351,27 @@ contains
     ! Temperature file:
     call nc_put_double(octid, 'time', start, tyrs, subnam)
 
-    ! Compute subsampling array indices
-    mwk = mod(go%nxp,subsamp%nsk)
-    ipwk = min(mwk,1) + (go%nxp-mwk)/subsamp%nsk
-    mwk = mod(go%nxt,subsamp%nsk)
-    itwk = min(mwk,1) + (go%nxt-mwk)/subsamp%nsk
-    mwk = mod(go%nyp,subsamp%nsk)
-    jpwk = min(mwk,1) + (go%nyp-mwk)/subsamp%nsk
-    mwk = mod(go%nyt,subsamp%nsk)
-    jtwk = min(mwk,1) + (go%nyt-mwk)/subsamp%nsk
-
     if (subsamp%outfl(1) .and. sst%active) then
-       call write_subsample(octid, 'sst', start, sst%data, &
-            itwk, jtwk, subsamp%nsk, subnam)
+       call nc_put_double(octid, 'sst', start, sst%data(::subsamp%nsk,::subsamp%nsk), subnam)
     endif
     if (subsamp%outfl(2)) then
-       call write_subsample_3d(ocpid, 'p', start, qgo%p, &
-            ipwk, jpwk, subsamp%nsk, go%nl, subnam)
+       call nc_put_double(ocpid, 'p', start, qgo%p(::subsamp%nsk,::subsamp%nsk,:), subnam)
     endif
     if (subsamp%outfl(3)) then
-       call write_subsample_3d(ocpid, 'q', start, qgo%q, &
-            ipwk, jpwk, subsamp%nsk, go%nl, subnam)
+       call nc_put_double(ocpid, 'q', start, qgo%q(::subsamp%nsk,::subsamp%nsk,:), subnam)
     endif
     if (subsamp%outfl(4)) then
-       call write_subsample(octid, 'wekt', start, eko%wekt, &
-            itwk, jtwk, subsamp%nsk, subnam)
+       call nc_put_double(octid, 'wekt', start, eko%wekt(::subsamp%nsk,::subsamp%nsk), subnam)
     endif
     if (subsamp%outfl(5)) then
        do k=1,go%nl-1
           eta(:,:,k) = qgo%b%dz_sign*(qgo%p(:,:,k) - qgo%p(:,:,k+1))/qgo%gp(k)
        enddo
-       call write_subsample_3d(ocpid, 'h', start, eta, &
-            ipwk, jpwk, subsamp%nsk, go%nl-1, subnam)
+       call nc_put_double(ocpid, 'h', start, eta(::subsamp%nsk,::subsamp%nsk,:), subnam)
     endif
     if (subsamp%outfl(6)) then
-       call write_subsample(ocpid, 'taux', start, eko%taux, &
-            ipwk, jpwk, subsamp%nsk, subnam)
-       call write_subsample(ocpid, 'tauy', start, eko%tauy, &
-            ipwk, jpwk, subsamp%nsk, subnam)
+       call nc_put_double(ocpid, 'taux', start, eko%taux(::subsamp%nsk,::subsamp%nsk), subnam)
+       call nc_put_double(ocpid, 'tauy', start, eko%tauy(::subsamp%nsk,::subsamp%nsk), subnam)
     endif
 
     ! The oceanic mixed layer thickness is fixed in this
@@ -480,10 +397,8 @@ contains
     character :: subnam*(*)
     parameter ( subnam = 'atnc_out' )
 
-    integer :: start
+    integer :: start, k, atpid, attid
     double precision :: eta(ga%nxp,ga%nyp,ga%nl-1)
-    integer :: k,ipwk,jpwk,itwk,jtwk,mwk
-    integer :: atpid, attid
 
     atpid = nc_open_w(outdir, subsamp%filename_p, subnam)
     attid = nc_open_w(outdir, subsamp%filename_t, subnam)
@@ -495,99 +410,35 @@ contains
     ! Temperature file:
     call nc_put_double(attid, 'time', start, tyrs, subnam)
 
-    ! Compute subsampling array indices
-    mwk = mod(ga%nxp,subsamp%nsk)
-    ipwk = min(mwk,1) + (ga%nxp-mwk)/subsamp%nsk
-    mwk = mod(ga%nxt,subsamp%nsk)
-    itwk = min(mwk,1) + (ga%nxt-mwk)/subsamp%nsk
-    mwk = mod(ga%nyp,subsamp%nsk)
-    jpwk = min(mwk,1) + (ga%nyp-mwk)/subsamp%nsk
-    mwk = mod(ga%nyt,subsamp%nsk)
-    jtwk = min(mwk,1) + (ga%nyt-mwk)/subsamp%nsk
-
     if (subsamp%outfl(1) .and. ast%active) then
-       call write_subsample(attid, 'ast', start, ast%data, &
-            itwk, jtwk, subsamp%nsk, subnam)
+       call nc_put_double(attid, 'ast', start, ast%data(::subsamp%nsk,::subsamp%nsk), subnam)
     endif
     if (subsamp%outfl(2)) then
-       call write_subsample_3d(atpid, 'p', start, qga%p, &
-            ipwk, jpwk, subsamp%nsk, ga%nl, subnam)
+       call nc_put_double(atpid, 'p', start, qga%p(::subsamp%nsk,::subsamp%nsk,:), subnam)
     endif
     if (subsamp%outfl(3)) then
-       call write_subsample_3d(atpid, 'q', start, qga%q, &
-            ipwk, jpwk, subsamp%nsk, ga%nl, subnam)
+       call nc_put_double(atpid, 'q', start, qga%q(::subsamp%nsk,::subsamp%nsk,:), subnam)
     endif
     if (subsamp%outfl(4)) then
-       call write_subsample(attid, 'wekt', start, eka%wekt, &
-            itwk, jtwk, subsamp%nsk, subnam)
+       call nc_put_double(attid, 'wekt', start, eka%wekt(::subsamp%nsk,::subsamp%nsk), subnam)
     endif
     if (subsamp%outfl(5)) then
        do k=1,ga%nl-1
           eta(:,:,k) = qga%b%dz_sign*(qga%p(:,:,k) - qga%p(:,:,k+1))/qga%gp(k)
        enddo
-       call write_subsample_3d(atpid, 'h', start, eta, &
-            ipwk, jpwk, subsamp%nsk, ga%nl-1, subnam)
+       call nc_put_double(atpid, 'h', start, eta(::subsamp%nsk,::subsamp%nsk,:), subnam)
     endif
     if (subsamp%outfl(6)) then
-       call write_subsample(atpid, 'taux', start, eka%taux, &
-            ipwk, jpwk, subsamp%nsk, subnam)
-       call write_subsample(atpid, 'tauy', start, eka%tauy, &
-            ipwk, jpwk, subsamp%nsk, subnam)
+       call nc_put_double(atpid, 'taux', start, eka%taux(::subsamp%nsk,::subsamp%nsk), subnam)
+       call nc_put_double(atpid, 'tauy', start, eka%tauy(::subsamp%nsk,::subsamp%nsk), subnam)
     endif
     if (subsamp%outfl(7) .and. hmixa%active) then
-       call write_subsample(attid, 'hmixa', start, hmixa%data, &
-            itwk, jtwk, subsamp%nsk, subnam)
+       call nc_put_double(attid, 'hmixa', start, hmixa%data(::subsamp%nsk,::subsamp%nsk), subnam)
     endif
 
     call nc_close(atpid)
     call nc_close(attid)
 
   end subroutine atnc_out
-
-  subroutine write_subsample(ncid, varname, start, data, &
-       itwk, jtwk, nsk, subnam)
-
-    integer, intent(in) :: ncid
-    character (len=*), intent(in) :: varname
-    integer, intent(in) :: start
-    double precision, intent(in) :: data(:,:)
-    integer, intent(in) :: itwk, jtwk, nsk
-    character (len=*), intent(in) :: subnam
-
-    integer :: i, j
-    double precision :: wrk(itwk,jtwk)
-
-    do j=1,jtwk
-       do i=1,itwk
-          wrk(i,j) = data(1+(i-1)*nsk,1+(j-1)*nsk)
-       enddo
-    enddo
-    call nc_put_double(ncid, varname, start, wrk, subnam)
-    
-  end subroutine write_subsample
-
-  subroutine write_subsample_3d(ncid, varname, start, data, &
-       itwk, jtwk, nsk, nl, subnam)
-
-    integer, intent(in) :: ncid
-    character (len=*), intent(in) :: varname
-    integer, intent(in) :: start
-    double precision, intent(in) :: data(:,:,:)
-    integer, intent(in) :: itwk, jtwk, nsk, nl
-    character (len=*), intent(in) :: subnam
-
-    integer :: i, j, k
-    double precision :: wrk(itwk,jtwk,nl)
-
-    do k=1,nl
-       do j=1,jtwk
-          do i=1,itwk
-             wrk(i,j,k) = data(1+(i-1)*nsk,1+(j-1)*nsk,k)
-          enddo
-       enddo
-    enddo
-    call nc_put_double(ncid, varname, start, wrk, subnam)
-    
-  end subroutine write_subsample_3d
 
 end module subsampling
