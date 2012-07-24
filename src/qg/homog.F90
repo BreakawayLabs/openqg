@@ -84,17 +84,17 @@ contains
     type(box_type), intent(in) :: b
 
     if (b%cyclic) then
-       allocate(init_homog%cyc%hom_sol_bc1(b%nyp,b%nl-1))
-       allocate(init_homog%cyc%hom_sol_bc2(b%nyp,b%nl-1))
+       allocate(init_homog%cyc%hom_sol_bc1(b%nyp,2:b%nl))
+       allocate(init_homog%cyc%hom_sol_bc2(b%nyp,2:b%nl))
 
        allocate(init_homog%cyc%hom_sol_bt(b%nyp))
 
-       allocate(init_homog%cyc%hc1s(b%nl-1))
-       allocate(init_homog%cyc%hc2s(b%nl-1))
-       allocate(init_homog%cyc%hc1n(b%nl-1))
-       allocate(init_homog%cyc%hc2n(b%nl-1))
+       allocate(init_homog%cyc%hc1s(2:b%nl))
+       allocate(init_homog%cyc%hc2s(2:b%nl))
+       allocate(init_homog%cyc%hc1n(2:b%nl))
+       allocate(init_homog%cyc%hc2n(2:b%nl))
 
-       allocate(init_homog%cyc%int_sol_bc(b%nl-1))
+       allocate(init_homog%cyc%int_sol_bc(2:b%nl))
     else
        allocate(init_homog%box%hom_sol_bc(b%nxp, b%nyp, 2:b%nl))
 
@@ -185,11 +185,11 @@ contains
        ! For hom_sol_bc2, L(y) = 0.0 on S bdy; = 1.0 on N bdy
        ! Specify RHSs
        do j=1,b%nyp
-          hom_cyc%hom_sol_bc1(j,m) = ( b%yp(b%nyp)-b%yp(j) )/b%yl
-          hom_cyc%hom_sol_bc2(j,m) = ( b%yp(  j )-b%yp(1) )/b%yl
+          hom_cyc%hom_sol_bc1(j,m+1) = ( b%yp(b%nyp)-b%yp(j) )/b%yl
+          hom_cyc%hom_sol_bc2(j,m+1) = ( b%yp(  j )-b%yp(1) )/b%yl
           do i=1,b%nxp
-             wk1(i,j) = hom_cyc%hom_sol_bc1(j,m)
-             wk2(i,j) = hom_cyc%hom_sol_bc2(j,m)
+             wk1(i,j) = hom_cyc%hom_sol_bc1(j,m+1)
+             wk2(i,j) = hom_cyc%hom_sol_bc2(j,m+1)
           enddo
        enddo
 
@@ -202,31 +202,31 @@ contains
        ! independent of i, so just save solution for one i value
        do j=1,b%nyp
           do i=1,b%nxp
-             wk1(i,j) = hom_cyc%hom_sol_bc1(j,m) + mod%rdm2(m+1)*wk1(i,j)
-             wk2(i,j) = hom_cyc%hom_sol_bc2(j,m) + mod%rdm2(m+1)*wk2(i,j)
+             wk1(i,j) = hom_cyc%hom_sol_bc1(j,m+1) + mod%rdm2(m+1)*wk1(i,j)
+             wk2(i,j) = hom_cyc%hom_sol_bc2(j,m+1) + mod%rdm2(m+1)*wk2(i,j)
           enddo
-          hom_cyc%hom_sol_bc1(j,m) = wk1(1,j)
-          hom_cyc%hom_sol_bc2(j,m) = wk2(1,j)
+          hom_cyc%hom_sol_bc1(j,m+1) = wk1(1,j)
+          hom_cyc%hom_sol_bc2(j,m+1) = wk2(1,j)
        enddo
        ! Compute area integrals of hom_sol_bc1 and hom_sol_bc2
        aipch1 = xintp(wk1, b%nxp, b%nyp)
        aipch2 = xintp(wk2, b%nxp, b%nyp)
        ! Both solutions should have the same area integral
-       hom_cyc%int_sol_bc(m) = 0.5d0*(aipch1+aipch2)*b%dx*b%dy
+       hom_cyc%int_sol_bc(m+1) = 0.5d0*(aipch1+aipch2)*b%dx*b%dy
        
        ! Compute dp/dy half a gridpoint in from the north
        ! and south boundaries, and "integrate" in x
        ! Since these solutions are independent of x,
        ! x integration means just multiply by xla
-       pch1ys = ( hom_cyc%hom_sol_bc1(  2 ,m) - hom_cyc%hom_sol_bc1(   1  ,m) )/b%dy
-       pch2ys = ( hom_cyc%hom_sol_bc2(  2 ,m) - hom_cyc%hom_sol_bc2(   1  ,m) )/b%dy
-       pch1yn = ( hom_cyc%hom_sol_bc1(b%nyp,m) - hom_cyc%hom_sol_bc1(b%nyp-1,m) )/b%dy
-       pch2yn = ( hom_cyc%hom_sol_bc2(b%nyp,m) - hom_cyc%hom_sol_bc2(b%nyp-1,m) )/b%dy
+       pch1ys = ( hom_cyc%hom_sol_bc1(  2 ,m+1) - hom_cyc%hom_sol_bc1(   1  ,m+1) )/b%dy
+       pch2ys = ( hom_cyc%hom_sol_bc2(  2 ,m+1) - hom_cyc%hom_sol_bc2(   1  ,m+1) )/b%dy
+       pch1yn = ( hom_cyc%hom_sol_bc1(b%nyp,m+1) - hom_cyc%hom_sol_bc1(b%nyp-1,m+1) )/b%dy
+       pch2yn = ( hom_cyc%hom_sol_bc2(b%nyp,m+1) - hom_cyc%hom_sol_bc2(b%nyp-1,m+1) )/b%dy
        ! Correction for baroclinic modes
-       pch1ys = -pch1ys + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%hom_sol_bc1(  1 ,m)
-       pch2ys = -pch2ys + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%hom_sol_bc2(  1 ,m)
-       pch1yn =  pch1yn + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%hom_sol_bc1(b%nyp,m)
-       pch2yn =  pch2yn + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%hom_sol_bc2(b%nyp,m)
+       pch1ys = -pch1ys + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%hom_sol_bc1(  1 ,m+1)
+       pch2ys = -pch2ys + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%hom_sol_bc2(  1 ,m+1)
+       pch1yn =  pch1yn + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%hom_sol_bc1(b%nyp,m+1)
+       pch2yn =  pch2yn + 0.5d0*b%dy*mod%rdm2(m+1)*hom_cyc%hom_sol_bc2(b%nyp,m+1)
        ! Convert to line integrals
        pch1ys = b%xl*pch1ys
        pch2ys = b%xl*pch2ys
@@ -235,18 +235,18 @@ contains
        ! The above are (for each mode m) the quantities in square
        ! brackets on the RHS of (B.14) and (B.15)
        pchdet = pch1ys*pch2yn - pch2ys*pch1yn
-       hom_cyc%hc1s(m) = pch1ys/pchdet
-       hom_cyc%hc2s(m) = pch2ys/pchdet
-       hom_cyc%hc1n(m) = pch1yn/pchdet
-       hom_cyc%hc2n(m) = pch2yn/pchdet
+       hom_cyc%hc1s(m+1) = pch1ys/pchdet
+       hom_cyc%hc2s(m+1) = pch2ys/pchdet
+       hom_cyc%hc1n(m+1) = pch1yn/pchdet
+       hom_cyc%hc2n(m+1) = pch2yn/pchdet
        print *
        print 240, '  aipch1, aipch2 = ',aipch1,aipch2
-       print 240, '  int_sol_bc     = ',hom_cyc%int_sol_bc(m)
+       print 240, '  int_sol_bc     = ',hom_cyc%int_sol_bc(m+1)
        print 240, '  pch1ys, pch1yn = ',pch1ys,pch1yn
        print 240, '  pch2ys, pch2yn = ',pch2ys,pch2yn
        print 240, '  pchdet         = ',pchdet
-       print 240, '  hc1s, hc2s = ',hom_cyc%hc1s(m),hom_cyc%hc2s(m)
-       print 240, '  hc1n, hc2n = ',hom_cyc%hc1n(m),hom_cyc%hc2n(m)
+       print 240, '  hc1s, hc2s = ',hom_cyc%hc1s(m+1),hom_cyc%hc2s(m+1)
+       print 240, '  hc1n, hc2n = ',hom_cyc%hc1n(m+1),hom_cyc%hc2n(m+1)
     enddo
 
 240 format(a,1p,9d21.13)
@@ -351,7 +351,7 @@ contains
     double precision, intent(out) :: homcor(b%nxp,b%nyp,b%nl)
 
     double precision :: aiplay(b%nl)
-    double precision :: c1(b%nl-1), c2(b%nl-1), c3
+    double precision :: c_bc1(2:b%nl), c_bc2(2:b%nl), c_bt
     double precision :: homcor_2d(b%nyp,b%nl)
 
     ! Compute homogeneous solution coefficients
@@ -359,24 +359,24 @@ contains
     ! Compute boundary integrals of entrainment
     call step_constraints(b, tau_sign, tdt, constr)
 
-    ! Compute LHSs for the c1, c2 equations
-    call compute_correction_coeffs(c1, c2, c3, inhomog, hom_cyc, &
+    ! Compute LHSs for the c_bc1, c_bc2 equations
+    call compute_correction_coeffs(c_bc1, c_bc2, c_bt, inhomog, hom_cyc, &
          mod, constr%cs, constr%cn, b)
 
-    call compute_layer_pressure(aiplay, b, inhomog, c1, c2, c3, hom_cyc, mod)
+    call compute_layer_pressure(aiplay, b, inhomog, c_bc1, c_bc2, c_bt, hom_cyc, mod)
 
     call check_continuity(con, gp, b, tdt, aiplay, ent_xn)
 
-    call homogeneous_correction(homcor_2d(:,:), hom_cyc, c1, c2, c3, b%nyp, b%nl)
+    call homogeneous_correction(homcor_2d(:,:), hom_cyc, c_bc1, c_bc2, c_bt, b%nyp, b%nl)
     homcor(:,:,:) = spread(homcor_2d, 1, b%nxp)
 
   end subroutine cyclic_homog
 
-  subroutine compute_correction_coeffs(c1, c2, c3, wrk, hom_cyc, mod, cs, cn, b)
+  subroutine compute_correction_coeffs(c_bc1, c_bc2, c_bt, wrk, hom_cyc, mod, cs, cn, b)
     type(box_type), intent(in) :: b
-    double precision, intent(out) :: c1(b%nl-1)
-    double precision, intent(out) :: c2(b%nl-1)
-    double precision, intent(out) :: c3
+    double precision, intent(out) :: c_bc1(2:b%nl)
+    double precision, intent(out) :: c_bc2(2:b%nl)
+    double precision, intent(out) :: c_bt
     double precision, intent(in) :: wrk(b%nxp,b%nyp,b%nl)
     type(homog_cyclic_type), intent(in) :: hom_cyc
     type(modes_type), intent(in) :: mod
@@ -393,28 +393,28 @@ contains
        ! -point formulation, but values on bdy are exactly zero
        ayis = trapin(wrk(:,2,m), b%nxp, b%dx)
        ayin = trapin(wrk(:,b%nyp-1,m), b%nxp, b%dx)
-       ! Compute LHSs for the c1, c2 equations
+       ! Compute LHSs for the c_bc1, c_bc2 equations
        clhss(m) = sum(mod%ctl2m(:,m)*cs(:)) + ayis/b%dy
        clhsn(m) = sum(mod%ctl2m(:,m)*cn(:)) + ayin/b%dy
     enddo
 
     ! Get coefft for barotropic mode
-    c3 = clhss(1)*hom_cyc%hbsi
-    ! Derive c1, c2 for baroclinic modes
-    do m=1,b%nl-1
-       c1(m) = hom_cyc%hc2n(m)*clhss(m+1) - hom_cyc%hc2s(m)*clhsn(m+1)
-       c2(m) = hom_cyc%hc1s(m)*clhsn(m+1) - hom_cyc%hc1n(m)*clhss(m+1)
+    c_bt = clhss(1)*hom_cyc%hbsi
+    ! Derive c_bc1, c_bc2 for baroclinic modes
+    do m=2,b%nl
+       c_bc1(m) = hom_cyc%hc2n(m)*clhss(m) - hom_cyc%hc2s(m)*clhsn(m)
+       c_bc2(m) = hom_cyc%hc1s(m)*clhsn(m) - hom_cyc%hc1n(m)*clhss(m)
     enddo
   end subroutine compute_correction_coeffs
 
-  subroutine compute_layer_pressure(aiplay, b, wrk, c1, c2, c3, hom_cyc, mod)
+  subroutine compute_layer_pressure(aiplay, b, wrk, c_bc1, c_bc2, c_bt, hom_cyc, mod)
 
     type(box_type), intent(in) :: b
     double precision, intent(out) :: aiplay(b%nl)
     double precision, intent(in) ::  wrk(b%nxp,b%nyp,b%nl)
-    double precision, intent(in) :: c1(b%nl-1)
-    double precision, intent(in) :: c2(b%nl-1)
-    double precision, intent(in) :: c3
+    double precision, intent(in) :: c_bc1(2:b%nl)
+    double precision, intent(in) :: c_bc2(2:b%nl)
+    double precision, intent(in) :: c_bt
 
     type(homog_cyclic_type), intent(in) :: hom_cyc
     type(modes_type), intent(in) :: mod
@@ -429,9 +429,9 @@ contains
        xinhom(m) = int_P_dA(wrk(:,:,m), b)
     enddo
 
-    aipmod(1) = xinhom(1) + c3*hom_cyc%int_sol_bt
+    aipmod(1) = xinhom(1) + c_bt*hom_cyc%int_sol_bt
     do m=2,b%nl
-       aipmod(m) = xinhom(m) + ( c1(m-1) + c2(m-1) )*hom_cyc%int_sol_bc(m-1)
+       aipmod(m) = xinhom(m) + ( c_bc1(m) + c_bc2(m) )*hom_cyc%int_sol_bc(m)
     enddo
     ! Integrals of layer pressures
     do k=1,b%nl
@@ -480,23 +480,23 @@ contains
 
   end subroutine check_continuity
 
-  pure subroutine homogeneous_correction(homcor, hom_cyc, c1, c2, c3, nyp, nl)
+  pure subroutine homogeneous_correction(homcor, hom_cyc, c_bc1, c_bc2, c_bt, nyp, nl)
 
     double precision, intent(out) :: homcor(nyp,nl)
     type(homog_cyclic_type), intent(in) :: hom_cyc
-    double precision, intent(in) :: c1(nl-1)
-    double precision, intent(in) :: c2(nl-1)
-    double precision, intent(in) :: c3
+    double precision, intent(in) :: c_bc1(2:nl)
+    double precision, intent(in) :: c_bc2(2:nl)
+    double precision, intent(in) :: c_bt
     integer, intent(in) :: nyp, nl
 
     integer :: m
 
     ! Compute homogeneous corrections (indep. of i)
     ! Barotropic mode
-    homcor(:,1) = c3*hom_cyc%hom_sol_bt(:)
+    homcor(:,1) = c_bt*hom_cyc%hom_sol_bt(:)
     ! Baroclinic modes
     do m=2,nl
-       homcor(:,m) = c1(m-1)*hom_cyc%hom_sol_bc1(:,m-1) + c2(m-1)*hom_cyc%hom_sol_bc2(:,m-1)
+       homcor(:,m) = c_bc1(m)*hom_cyc%hom_sol_bc1(:,m) + c_bc2(m)*hom_cyc%hom_sol_bc2(:,m)
     enddo
 
   end subroutine homogeneous_correction
