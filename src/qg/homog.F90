@@ -142,8 +142,8 @@ contains
     type(homog_cyclic_type), intent(inout) :: hom_cyc
     type(inhomog_type), intent(inout) :: inhom
 
-    double precision :: bb(b%nxt/2 + 1)
     double precision :: wk1(b%nxp,b%nyp),wk2(b%nxp,b%nyp)
+    double precision :: rhs1(b%nxp,b%nyp),rhs2(b%nxp,b%nyp)
     double precision pch1yn,pch2yn,pch1ys,pch2ys, &
          pchdet,aipch1,aipch2
 
@@ -187,16 +187,13 @@ contains
        do j=1,b%nyp
           hom_cyc%hom_sol_bc1(j,m+1) = ( b%yp(b%nyp)-b%yp(j) )/b%yl
           hom_cyc%hom_sol_bc2(j,m+1) = ( b%yp(  j )-b%yp(1) )/b%yl
-          do i=1,b%nxp
-             wk1(i,j) = hom_cyc%hom_sol_bc1(j,m+1)
-             wk2(i,j) = hom_cyc%hom_sol_bc2(j,m+1)
-          enddo
+          rhs1(:,j) = hom_cyc%hom_sol_bc1(j,m+1)
+          rhs2(:,j) = hom_cyc%hom_sol_bc2(j,m+1)
        enddo
 
        ! Invert these RHSs for baroclinic homog. solutions (sol0 above)
-       bb(:) = inhom%bd2(:) - mod%rdm2(m+1)
-       call hscy (inhom, b, wk1, bb)
-       call hscy (inhom, b, wk2, bb)
+       call hscy (inhom, b, rhs1, inhom%bd2(:) - mod%rdm2(m+1), wk1)
+       call hscy (inhom, b, rhs2, inhom%bd2(:) - mod%rdm2(m+1), wk2)
        ! Add Helmholtz solution to L(y) to get full solutions
        ! Solutions in wk1, wk2 are functions of y only, i.e.
        ! independent of i, so just save solution for one i value
@@ -260,7 +257,7 @@ contains
     type(homog_box_type), intent(inout) :: hom_box
     type(inhomog_type), intent(inout) :: inhom
 
-    double precision bb(b%nxt-1)
+    double precision :: rhs(b%nxp,b%nyp)
     integer :: k, m
 
     ! the area integrals of the homogeneous baroclinic solutions
@@ -279,10 +276,11 @@ contains
        ! with the usual boundary condition p = 0
        ! These are baroclinic solutions for use in ocinvq
        ! Setup RHS.
-       hom_box%hom_sol_bc(:,:,m) = 1.0d0
+       rhs(:,:) = 1.0d0
+
        ! Solve for sol0 in ochom.
-       bb(:) = inhom%bd2(:) - mod%rdm2(m)
-       call hsbx (inhom, b, hom_box%hom_sol_bc(:,:,m), bb)
+       call hsbx (inhom, b, rhs(:,:), inhom%bd2(:) - mod%rdm2(m), hom_box%hom_sol_bc(:,:,m))
+
        ! Add constant offset
        hom_box%hom_sol_bc(:,:,m) = 1.0d0 + mod%rdm2(m)*hom_box%hom_sol_bc(:,:,m)
        ! Area integral of full homogeneous solution

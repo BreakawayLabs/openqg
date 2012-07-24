@@ -86,7 +86,7 @@ contains
 
   end function init_inhomog
 
-  subroutine hsbx (inhom, b, wrk2, bb)
+  subroutine hsbx (inhom, b, rhs, bb, inhomog)
 
     ! Solves the inhomogeneous Helmholtz equation for
     ! given rhs in a domain with meridional boundaries
@@ -101,8 +101,9 @@ contains
 
     type(inhomog_type), intent(inout) :: inhom
     type(box_type), intent(in) :: b
-    double precision, intent(inout) :: wrk2(b%nxp,b%nyp)
+    double precision, intent(inout) :: rhs(b%nxp,b%nyp)
     double precision, intent(in) :: bb(b%nxt-1)
+    double precision, intent(inout) :: inhomog(b%nxp,b%nyp)
 
     double precision ftnorm
 
@@ -118,7 +119,7 @@ contains
     ! --------------------------------------------------
     ! N.B. uses extra element wrk(nxp,j) as workspace.
     ! Value in this location does not affect inverse.
-    inhom%fftw_ocn_in(:,:) = wrk2(2:b%nxp-1,2:b%nyp-1)
+    inhom%fftw_ocn_in(:,:) = rhs(2:b%nxp-1,2:b%nyp-1)
     call fftw_execute_r2r(inhom%ocn_plan_f, inhom%fftw_ocn_in, inhom%fftw_ocn_out_r)
 
     ! For each wavenumber i, solve for sine transform of p
@@ -143,19 +144,19 @@ contains
     ! Inverse sine transform along latitude lines
     ! -------------------------------------------
     call fftw_execute_r2r(inhom%ocn_plan_f, inhom%fftw_ocn_in, inhom%fftw_ocn_out_r)
-    wrk2(2:b%nxp-1,2:b%nyp-1) = inhom%fftw_ocn_out_r(:,:)
+    inhomog(2:b%nxp-1,2:b%nyp-1) = inhom%fftw_ocn_out_r(:,:)
     ! Zero pressure on Western & Eastern boundaries
-    wrk2(1,:) = 0.0d0
-    wrk2(b%nxp,:) = 0.0d0
+    inhomog(1,:) = 0.0d0
+    inhomog(b%nxp,:) = 0.0d0
 
     ! Impose N & S boundary values, which are
     ! implicit in the tridiagonal formulation.
-    wrk2(:,1) = 0.0d0
-    wrk2(:,b%nyp) = 0.0d0
+    inhomog(:,1) = 0.0d0
+    inhomog(:,b%nyp) = 0.0d0
 
   end subroutine hsbx
 
-  subroutine hscy (inhom, b, wrk2, bb)
+  subroutine hscy (inhom, b, rhs, bb, inhomog)
 
     ! Solves the inhomogeneous Helmholtz equation
     ! for given rhs in a zonally periodic domain.
@@ -168,8 +169,9 @@ contains
 
     type(inhomog_type), intent(inout) :: inhom
     type(box_type), intent(in) :: b
-    double precision, intent(inout) :: wrk2(b%nxp,b%nyp)
+    double precision, intent(in) :: rhs(b%nxp,b%nyp)
     double precision, intent(in) :: bb(b%nxt/2 + 1)
+    double precision, intent(out) :: inhomog(b%nxp,b%nyp)
 
     double precision :: ftnorm
 
@@ -181,7 +183,7 @@ contains
 
     ! Compute FFT of rhs along latitude lines
     ! ---------------------------------------
-    inhom%fftw_ocn_in(:,:) = wrk2(:b%nxp-1,2:b%nyp-1)
+    inhom%fftw_ocn_in(:,:) = rhs(:b%nxp-1,2:b%nyp-1)
     call fftw_execute_dft_r2c(inhom%ocn_plan_f, inhom%fftw_ocn_in, inhom%fftw_ocn_out_c)
 
     ! For each wavenumber i, solve for FFT of p
@@ -204,13 +206,13 @@ contains
     inhom%fftw_ocn_out_c(:,:) = ftnorm*uvec(:,:)
 
     call fftw_execute_dft_c2r(inhom%ocn_plan_b, inhom%fftw_ocn_out_c, inhom%fftw_ocn_in)
-    wrk2(:b%nxp-1,2:b%nyp-1) = inhom%fftw_ocn_in(:,:)
+    inhomog(:b%nxp-1,2:b%nyp-1) = inhom%fftw_ocn_in(:,:)
     ! Impose N & S boundary values, which are
     ! implicit in the tridiagonal formulation.
-    wrk2(:,1) = 0.0d0
-    wrk2(:,b%nyp) = 0.0d0
+    inhomog(:,1) = 0.0d0
+    inhomog(:,b%nyp) = 0.0d0
     ! Cyclic condition
-    wrk2(b%nxp,:) = wrk2(1,:)
+    inhomog(b%nxp,:) = inhomog(1,:)
 
   end subroutine hscy
 
