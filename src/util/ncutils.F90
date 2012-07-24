@@ -11,18 +11,16 @@ module ncutils
   public nc_create
   public nc_open
   public nc_open_w
+  public nc_enddef
 
   public nc_def_dim
   public nc_get_dim
 
   public nc_get_int
 
-
   public nc_get_double
 
   public nc_get_text
-
-  public nc_enddef
 
   interface nc_get_int
      module procedure nc_get_int
@@ -61,21 +59,13 @@ module ncutils
   end interface
 
   public nc_put_double
-
   interface nc_put_double
-     module procedure nc_put_double_block_1d_id
-     module procedure nc_put_double_block_2d_id
-     module procedure nc_put_double_block_3d_id
      module procedure nc_put_double_block_1d_name
      module procedure nc_put_double_block_2d_name
      module procedure nc_put_double_block_3d_name
-     module procedure nc_put_double_line_array_1d_id
      module procedure nc_put_double_line_array_1d_name
-     module procedure nc_put_double_line_array_2d_id
      module procedure nc_put_double_line_array_2d_name
-     module procedure nc_put_double_line_array_3d_id
      module procedure nc_put_double_line_array_3d_name
-     module procedure nc_put_double_line_scalar_id
      module procedure nc_put_double_line_scalar_name
   end interface nc_put_double
 
@@ -254,7 +244,7 @@ contains
     integer :: ncstat
 
     ncstat = nf90_enddef(ncid)
-    if (ncstat /= NF90_NOERR ) call handle_err(ncstat, subnam)
+    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
     
   end subroutine nc_enddef
 
@@ -456,49 +446,6 @@ contains
 
   end subroutine nc_put_int_simple
 
-
-  subroutine nc_put_double_block_1d_id(ncid, varid, data, subnam)
-
-    integer, intent(in) :: ncid
-    integer, intent(in) :: varid
-    double precision, intent(in) :: data(:)
-    character (len=*), intent(in), optional :: subnam
-
-    integer :: ncstat
-
-    ncstat = nf90_put_var(ncid, varid, data)
-    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
-
-  end subroutine nc_put_double_block_1d_id
-
-  subroutine nc_put_double_block_2d_id(ncid, varid, data, subnam)
-
-    integer, intent(in) :: ncid
-    integer, intent(in) :: varid
-    double precision, intent(in) :: data(:,:)
-    character (len=*), intent(in), optional :: subnam
-
-    integer :: ncstat
-
-    ncstat = nf90_put_var(ncid, varid, data)
-    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
-
-  end subroutine nc_put_double_block_2d_id
-
-  subroutine nc_put_double_block_3d_id(ncid, varid, data, subnam)
-
-    integer, intent(in) :: ncid
-    integer, intent(in) :: varid
-    double precision, intent(in) :: data(:,:,:)
-    character (len=*), intent(in), optional :: subnam
-
-    integer :: ncstat
-
-    ncstat = nf90_put_var(ncid, varid, data)
-    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
-
-  end subroutine nc_put_double_block_3d_id
-
   subroutine nc_put_double_block_1d_name(ncid, varname, data, subnam)
 
     integer, intent(in) :: ncid
@@ -544,8 +491,6 @@ contains
 
   end subroutine nc_put_double_block_3d_name
 
-! nc_put_double_line_scalar_id (ncid, varid, start, data, subname) (nc_put_float are a bit like this...)
-! nc_put_double_line_array_id 
 ! nc_put_double_line_scalar_name (ncid, varname, start, data, subname)
 ! nc_put_double_line_array_name
 
@@ -568,24 +513,6 @@ contains
 
   end subroutine nc_put_double_line_array_1d_name
 
-  subroutine nc_put_double_line_array_1d_id(ncid, varid, start, data, subnam)
-    integer, intent(in) :: ncid
-    integer, intent(in) :: varid
-    integer, intent(in) :: start
-    double precision, intent(in) :: data(:)
-    character (len=*), intent(in) :: subnam
-
-    integer :: ncstat
-    integer :: startt(2), count(2)
-
-    startt = (/1, start/)
-    count = (/size(data), 1/)
-
-    ncstat = nf90_put_var(ncid, varid, data, startt, count)
-    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
-
-  end subroutine nc_put_double_line_array_1d_id
-
   subroutine nc_put_double_line_array_2d_name(ncid, varname, start, data, subnam)
     integer, intent(in) :: ncid
     character (len=*), intent(in) :: varname
@@ -604,24 +531,6 @@ contains
     if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
   end subroutine nc_put_double_line_array_2d_name
-
-  subroutine nc_put_double_line_array_2d_id(ncid, varid, start, data, subnam)
-    integer, intent(in) :: ncid
-    integer, intent(in) :: varid
-    integer, intent(in) :: start
-    double precision, intent(in) :: data(:,:)
-    character (len=*), intent(in) :: subnam
-
-    integer :: ncstat
-    integer :: startt(3), count(3)
-
-    startt = (/1, 1, start/)
-    count = (/shape(data), 1/)
-
-    ncstat = nf90_put_var(ncid, varid, data, startt, count)
-    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
-
-  end subroutine nc_put_double_line_array_2d_id
 
   subroutine nc_put_double_line_array_3d_name(ncid, varname, start, data, subnam)
     integer, intent(in) :: ncid
@@ -642,24 +551,6 @@ contains
 
   end subroutine nc_put_double_line_array_3d_name
 
-  subroutine nc_put_double_line_array_3d_id(ncid, varid, start, data, subnam)
-    integer, intent(in) :: ncid
-    integer, intent(in) :: varid
-    integer, intent(in) :: start
-    double precision, intent(in) :: data(:,:,:)
-    character (len=*), intent(in) :: subnam
-
-    integer :: ncstat
-    integer :: startt(4), count(4)
-
-    startt = (/1, 1, 1, start/)
-    count = (/shape(data), 1/)
-
-    ncstat = nf90_put_var(ncid, varid, data, startt, count)
-    if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
-
-  end subroutine nc_put_double_line_array_3d_id
-
   subroutine nc_put_double_line_scalar_name(ncid, varname, start, data, subnam)
     integer, intent(in) :: ncid
     character (len=*), intent(in) :: varname
@@ -675,27 +566,9 @@ contains
 
     varid = nc_inq_varid(ncid, varname, subnam)
     ncstat = nf90_put_var(ncid, varid, (/data/), startt, count)
-    if (ncstat /= NF90_NOERR ) call handle_err(ncstat, subnam)
-
-  end subroutine nc_put_double_line_scalar_name
-
-  subroutine nc_put_double_line_scalar_id(ncid, varid, start, data, subnam)
-    integer, intent(in) :: ncid
-    integer, intent(in) :: varid
-    integer, intent(in) :: start
-    double precision, intent(in) :: data
-    character (len=*), intent(in) :: subnam
-
-    integer :: ncstat
-    integer :: startt(2), count(2)
-
-    startt = (/1, start/)
-    count = (/1, 1/)
-
-    ncstat = nf90_put_var(ncid, varid, (/data/), startt, count)
     if (ncstat /= NF90_NOERR) call handle_err(ncstat, subnam)
 
-  end subroutine nc_put_double_line_scalar_id
+  end subroutine nc_put_double_line_scalar_name
 
   integer function nc_inq_varid(ncid, varname, subnam)
     integer, intent(in) :: ncid
