@@ -332,21 +332,13 @@ contains
        ! Differentiate contents of ug to get Del-4th(lagged u)
        ! Return this field in array ptwk3. ptwk2 is workspace
        ! which contains Del-sqd(lagged u)
-       if (b%cyclic) then
-          call del4ch (ug, b%nxp, b%nyt, ptwk2, b%dxm2, ptwk3)
-       else
-          call del4bx (ug, b%nxp, b%nyt, ptwk2, b%dxm2, ptwk3)
-       endif
+       call del4_ (ug, b%nxp, b%nyt, b%cyclic, b%dxm2, ptwk2, ptwk3)
           
        vg(:,:) = dpm_dx(:,:)/b%fnot
        ! Differentiate contents of vg to get Del-4th(lagged v)
        ! Return this field in array octwk3. octwk2 is workspace
        ! which contains Del-sqd(lagged v)
-       if (b%cyclic) then
-          call del4ch (vg, b%nxt, b%nyp, tpwk2, b%dxm2, tpwk3)
-       else
-          call del4bx (vg, b%nxt, b%nyp, tpwk2, b%dxm2, tpwk3)
-       endif
+       call del4_ (vg, b%nxt, b%nyp, b%cyclic, b%dxm2, tpwk2, tpwk3)
        ! Find extrema of po for stream function
        ! Infer current u and v geostrophically
        ! Compute required integrands and jet position
@@ -419,231 +411,78 @@ contains
 
   end subroutine qg_diagno
 
-  subroutine del4bx (arr, nx, ny, del2, dxm2, del4)
+  function d2dx2(arr, nx, ny, cyclic)
+
+    double precision, intent(in) :: arr(nx,ny)
+    integer, intent(in) :: nx
+    integer, intent(in) :: ny
+    logical, intent(in) :: cyclic
+    double precision :: d2dx2(nx,ny)
+
+    integer :: i
+
+    do i=2,nx-1
+       d2dx2(i,:) = arr(i-1,:) - 2.0d0*arr(i,:) + arr(i+1,:)
+    enddo
+
+    if (cyclic) then
+       d2dx2(1,:) = arr(nx,:) - 2.0d0*arr(1,:) + arr(2,:)
+       d2dx2(nx,:) = arr(nx-1,:) - 2.0d0*arr(nx,:) + arr(1,:)
+    else
+       d2dx2(1,:) = d2dx2(2,:)
+       d2dx2(nx,:) = d2dx2(nx-1,:)
+    endif
+
+  end function d2dx2
+
+  function d2dy2(arr, nx, ny)
+    double precision, intent(in) :: arr(nx,ny)
+    integer, intent(in) :: nx
+    integer, intent(in) :: ny
+    double precision :: d2dy2(nx,ny)
+
+    integer :: j
+
+    do j=2,ny-2
+       d2dy2(:,j) = arr(:,j-1) - 2.0d0*arr(:,j) + arr(:,j+1)
+    enddo
+    d2dy2(:,1) = d2dy2(:,2)
+    d2dy2(:,ny) = d2dy2(:,ny-1)
+
+  end function d2dy2
+
+  subroutine del4_ (arr, nx, ny, cyclic, dxm2, del2, del4)
 
     ! Computes Del-4th(arr) for a field arr(nx,ny) tabulated
-    ! in a finite box. No boundary condition is applied;
+    ! in a finite box or periodic box. No boundary condition is applied;
     ! the boundary values are computed using the appropriate
     ! forward or backward difference formulae.
     ! del2(nx,ny) is a workspace array used for Del-sqd(arr);
     ! Del-4th(arr) is returned in the array del4(nx,ny).
     ! arr is returned unchanged.
      
-    ! N.B. Parallelised using "orphaned directives";
-    ! only intended for use in the parallel regions
-    ! established earlier in calling subroutine diagno
-
     integer, intent(in) :: nx,ny
     double precision, intent(in) :: arr(nx,ny)
+    double precision, intent(in) ::dxm2
+    logical, intent(in) :: cyclic
     double precision, intent(out) :: del2(nx,ny),del4(nx,ny)
-    double precision, intent(in) ::dxm2
 
-    integer :: i,j
+    double precision :: d2arr_dx2(nx,ny)
+    double precision :: d2arr_dy2(nx,ny)
+    double precision :: d2del2_dx2(nx,ny)
+    double precision :: d2del2_dy2(nx,ny)
 
-    ! Compute Del-sqd(arr) except at N & S boundaries.
-    do j=2,ny-1
-       ! Western boundary:
-       del2( 1,j) = dxm2*(  arr( 3,j)-2.0d0*arr(  2 ,j)+arr(  1 ,j) &
-            + arr( 1,j-1)-2.0d0*arr( 1,j)+arr( 1,j+1) )
-       ! Inner points (standard case)
-       do i=2,nx-1
-          del2(i,j) = dxm2*(  arr(i,j-1) + arr(i-1,j) + arr(i+1,j) &
-               + arr(i,j+1) - 4.0d0*arr(i,j) )
-       enddo
-       ! Eastern boundary:
-       del2(nx,j) = dxm2*(  arr(nx,j)-2.0d0*arr(nx-1,j)+arr(nx-2,j) &
-            + arr(nx,j-1)-2.0d0*arr(nx,j)+arr(nx,j+1) )
-    enddo
+    d2arr_dx2(:,:) = d2dx2(arr, nx, ny, cyclic)
+    d2arr_dy2(:,:) = d2dy2(arr, nx, ny)
 
-    !~ Compute N & S Del-sqd boundary values
-    do i=2,nx-1
-       del2(i, 1) = dxm2*(  arr(i-1, 1)-2.0d0*arr(i, 1)+arr(i+1,1) &
-            + arr(i, 3)-2.0d0*arr(i,  2 )+arr(i,  1 ) )
-       del2(i,ny) = dxm2*(  arr(i-1,ny)-2.0d0*arr(i,ny)+arr(i+1,ny) &
-            + arr(i,ny)-2.0d0*arr(i,ny-1)+arr(i,ny-2) )
-    enddo
+    del2(:,:) = dxm2*(d2arr_dx2(:,:) + d2arr_dy2(:,:))
 
-    ! SW corner
-    del2( 1, 1) = dxm2*(  arr( 3, 1) - 2.0d0*arr( 2 , 1 ) &
-         + arr( 1 , 1 ) &
-         + arr( 1, 3) - 2.0d0*arr( 1 , 2 ) &
-         + arr( 1 , 1 ) )
-    ! SE corner
-    del2(nx, 1) = dxm2*(  arr(nx, 1) - 2.0d0*arr(nx-1, 1) &
-         + arr(nx-2, 1) &
-         + arr(nx, 3) - 2.0d0*arr( nx , 2) &
-         + arr( nx , 1) )
-    ! NW corner
-    del2( 1,ny) = dxm2*(  arr( 3,ny) - 2.0d0*arr( 2, ny ) &
-         + arr( 1, ny ) &
-         + arr( 1,ny) - 2.0d0*arr( 1,ny-1) &
-         + arr( 1,ny-2) )
-    ! NE corner
-    del2(nx,ny) = dxm2*(  arr(nx,ny) - 2.0d0*arr(nx-1,ny) &
-                         + arr(nx-2,ny) &
-                         + arr(nx,ny) - 2.0d0*arr(nx,ny-1) &
-                         + arr(nx,ny-2) )
+    d2del2_dx2(:,:) = d2dx2(del2, nx, ny, cyclic)
+    d2del2_dy2(:,:) = d2dy2(del2, nx, ny)
 
-    ! Compute Del-4th(arr) except at N & S boundaries.
-    do j=2,ny-1
-       ! Western boundary:
-       del4( 1,j) = dxm2*( del2( 3,j)-2.0d0*del2(  2 ,j)+del2(  1 ,j) &
-            +del2( 1,j-1)-2.0d0*del2( 1,j)+del2( 1,j+1) )
-       ! Inner points (standard case)
-       do i=2,nx-1
-          del4(i,j) = dxm2*(  del2(i,j-1) + del2(i-1,j) + del2(i+1,j) &
-               + del2(i,j+1) - 4.0d0*del2(i,j) )
-       enddo
-       ! Eastern boundary:
-       del4(nx,j) = dxm2*( del2(nx,j)-2.0d0*del2(nx-1,j)+del2(nx-2,j) &
-            +del2(nx,j-1)-2.0d0*del2(nx,j)+del2(nx,j+1) )
-    enddo
-    
-    ! Compute N & S Del-4th boundary values
-    do i=2,nx-1
-       del4(i, 1) = dxm2*( del2(i-1, 1)-2.0d0*del2(i, 1)+del2(i+1,1) &
-            +del2(i, 3)-2.0d0*del2(i,  2 )+del2(i,  1 ) )
-       del4(i,ny) = dxm2*( del2(i-1,ny)-2.0d0*del2(i,ny)+del2(i+1,ny) &
-            +del2(i,ny)-2.0d0*del2(i,ny-1)+del2(i,ny-2) )
-    enddo
+    del4(:,:) = dxm2*(d2del2_dx2(:,:) + d2del2_dy2(:,:))
 
-    ! SW corner
-    del4( 1, 1) = dxm2*(  del2( 3, 1) - 2.0d0*del2( 2 , 1 ) &
-         + del2( 1 , 1 ) &
-         + del2( 1, 3) - 2.0d0*del2( 1 , 2 ) &
-         + del2( 1 , 1 ) )
-    ! SE corner
-    del4(nx, 1) = dxm2*(  del2(nx, 1) - 2.0d0*del2(nx-1, 1) &
-         + del2(nx-2, 1) &
-         + del2(nx, 3) - 2.0d0*del2( nx , 2) &
-         + del2( nx , 1) )
-    ! NW corner
-    del4( 1,ny) = dxm2*(  del2( 3,ny) - 2.0d0*del2( 2, ny ) &
-         + del2( 1, ny ) &
-         + del2( 1,ny) - 2.0d0*del2( 1,ny-1) &
-         + del2( 1,ny-2) )
-    ! NE corner
-    del4(nx,ny) = dxm2*(  del2(nx,ny) - 2.0d0*del2(nx-1,ny) &
-         + del2(nx-2,ny) &
-         + del2(nx,ny) - 2.0d0*del2(nx,ny-1) &
-         + del2(nx,ny-2) )
-
-  end subroutine del4bx
-
-  subroutine del4ch (arr, nx, ny, del2, dxm2, del4)
-
-    ! Computes Del-4th(arr) for a field arr(nx,ny) tabulated
-    ! in a periodic channel. No boundary condition is applied;
-    ! the boundary values are computed using the appropriate
-    ! forward or backward difference formulae.
-    ! del2(nx,ny) is a workspace array used for Del-sqd(arr);
-    ! we use an externally dimensioned array so that the
-    ! routine can be used for either atmosphere or ocean.
-    ! Del-4th(arr) is returned in the array del4(nx,ny).
-    ! arr is returned unchanged.
-
-    ! N.B. Parallelised using "orphaned directives";
-    ! only intended for use in the parallel regions
-    ! established earlier in calling subroutine diagno
-
-    integer, intent(in) :: nx,ny
-    double precision, intent(in) :: arr(nx,ny)
-    double precision, intent(out) ::del2(nx,ny),del4(nx,ny)
-    double precision, intent(in) ::dxm2
-
-    integer :: i,j
-
-    ! Compute Del-sqd(arr) except at N & S boundaries.
-    ! Apply periodic E-W condition
-    do j=2,ny-1
-       ! Western boundary (periodic)
-       del2( 1,j) = dxm2*(  arr(1,j-1) + arr(nx,j) + arr(2,j) &
-            + arr(1,j+1) - 4.0d0*arr(1,j) )
-       ! Inner points (standard case)
-       do i=2,nx-1
-          del2(i,j) = dxm2*(  arr(i,j-1) + arr(i-1,j) + arr(i+1,j) &
-               + arr(i,j+1) - 4.0d0*arr(i,j) )
-       enddo
-       ! Eastern boundary (periodic)
-       del2(nx,j) = dxm2*(  arr(nx,j-1) + arr(nx-1,j) + arr(1,j) &
-            + arr(nx,j+1) - 4.0d0*arr(nx,j) )
-    enddo
-
-    ! Compute N & S Del-sqd boundary values
-    ! Apply periodic E-W condition
-    del2( 1, 1) = dxm2*(  arr( nx, 1) - 2.0d0*arr( 1,  1 ) &
-         + arr( 2 , 1) &
-         + arr( 1 , 3) - 2.0d0*arr( 1,  2 ) &
-         + arr(1,  1 ) )
-    del2( 1,ny) = dxm2*(  arr( nx,ny) - 2.0d0*arr( 1, ny ) &
-         + arr( 2 ,ny) &
-         + arr( 1 ,ny) - 2.0d0*arr( 1,ny-1) &
-         + arr(1,ny-2) )
-    do i=2,nx-1
-       del2(i, 1) = dxm2*(  arr(i-1, 1) - 2.0d0*arr( i,  1 ) &
-            + arr(i+1, 1) &
-            + arr( i , 3) - 2.0d0*arr( i,  2 ) &
-            + arr(i,  1 ) )
-       del2(i,ny) = dxm2*(  arr(i-1,ny) - 2.0d0*arr( i, ny ) &
-            + arr(i+1,ny) &
-            + arr( i ,ny) - 2.0d0*arr( i,ny-1) &
-            + arr(i,ny-2) )
-    enddo
-    del2(nx, 1) = dxm2*(  arr(nx-1, 1) - 2.0d0*arr(nx,  1 ) &
-         + arr( 1 , 1) &
-         + arr( nx , 3) - 2.0d0*arr(nx,  2 ) &
-         + arr(nx,  1 ) )
-    del2(nx,ny) = dxm2*(  arr(nx-1,ny) - 2.0d0*arr(nx, ny ) &
-         + arr( 1 ,ny) &
-         + arr( nx ,ny) - 2.0d0*arr(nx,ny-1) &
-         + arr(nx,ny-2) )
-
-    ! Compute Del-4th(arr) except at N & S boundaries.
-    ! Apply periodic E-W condition
-    do j=2,ny-1
-       ! Western boundary (periodic)
-       del4( 1,j) = dxm2*(  del2(1,j-1) + del2(nx,j) + del2(2,j) &
-            + del2(1,j+1) - 4.0d0*del2(1,j) )
-       ! Inner points (standard case)
-       do i=2,nx-1
-          del4(i,j) = dxm2*(  del2(i,j-1) + del2(i-1,j) + del2(i+1,j) &
-               + del2(i,j+1) - 4.0d0*del2(i,j) )
-       enddo
-       ! Eastern boundary (periodic)
-       del4(nx,j) = dxm2*(  del2(nx,j-1) + del2(nx-1,j) + del2(1,j) &
-            + del2(nx,j+1) - 4.0d0*del2(nx,j) )
-    enddo
-
-    ! Compute N & S Del-4th boundary values
-    ! Apply periodic E-W condition
-    del4( 1, 1) = dxm2*(  del2( nx, 1) - 2.0d0*del2( 1,  1 ) &
-         + del2( 2 , 1) &
-         + del2( 1 , 3) - 2.0d0*del2( 1,  2 ) &
-         + del2(1,  1 ) )
-    del4( 1,ny) = dxm2*(  del2( nx,ny) - 2.0d0*del2( 1, ny ) &
-         + del2( 2 ,ny) &
-         + del2( 1 ,ny) - 2.0d0*del2( 1,ny-1) &
-         + del2(1,ny-2) )
-    do i=2,nx-1
-       del4(i, 1) = dxm2*(  del2(i-1, 1) - 2.0d0*del2( i,  1 ) &
-            + del2(i+1, 1) &
-            + del2( i , 3) - 2.0d0*del2( i,  2 ) &
-            + del2(i,  1 ) )
-       del4(i,ny) = dxm2*(  del2(i-1,ny) - 2.0d0*del2( i, ny ) &
-            + del2(i+1,ny) &
-            + del2( i ,ny) - 2.0d0*del2( i,ny-1) &
-            + del2(i,ny-2) )
-    enddo
-    del4(nx, 1) = dxm2*(  del2(nx-1, 1) - 2.0d0*del2(nx,  1 ) &
-         + del2( 1 , 1) &
-         + del2( nx , 3) - 2.0d0*del2(nx,  2 ) &
-         + del2(nx,  1 ) )
-    del4(nx,ny) = dxm2*(  del2(nx-1,ny) - 2.0d0*del2(nx, ny ) &
-         + del2( 1 ,ny) &
-         + del2( nx ,ny) - 2.0d0*del2(nx,ny-1) &
-         + del2(nx,ny-2) )
-
-  end subroutine del4ch
+  end subroutine del4_
 
 
   subroutine qg_monnc_init(outdir, filename, qg, numoutsteps)
