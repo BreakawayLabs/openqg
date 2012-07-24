@@ -37,7 +37,6 @@ contains
     ! Solve modified Helmholtz equation to invert each mode
     ! m = 1 is the barotropic mode
     ! m=2,nlo are baroclinic modes
-
     do m=1,b%nl
        ! Compute Helmholtz operator for mode m
        inhomog(:,:,m) = solve_inhomog_eqn(qg%inhom, b, m, rhs(:,:,m))
@@ -45,11 +44,11 @@ contains
     ! Have solved inhomogeneous modal problem
     ! with po = 0 on all solid boundaries
 
+
     ! Compute area integral of entrainment between
     ! layers 1 and 2 to get net diabatic effect
     ent_xn(1) = xintp(ent(:,:,1), b%nxp, b%nyp)*b%dx*b%dy
     ent_xn(2:) = 0.0d0
-
     ! Solve constraint equations and add homogeneous solutions
     if (b%cyclic) then
        call cyclic_homog(b, qg%tau_sign, tdt,  &
@@ -59,6 +58,7 @@ contains
     else
        call box_homog(b, tdt, inhomog, qg%hom%box, qg%con, qg%gp, ent_xn, homcor)
     endif
+
     ! Add suitable multiple of homogeneous solutions and unpack modal
     ! pressures to layer pressures - equations (7.18) and (7.19)
     ! Also copy current pa to pam before overwriting with new value

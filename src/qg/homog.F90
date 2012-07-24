@@ -141,12 +141,14 @@ contains
     type(homog_cyclic_type), intent(inout) :: hom_cyc
     type(inhomog_type), intent(inout) :: inhom
 
-    double precision :: wk1(b%nxp,b%nyp),wk2(b%nxp,b%nyp)
+    double precision :: sol01(b%nxp,b%nyp),sol02(b%nxp,b%nyp)
     double precision :: rhs1(b%nxp,b%nyp),rhs2(b%nxp,b%nyp)
     double precision pch1yn,pch2yn,pch1ys,pch2ys, &
          pchdet,aipch1,aipch2
+    double precision :: Ly1(b%nyp)
+    double precision :: Ly2(b%nyp)
 
-    integer :: i, j, m
+    integer :: j, m
     ! Compute homogeneous channel solutions
     ! =================================================
     ! Barotropic mode: homogeneous solutions would need
@@ -173,42 +175,38 @@ contains
 
     print *
     print *, ' Homogeneous (baroclinic) solutions:'
+    ! bc = L(y) + rdm2*sol0, where L(y) is linear in y,
+    ! and sol0 satisfies Del-sqd(sol0) - rdm2*sol0 = L(y)
+    ! with the usual solid boundary condition p = 0.
+    ! For hom_sol_bc1, L(y) = 1.0 on S bdy; = 0.0 on N bdy
+    ! For hom_sol_bc2, L(y) = 0.0 on S bdy; = 1.0 on N bdy
+    ! Specify RHSs
+    do j=1,b%nyp
+       Ly1(j) = ( b%yp(b%nyp)-b%yp(j) )/b%yl
+       Ly2(j) = ( b%yp(  j )-b%yp(1) )/b%yl
+       rhs1(:,j) = Ly1(j)
+       rhs2(:,j) = Ly2(j)
+    enddo
+
     do m=2,b%nl
        print *
        print '(a,i2)', '  Mode: ',m
 
-       ! pch = L(y) + rdm2*sol0, where L(y) is linear in y,
-       ! and sol0 satisfies Del-sqd(sol0) - rdm2*sol0 = L(y)
-       ! with the usual solid boundary condition p = 0.
-       ! For hom_sol_bc1, L(y) = 1.0 on S bdy; = 0.0 on N bdy
-       ! For hom_sol_bc2, L(y) = 0.0 on S bdy; = 1.0 on N bdy
-       ! Specify RHSs
-       do j=1,b%nyp
-          hom_cyc%hom_sol_bc1(j,m) = ( b%yp(b%nyp)-b%yp(j) )/b%yl
-          hom_cyc%hom_sol_bc2(j,m) = ( b%yp(  j )-b%yp(1) )/b%yl
-          rhs1(:,j) = hom_cyc%hom_sol_bc1(j,m)
-          rhs2(:,j) = hom_cyc%hom_sol_bc2(j,m)
-       enddo
-
        ! Invert these RHSs for baroclinic homog. solutions (sol0 above)
-       wk1(:,:) = solve_inhomog_eqn(inhom, b, m, rhs1)
-       wk2(:,:) = solve_inhomog_eqn(inhom, b, m, rhs2)
+       sol01(:,:) = solve_inhomog_eqn(inhom, b, m, rhs1)
+       sol02(:,:) = solve_inhomog_eqn(inhom, b, m, rhs2)
        ! Add Helmholtz solution to L(y) to get full solutions
-       ! Solutions in wk1, wk2 are functions of y only, i.e.
+       ! Solutions in sol01, sol02 are functions of y only, i.e.
        ! independent of i, so just save solution for one i value
        do j=1,b%nyp
-          do i=1,b%nxp
-             wk1(i,j) = hom_cyc%hom_sol_bc1(j,m) + inhom%rdm2(m)*wk1(i,j)
-             wk2(i,j) = hom_cyc%hom_sol_bc2(j,m) + inhom%rdm2(m)*wk2(i,j)
-          enddo
-          hom_cyc%hom_sol_bc1(j,m) = wk1(1,j)
-          hom_cyc%hom_sol_bc2(j,m) = wk2(1,j)
+          hom_cyc%hom_sol_bc1(j,m) = Ly1(j) + inhom%rdm2(m)*sol01(1,j)
+          hom_cyc%hom_sol_bc2(j,m) = Ly2(j) + inhom%rdm2(m)*sol02(1,j)
        enddo
        ! Compute area integrals of hom_sol_bc1 and hom_sol_bc2
-       aipch1 = xintp(wk1, b%nxp, b%nyp)
-       aipch2 = xintp(wk2, b%nxp, b%nyp)
+       aipch1 = trapin(hom_cyc%hom_sol_bc1(:,m), b%nyp, b%dy)*b%xl
+       aipch2 = trapin(hom_cyc%hom_sol_bc2(:,m), b%nyp, b%dy)*b%xl
        ! Both solutions should have the same area integral
-       hom_cyc%int_sol_bc(m) = 0.5d0*(aipch1+aipch2)*b%dx*b%dy
+       hom_cyc%int_sol_bc(m) = 0.5d0*(aipch1+aipch2)
        
        ! Compute dp/dy half a gridpoint in from the north
        ! and south boundaries, and "integrate" in x
@@ -262,14 +260,9 @@ contains
     ! the area integrals of the homogeneous baroclinic solutions
     double precision :: aipohs(2:b%nl)
 
-    ! Finite box ocean
-    ! ----------------
     print *
     print *, ' Homogeneous (baroclinic) solutions:'
     do m=2,b%nl
-       print *
-       print '(a,i2)', '  Mode: ',m
-
        ! Compute new homogeneous solution = (1 + rdm2*sol0)
        ! sol0 satisfies Del-sqd(sol0) - rdm2*sol0 = 1
        ! with the usual boundary condition p = 0
@@ -282,9 +275,15 @@ contains
 
        ! Add constant offset
        hom_box%hom_sol_bc(:,:,m) = 1.0d0 + inhom%rdm2(m)*hom_box%hom_sol_bc(:,:,m)
+    enddo
+
+    do m=2,b%nl
        ! Area integral of full homogeneous solution
        aipohs(m) = xintp(hom_box%hom_sol_bc(:,:,m), b%nxp, b%nyp)
        aipohs(m) = aipohs(m)*b%dx*b%dy
+
+       print *
+       print '(a,i2)', '  Mode: ',m
        print 240, '  aipohs = ',aipohs(m)
     enddo
     ! Compute the matrices used in the mass constraint equation
