@@ -66,154 +66,42 @@ contains
 
     call compute_A(b, gpr, mod)
 
-    call compute_eigs(mod, prtval, b%nl, wre, evecl, evecr, elder)
+    call compute_eigs(mod%amat, b%nl, wre, evecl, evecr, elder)
 
     call derive_qg_modes(b, wre, evecl, evecr, elder, mod)
 
   end subroutine eigmod
 
-  subroutine compute_eigs(mod, prtval, nl, wre, evecl, evecr, elder)
-
-    type(modes_type), intent(in) :: mod
+  subroutine compute_eigs(amat, nl, eigval_real, eigvec_left, eigvec_right, elder)
+    double precision, intent(in) :: amat(nl,nl)
     integer, intent(in) :: nl
-    logical, intent(in) :: prtval
-    double precision, intent(out) :: wre(:)
-    double precision, intent(out) :: evecl(:,:)
-    double precision, intent(out) :: evecr(:,:)
-    double precision, intent(out) :: elder(:,:)
+    double precision, intent(out) :: eigval_real(nl)
+    double precision, intent(out) :: eigvec_left(nl,nl), eigvec_right(nl,nl)
+    double precision, intent(out) :: elder(nl,nl)
 
-    integer :: nblk,lwork
-    parameter ( nblk=64 )
+    double precision :: A(nl,nl)
+    double precision :: eigval_imag(nl)
+    double precision :: work(20*nl), scale(nl), abnrm, rconde(nl), rcondv(nl)
+    integer :: info, iwork(20*nl - 2)
+    integer :: n, m, ihi, ilo
 
-    double precision :: scale(nl), work(nl*nblk), wim(nl), tauvec(nl)
-    double precision :: aba(nl,nl),hup(nl,nl),qqq(nl,nl),zzz(nl,nl),uqt(nl,nl)
-    logical :: select(nl)
-
-    integer :: i, j, k, n, m, mwant, mgot, info, ilo, ihi
-
-    character :: baljob*(*)
-    parameter ( baljob = 'Both' )
-
-    lwork = nl*nblk
-
-    ! Solve for the eigenvalues and L & R eigenvectors of A
-    ! -----------------------------------------------------
-    ! (real nonsymmetric eigenproblem). Use LAPACK routines
-    ! DGEBAL = F08NHF
-    ! DGEHRD = F08NEF
-    ! DORGHR = F08NFF
-    ! DHSEQR = F08PEF
-    ! DTREVC = F08QKF
-    ! DGEBAK = F08NJF
-    ! Set default values of ILO, IHI.
-    ilo = 1
-    ihi = nl
-    ! ------------------------------------------------------
-    ! Balance a real general matrix to improve accuracy
-    ! Use a copy of A in case the original is required
-    ! BALJOB passed to DGEBAK to transform eigenvectors suitably
-    aba(:,:) = mod%amat(:,:)
-    call DGEBAL (baljob, nl, aba, nl, ilo, ihi, scale, info)
-    call check_result(info, 'DGEBAL')
-
-    ! ABA is now overwritten with the balanced matrix
-    ! ------------------------------------------------------
-    ! Reduce a real general matrix to Hessenberg form
-    ! N.B. overwrites matrix with its upper Hessenberg form H
-    ! and details of the orthogonal transformation matrix Q
-    hup(:,:) = aba(:,:)
-    call DGEHRD (nl, ilo, ihi, hup, nl, tauvec, work, lwork, info)
-    call check_result(info, 'DHEHRD')
-
-    !------------------------------------------------------
-    ! Generate the real orthogonal matrix Q
-    ! that reduces A to upper Hessenberg form
-    ! Provide as input a copy of the upper Hessenberg matrix
-    ! previously generated, which also contains details of
-    ! the vectors which define the elementary reflectors
-    qqq(:,:) = hup(:,:)
-    call DORGHR (nl, ilo, ihi, qqq, nl, tauvec, work, lwork, info)
-    call check_result(info, 'DORGHR')
-
-    ! ------------------------------------------------------
-    ! Compute all the eigenvalues, and optionally the Schur
-    ! factorization, of a real upper Hessenberg matrix
-    ! We require the Schur form in order to get the eigenvectors
-    ! This means that UQT is overwritten with the upper
-    ! quasi-triangular matrix T from the Schur decomposition
-    ! Set ZZZ to contain the matrix Q on entry.
-    uqt(:,:) = hup(:,:)
-    zzz(:,:) = qqq(:,:)
-    call DHSEQR ('Schur', 'V', nl, ilo, ihi, uqt, nl, wre, wim, zzz, nl, work, lwork, info)
-    call check_result(info, 'DHSEQR')
-    ! Check for reality of eigenvalues.
-    if (any(wim(:) /= 0.0d0)) then
-       print *,' DHSEQR returns complex eigenvalues'
-       print *,' program terminates in eigmod'
+    A(:,:) = amat(:,:)
+    call DGEEVX('B', 'V', 'V', 'B', nl, A, nl, eigval_real, eigval_imag, &
+         eigvec_left, nl, eigvec_right, nl, ilo, ihi, scale, abnrm, &
+         rconde, rcondv, work, size(work), iwork, info )
+    if (info /= 0) then
+       print *,' Problem in DGEEVX, INFO = ', info
+       print *,' program terminates in compute_eigs'
        stop 1
     endif
 
-    ! ------------------------------------------------------
-    ! Routine computes selected left and/or right eigen-
-    ! vectors of a real upper quasi-triangular matrix
-    ! We require ALL left AND right eigenvectors
-    ! EVECL and EVECR need to be set on entry to the
-    ! matrix of Schur vectors returned by DHSEQR,
-    ! which is not necessarily the same as Q
-    evecl(:,:) = zzz(:,:)
-    evecr(:,:) = zzz(:,:)
-    mwant = nl
-    call DTREVC ('Both', 'Back', select, nl, uqt, nl, evecl, nl, evecr, nl, mwant, mgot, work, info)
-    call check_result(info, 'DTREVC')
-    ! Left and right eigenvectors are stored in the columns of
-    ! EVECL, EVECR, i.e. 1st subscript = eigenvector component,
-    ! 2nd subscript = eigenmode number
-
-    ! ------------------------------------------------------
-    ! Transform the eigenvectors of a balanced matrix to
-    ! those of the original real nonsymmetric matrix A
-    call DGEBAK (baljob, 'Left', nl, ilo, ihi, scale, mgot, evecl, nl, info)
-    call DGEBAK (baljob, 'Righ', nl, ilo, ihi, scale, mgot, evecr, nl, info)
-    ! ------------------------------------------------------
-
-    ! At this point we should have a full set of eigen-
-    ! values and eigenvectors of the original matrix A
-
-    ! Check orthogonality of eigenvectors
-    ! -----------------------------------
     do n=1,nl
        do m=1,nl
-          elder(m,n) = sum(evecl(:,m)*evecr(:,n))
+          elder(m,n) = sum(eigvec_left(:,m)*eigvec_right(:,n))
        enddo
     enddo
 
-    ! Optionally print eigenvalues and vectors as a check
-    ! ---------------------------------------------------
-    if ( prtval ) then
-       print *
-       print '(2x,a)', 'A matrix:'
-       do i=1,nl
-          print '(2x,i3,1x,1p,9d16.7)', i,(mod%amat(i,j),j=1,nl)
-       enddo
-       print '(2x,a,i9,8i16)', ' m:  ',(m,m=1,nl)
-       print '(2x,a,1p,9d16.7)', ' Wre',(wre(m),m=1,nl)
-       print '(2x,a,1p,9d16.7)', ' Wim',(wim(m),m=1,nl)
-       print '(2x,a)', 'Right eigenvectors:'
-       do k=1,nl
-          print '(2x,i3,1x,1p,9d16.7)', k,(evecr(k,m),m=1,nl)
-       enddo
-       print '(2x,a)', 'Left  eigenvectors:'
-       do k=1,nl
-          print '(2x,i3,1x,1p,9d16.7)', k,(evecl(k,m),m=1,nl)
-       enddo
-       print '(2x,a)', 'Dot products evecl(m).evecr(n):'
-       print '(2x,a,i9,8i16)', ' n:  ',(n,n=1,nl)
-       do m=1,nl
-          print '(2x,i3,1x,1p,9d16.7)', m,(elder(m,n),n=1,nl)
-       enddo
-    endif
-
-    end subroutine
+  end subroutine compute_eigs
 
   subroutine derive_qg_modes(b, wre, evecl, evecr, elder, mod)
     
@@ -352,37 +240,6 @@ contains
        enddo
     endif
 
-    ! *     Check matrix triple product occuring in cyclic constraint equations
-    ! *     -------------------------------------------------------------------
-    ! *     Matrix is Cl2m*A*Cm2l
-    ! **    do j=1,nl
-    ! *       Work out A*Cm2l for current j
-    ! **      do k=1,nl
-    ! **        ac(k) = 0.0d0
-    ! **        do m=1,nl
-    ! **          ac(k) = ac(k) + mod%amat(k,m)*cm2l(m,j)
-    ! **        enddo
-    ! **      enddo
-    ! *       Work out Cl2m*(A*Cm2l) for current i
-    ! **      do i=1,nl
-    ! **        ca = 0.0d0
-    ! **        do k=1,nl
-    ! **          ca = ca + cl2m(i,k)*ac(k)
-    ! **        enddo
-    ! **        ccprod(i,j) = ca
-    ! **      enddo
-    ! **    enddo
-    ! **    print *
-    ! **    print '(2x,a,i9,8i16)', ' j:  ',(j,j=1,nl)
-    ! **    print '(2x,a,1p,9d16.7)', 'eig_val',(eig_val(j),j=1,nl)
-    ! **    print '(2x,a,a)', 'matrix triple product ',
-    ! **   &                     'cl2m(i,k)*A(k,m)*cm2l(m,j):'
-    ! **    do i=1,nl
-    ! **      print '(2x,i3,1x,1p,9d16.7)', i,(ccprod(i,j),j=1,nl)
-    ! **    enddo
-    ! *     Confirms that the matrix triple product is a diagonal
-    ! *     matrix whose entries are the eigenvalues Lambda
-
   end subroutine derive_qg_modes
 
   pure subroutine compute_A(b, gpr, mod)
@@ -412,19 +269,6 @@ contains
 
   end subroutine compute_A
 
-  subroutine check_result(info, routine)
-
-    integer, intent(in) :: info
-    character, intent(in) :: routine*(*)
-
-    if (info /= 0) then
-       print *,' Problem in ', routine, ', INFO = ', info
-       print *,' program terminates in eigmod'
-       stop 1
-    endif
-
-  end subroutine check_result
-
   function p_modes_rhs(q, topo, mod, b)
 
     type(box_type), intent(in) :: b
@@ -453,9 +297,6 @@ contains
     double precision :: modes_to_layers(b%nxp,b%nyp,b%nl)
     integer :: i,j,k
 
-    !do j=1,b%nyp
-    !   modes_to_layers(:,j,:) = matmul(pm(:,j,:), mod%ctm2l(:,:))
-    !enddo
     do j=1,b%nyp
        do i=1,b%nxp
           do k=1,b%nl
@@ -463,7 +304,6 @@ contains
           enddo
        enddo
     enddo
-
 
   end function modes_to_layers
 
