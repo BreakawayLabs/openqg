@@ -39,7 +39,7 @@ contains
     ! m=2,nlo are baroclinic modes
     do m=1,b%nl
        ! Compute Helmholtz operator for mode m
-       inhomog(:,:,m) = solve_inhomog_eqn(qg%inhom, b, m, rhs(:,:,m))
+       inhomog(:,:,m) = solve_inhomog_eqn(qg%inhom, m, rhs(:,:,m))
     enddo
     ! Have solved inhomogeneous modal problem
     ! with po = 0 on all solid boundaries

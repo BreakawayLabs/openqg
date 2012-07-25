@@ -98,7 +98,7 @@ contains
     call eigmod(init_qg%b, init_qg%gp, init_qg%mod)
 
     init_qg%hom = init_homog(init_qg%b)
-    init_qg%inhom = init_inhomog(init_qg%b, init_qg%mod)
+    init_qg%inhom = init_inhomog(init_qg%b, init_qg%mod%rdm2)
     call homsol(init_qg%b, init_qg%mod, init_qg%hom, init_qg%inhom)
 
     init_qg%con = init_core_constr(init_qg%b%nl)

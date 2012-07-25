@@ -8,7 +8,7 @@ module homog
   use constraint, only: step_constraints
   use linalg, only: LU_factor, solve_Ax_b
 
-  use inhomog, only: inhomog_type, solve_inhomog_eqn
+  use inhomog, only: inhomog_type, generate_homog_soln
 
   implicit none
 
@@ -141,8 +141,6 @@ contains
     double precision :: rhs1(b%nxp,b%nyp),rhs2(b%nxp,b%nyp)
     double precision pch1yn,pch2yn,pch1ys,pch2ys, &
          pchdet,aipch1,aipch2
-    double precision :: Ly1(b%nyp)
-    double precision :: Ly2(b%nyp)
 
     integer :: j, m
     ! Compute homogeneous channel solutions
@@ -168,7 +166,6 @@ contains
     ! Now compute baroclinic solutions for use in atinvq
     ! Solutions are functions of y only, but use the usual
     ! 2-D Helmholtz solver for simplicity and consistency
-
     print *
     print *, ' Homogeneous (baroclinic) solutions:'
     ! bc = L(y) + rdm2*sol0, where L(y) is linear in y,
@@ -176,25 +173,18 @@ contains
     ! with the usual solid boundary condition p = 0.
     ! For hom_sol_bc1, L(y) = 1.0 on S bdy; = 0.0 on N bdy
     ! For hom_sol_bc2, L(y) = 0.0 on S bdy; = 1.0 on N bdy
-    ! Specify RHSs
     do j=1,b%nyp
-       Ly1(j) = ( b%yp(b%nyp)-b%yp(j) )/b%yl
-       Ly2(j) = ( b%yp(  j ) -b%yp(1) )/b%yl
-       rhs1(:,j) = Ly1(j)
-       rhs2(:,j) = Ly2(j)
+       rhs1(:,j) = ( b%yp(b%nyp)-b%yp(j) )/b%yl
+       rhs2(:,j) = ( b%yp(  j ) -b%yp(1) )/b%yl
+    enddo
+    do m=2,b%nl
+       sol01(:,:) = generate_homog_soln(inhom, m, rhs1)
+       sol02(:,:) = generate_homog_soln(inhom, m, rhs2)
+       hom_cyc%hom_sol_bc1(:,m) = sol01(1,:)
+       hom_cyc%hom_sol_bc2(:,m) = sol02(1,:)
     enddo
 
     do m=2,b%nl
-       ! Invert these RHSs for baroclinic homog. solutions (sol0 above)
-       sol01(:,:) = solve_inhomog_eqn(inhom, b, m, rhs1)
-       sol02(:,:) = solve_inhomog_eqn(inhom, b, m, rhs2)
-       ! Add Helmholtz solution to L(y) to get full solutions
-       ! Solutions in sol01, sol02 are functions of y only, i.e.
-       ! independent of i, so just save solution for one i value
-       do j=1,b%nyp
-          hom_cyc%hom_sol_bc1(j,m) = Ly1(j) + inhom%rdm2(m)*sol01(1,j)
-          hom_cyc%hom_sol_bc2(j,m) = Ly2(j) + inhom%rdm2(m)*sol02(1,j)
-       enddo
        ! Compute area integrals of hom_sol_bc1 and hom_sol_bc2
        aipch1 = trapin(hom_cyc%hom_sol_bc1(:,m), b%nyp, b%dy)*b%xl
        aipch2 = trapin(hom_cyc%hom_sol_bc2(:,m), b%nyp, b%dy)*b%xl
@@ -247,7 +237,7 @@ contains
     type(homog_box_type), intent(inout) :: hom_box
     type(inhomog_type), intent(inout) :: inhom
 
-    double precision :: rhs(b%nxp,b%nyp)
+    double precision :: L(b%nxp,b%nyp)
     integer :: k, m
 
     ! the area integrals of the homogeneous baroclinic solutions
@@ -256,20 +246,14 @@ contains
     print *
     print *, ' Homogeneous (baroclinic) solutions:'
 
-    ! Setup RHS.
-    rhs(:,:) = 1.0d0
+    L(:,:) = 1.0d0
     do m=2,b%nl
        ! Compute new homogeneous solution = (1 + rdm2*sol0)
        ! sol0 satisfies Del-sqd(sol0) - rdm2*sol0 = 1
        ! with the usual boundary condition p = 0
-       ! These are baroclinic solutions for use in ocinvq
-
-       ! Solve for sol0 in ochom.
-       hom_box%hom_sol_bc(:,:,m) = solve_inhomog_eqn(inhom, b, m, rhs(:,:))
-
-       ! Add constant offset
-       hom_box%hom_sol_bc(:,:,m) = 1.0d0 + inhom%rdm2(m)*hom_box%hom_sol_bc(:,:,m)
+       hom_box%hom_sol_bc(:,:,m) = generate_homog_soln(inhom, m, L)
     enddo
+
 
     do m=2,b%nl
        ! Area integral of full homogeneous solution
@@ -290,7 +274,7 @@ contains
           hom_box%cdhoc(k,m-1) = ( mod%ctm2l(m,k+1) - mod%ctm2l(m,k) )*aipohs(m)
        enddo
     enddo
-    stop 1
+
     ! Compute the LU factorization of cdhoc
     call LU_factor(hom_box%cdhoc, hom_box%LU, hom_box%ipiv)
 
