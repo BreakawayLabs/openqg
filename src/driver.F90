@@ -218,10 +218,10 @@ contains
     ! Ensure that monitoring and averaging are done synchronously
     ! as post-processing routines assume this.
     if (qg_monitor_step(ocn%qg_mon, force, ntdone)) then
-       call update_qg_monitor(ocn%qg, ocn%cpl%ek, ocn%cpl%ent, tsec, ocn%qg_mon, outdir, ntdone, tyrs, clk%dto)
+       call update_qg_monitor(ocn%qg, ocn%cpl%ek, ocn%cpl%ent, tsec, ocn%qg_mon, outdir, ntdone, tyrs, clk%dto, clk%tdto)
     endif
     if (qg_monitor_step(atm%qg_mon, force, ntdone)) then
-       call update_qg_monitor(atm%qg, atm%cpl%ek, atm%cpl%ent, tsec, atm%qg_mon, outdir, ntdone, tyrs, clk%dta)
+       call update_qg_monitor(atm%qg, atm%cpl%ek, atm%cpl%ent, tsec, atm%qg_mon, outdir, ntdone, tyrs, clk%dta, clk%tdta)
     endif
 
     if (ocn%ml%active .and. area_avg_step(ntdone, ocn%area_avgs)) then

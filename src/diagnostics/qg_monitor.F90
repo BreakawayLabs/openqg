@@ -3,11 +3,12 @@ module qg_monitor
   use units, only: m_to_km, m3_to_Sv
   use box, only: box_type
   use qg, only: qg_type
+  use constraint, only: mass_constr_type
   use ncutils, only: nc_open_w, nc_create, nc_close, nc_def_dim, nc_def_float
   use ncutils, only: nc_def_int, nc_put_double, nc_enddef, nc_put_int
   use intsubs, only: xintp, trapin
   use ekman, only: ekman_type
-  use numerics, only: map_P_to_x_face, map_P_to_y_face, dPdx, dPdy
+  use numerics, only: map_P_to_x_face, map_P_to_y_face, dPdx, dPdy, int_P_dA
 
   use intsubs, only: genint
 
@@ -199,7 +200,7 @@ contains
 
   end function init_qg_monitor
 
-  subroutine update_qg_monitor(qg, ek, ent, tsec, qg_mon, outdir, ntdone, tyrs, dt)
+  subroutine update_qg_monitor(qg, ek, ent, tsec, qg_mon, outdir, ntdone, tyrs, dt, tdt)
 
     type(qg_type), intent(in) :: qg
     type(ekman_type), intent(in) :: ek
@@ -210,18 +211,20 @@ contains
     integer, intent(in) :: ntdone
     double precision, intent(in) :: tyrs
     double precision, intent(in) :: dt
+    double precision, intent(in) :: tdt
 
-    call qg_diagno(qg, ek, ent, tsec, qg_mon)
+    call qg_diagno(qg, ek, ent, tsec, tdt, qg_mon)
     call qg_monnc_out(outdir, qg, qg_mon, ntdone, tyrs)
     call scan_cfl(qg, dt)
     
   end subroutine update_qg_monitor
 
-  subroutine qg_diagno(qg, ek, ent, tsec, mon)
+  subroutine qg_diagno(qg, ek, ent, tsec, tdt, mon)
     type(qg_type), intent(in) :: qg
     type(ekman_type), intent(in) :: ek
     double precision, intent(in) :: ent(qg%b%nxp,qg%b%nyp,qg%b%nl)
     double precision, intent(in) :: tsec
+    double precision, intent(in) :: tdt
     type(qg_monitor_type), intent(inout) :: mon
 
     double precision :: ptwk1(qg%b%nxp,qg%b%nyt)
@@ -250,12 +253,9 @@ contains
     type(box_type) :: b
     double precision pomin,pomax,poref(qg%b%nl),psiext
 
-    b = qg%b
+    double precision :: int_p2(qg%b%nl)
 
-    if (b%cyclic) then
-       mon%ermas = qg%con%ermas
-       mon%emfr = qg%con%emfr
-    endif
+    b = qg%b
 
     ! Ekman velocity diagnostics
     ! Mean value of Wekman at p points
@@ -408,6 +408,11 @@ contains
        mon%sfmax(k) = m3_to_Sv(b%h(k)*( psiext - poref(k)/b%fnot ))
        ! Compute volume transport in each layer (in Sverdrups)
     enddo
+
+    if (qg%b%cyclic) then
+       int_p2(:) = int_P_dA(qg%p, qg%b)
+       call check_continuity(qg%con, qg%gp, qg%b, tdt, int_p2, mon)
+    endif
 
   end subroutine qg_diagno
 
@@ -669,5 +674,43 @@ contains
 250 format(a,1p,d15.7,2i8,i6)
     
   end subroutine scan_cfl
+
+  pure subroutine check_continuity(con, gp, b, tdt, int_p, qg_mon)
+    ! Check continuity is satisfied at each interface
+    ! Update continuity measures at each interface
+    type(mass_constr_type), intent(in) :: con
+    type(box_type), intent(in) :: b
+    double precision, intent(in) :: gp(b%nl-1)
+    double precision, intent(in) :: tdt
+    double precision, intent(in) :: int_p(b%nl)
+    type(qg_monitor_type), intent(inout) :: qg_mon
+
+    integer :: k
+    double precision :: est1, est2, edif, esum
+
+    double precision ecrit
+    parameter ( ecrit=1.0d-13 )
+
+    do k=1,b%nl-1
+       ! Choose sign of dpioc so that +ve dpioc -> +ve eta
+       ! Check continuity is satisfied at each interface
+       ! MONITORING - extra section for ermaso, emfroc
+       ! Compute alternative estimates of new dpioc
+       est1 = b%dz_sign*(int_p(k) - int_p(k+1))
+       est2 = con%dpi(k)
+       edif = est1 - est2
+       esum = abs(est1) + abs(est2)
+       qg_mon%ermas(k) = edif
+       ! Compute fractional error if entrainment is significant;
+       ! fraction is meaningless if est1, est2 just noisy zeros
+       if (esum > (ecrit*b%xl*b%yl*tdt*gp(k))) then
+          qg_mon%emfr(k) = 2.0d0*edif/esum
+       else
+          qg_mon%emfr(k) = 0.0d0
+       endif
+    enddo
+
+  end subroutine check_continuity
+
 
 end module qg_monitor

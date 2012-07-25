@@ -4,10 +4,9 @@ module homog
   use modes, only: modes_type
   use intsubs, only: xintp, trapin
   use numerics, only: int_P_dA
-  use constraint, only: core_constr_type, constraint_type
+  use constraint, only: mass_constr_type, constraint_type
   use constraint, only: step_constraints
   use linalg, only: LU_factor, solve_Ax_b
-
   use inhomog, only: inhomog_type, generate_homog_soln
 
   implicit none
@@ -36,18 +35,15 @@ module homog
      double precision, allocatable :: hom_sol_bt(:)
 
      double precision, allocatable :: hc1s(:), hc2s(:), hc1n(:), hc2n(:)
-
-     double precision :: hbsi, int_sol_bt
-     double precision, allocatable :: int_sol_bc(:)
+     double precision :: hbsi
 
      ! *     hom_sol_bc1, hom_sol_bc2 are the two homogeneous solutions for each baroclinic
      ! *     mode, computed in subroutine homsol. They are functions of y only
-     ! *     (tabulated at p points). int_sol_bc is the area integral of these
-     ! *     solutions for each mode (both modes have the same area integral)
+     ! *     (tabulated at p points). 
      ! *
      ! *     hom_sol_bt is the homogeneous barotropic mode solution, computed in
      ! *     subroutine homsol. There is only one barotropic homogeneous
-     ! *     mode, which is a function of y only. int_sol_bt is its area integral
+     ! *     mode, which is a function of y only. 
      ! *
      ! *     hc1sat, hc2sat, hc1nat, hc2nat are boundary integrals of the
      ! *     homogeneous baroclinic solutions above, which arise in the momentum
@@ -91,7 +87,6 @@ contains
        allocate(init_homog%cyc%hc1n(2:b%nl))
        allocate(init_homog%cyc%hc2n(2:b%nl))
 
-       allocate(init_homog%cyc%int_sol_bc(2:b%nl))
     else
        allocate(init_homog%box%hom_sol_bc(b%nxp, b%nyp, 2:b%nl))
 
@@ -139,8 +134,7 @@ contains
 
     double precision :: sol01(b%nxp,b%nyp),sol02(b%nxp,b%nyp)
     double precision :: rhs1(b%nxp,b%nyp),rhs2(b%nxp,b%nyp)
-    double precision pch1yn,pch2yn,pch1ys,pch2ys, &
-         pchdet,aipch1,aipch2
+    double precision pch1yn,pch2yn,pch1ys,pch2ys,pchdet
 
     integer :: j, m
     ! Compute homogeneous channel solutions
@@ -157,10 +151,8 @@ contains
     enddo
     ! hbs = integral of y-derivative along Southern bdy
     hom_cyc%hbsi = b%yl/b%xl
-    hom_cyc%int_sol_bt = 0.5d0*b%xl*b%yl
     print *,' '
     print *, ' Homogeneous barotropic solution:'
-    print 240, '  int_sol_bt    = ',hom_cyc%int_sol_bt
     print 240, '  hbsi          = ',hom_cyc%hbsi
     
     ! Now compute baroclinic solutions for use in atinvq
@@ -184,16 +176,6 @@ contains
        hom_cyc%hom_sol_bc2(:,m) = sol02(1,:)
     enddo
 
-    do m=2,b%nl
-       ! Compute area integrals of hom_sol_bc1 and hom_sol_bc2
-       aipch1 = trapin(hom_cyc%hom_sol_bc1(:,m), b%nyp, b%dy)*b%xl
-       aipch2 = trapin(hom_cyc%hom_sol_bc2(:,m), b%nyp, b%dy)*b%xl
-       ! Both solutions should have the same area integral
-       hom_cyc%int_sol_bc(m) = 0.5d0*(aipch1+aipch2)
-       print *
-       print 240, '  aipch1, aipch2 = ',aipch1,aipch2
-       print 240, '  int_sol_bc     = ',hom_cyc%int_sol_bc(m)
-    enddo
     do m=2,b%nl
        print *
        print '(a,i2)', '  Mode: ',m
@@ -254,7 +236,6 @@ contains
        hom_box%hom_sol_bc(:,:,m) = generate_homog_soln(inhom, m, L)
     enddo
 
-
     do m=2,b%nl
        ! Area integral of full homogeneous solution
        aipohs(m) = xintp(hom_box%hom_sol_bc(:,:,m), b%nxp, b%nyp)
@@ -299,8 +280,8 @@ contains
   end subroutine homsol_box
 
   subroutine cyclic_homog(b, tau_sign, tdt, constr, inhomog, &
-       hom_cyc, mod, con, gp, &
-       ent_xn, homcor)
+       hom_cyc, mod, &
+       homcor)
     ! Solve constraint equations and add homogeneous solutions
 
     type(box_type), intent(in) :: b
@@ -310,14 +291,13 @@ contains
     double precision, intent(in) :: inhomog(b%nxp,b%nyp,b%nl)
     type(homog_cyclic_type), intent(in) :: hom_cyc
     type(modes_type), intent(in) :: mod
-    type(core_constr_type), intent(inout) :: con
-    double precision, intent(in) :: gp(b%nl-1)
-    double precision, intent(in) :: ent_xn(b%nl-1)
     double precision, intent(out) :: homcor(b%nxp,b%nyp,b%nl)
 
-    double precision :: int_p(b%nl)
+    integer :: m
     double precision :: c_bc1(2:b%nl), c_bc2(2:b%nl), c_bt
     double precision :: homcor_2d(b%nyp,b%nl)
+    double precision :: clhss(b%nl), clhsn(b%nl)
+    double precision :: ayis, ayin
 
     ! Compute homogeneous solution coefficients
     ! Accumulate RHSs for the constraint equations for each layer
@@ -325,43 +305,15 @@ contains
     call step_constraints(b, tau_sign, tdt, constr)
 
     ! Compute LHSs for the c_bc1, c_bc2 equations
-    call compute_correction_coeffs(c_bc1, c_bc2, c_bt, inhomog, hom_cyc, &
-         mod, constr%cs, constr%cn, b)
-
-    ! Check continuity
-    int_p(:) = compute_layer_pressure(b, inhomog, c_bc1, c_bc2, c_bt, hom_cyc, mod)
-    call check_continuity(con, gp, b, tdt, int_p, ent_xn)
-
-    ! Compute homogenous term
-    homcor_2d(:,:) = homogeneous_correction(hom_cyc, c_bc1, c_bc2, c_bt, b%nyp, b%nl)
-    homcor(:,:,:) = spread(homcor_2d, 1, b%nxp)
-
-  end subroutine cyclic_homog
-
-  subroutine compute_correction_coeffs(c_bc1, c_bc2, c_bt, inhomog, hom_cyc, mod, cs, cn, b)
-    type(box_type), intent(in) :: b
-    double precision, intent(out) :: c_bc1(2:b%nl)
-    double precision, intent(out) :: c_bc2(2:b%nl)
-    double precision, intent(out) :: c_bt
-    double precision, intent(in) :: inhomog(b%nxp,b%nyp,b%nl)
-    type(homog_cyclic_type), intent(in) :: hom_cyc
-    type(modes_type), intent(in) :: mod
-    double precision, intent(in) :: cs(b%nl), cn(b%nl)
-
-    integer :: m
-    double precision :: clhss(b%nl)
-    double precision :: clhsn(b%nl)
-    double precision :: ayis, ayin
-
     do m=1,b%nl
        ! Compute line integrals of p_y for new modal solutions
        ! Integrate along south & north boundaries for all modes
        ! -point formulation, but values on bdy are exactly zero
-       ayis = trapin(inhomog(:,2,m), b%nxp, b%dx)
-       ayin = trapin(inhomog(:,b%nyp-1,m), b%nxp, b%dx)
+       ayis = trapin(inhomog(:,  2    ,m), b%nxp, b%dx)/b%dy
+       ayin = trapin(inhomog(:,b%nyp-1,m), b%nxp, b%dx)/b%dy
        ! Compute LHSs for the c_bc1, c_bc2 equations
-       clhss(m) = sum(mod%ctl2m(:,m)*cs(:)) + ayis/b%dy
-       clhsn(m) = sum(mod%ctl2m(:,m)*cn(:)) + ayin/b%dy
+       clhss(m) = sum(mod%ctl2m(:,m)*constr%cs(:)) + ayis
+       clhsn(m) = sum(mod%ctl2m(:,m)*constr%cn(:)) + ayin
     enddo
 
     ! Get coefft for barotropic mode
@@ -371,121 +323,29 @@ contains
        c_bc1(m) = hom_cyc%hc2n(m)*clhss(m) - hom_cyc%hc2s(m)*clhsn(m)
        c_bc2(m) = hom_cyc%hc1s(m)*clhsn(m) - hom_cyc%hc1n(m)*clhss(m)
     enddo
-  end subroutine compute_correction_coeffs
 
-  pure function compute_layer_pressure(b, inhomog, c_bc1, c_bc2, c_bt, hom_cyc, mod)
+    ! Compute homogeneous corrections (indep. of i)    
+    homcor_2d(:,1) = c_bt*hom_cyc%hom_sol_bt(:) ! Barotropic mode
+    do m=2,b%nl ! Baroclinic modes
+       homcor_2d(:,m) = c_bc1(m)*hom_cyc%hom_sol_bc1(:,m) + c_bc2(m)*hom_cyc%hom_sol_bc2(:,m)
+    enddo
+    homcor(:,:,:) = spread(homcor_2d, 1, b%nxp)
+
+  end subroutine cyclic_homog
+
+  subroutine box_homog(b, inhomog, hom_box, con, mod, homcor)
 
     type(box_type), intent(in) :: b
-    double precision, intent(in) ::  inhomog(b%nxp,b%nyp,b%nl)
-    double precision, intent(in) :: c_bc1(2:b%nl)
-    double precision, intent(in) :: c_bc2(2:b%nl)
-    double precision, intent(in) :: c_bt
-    double precision :: compute_layer_pressure(b%nl)
-
-    type(homog_cyclic_type), intent(in) :: hom_cyc
-    type(modes_type), intent(in) :: mod
-
-    integer :: m, k
-    double precision :: int_inhom_m(b%nl), aipmod(b%nl)
-    ! Compute area integrals of pressures
-    ! -----------------------------------
-    ! Integrals of modal pressures
-    ! Compute area integral of new inhomogeneous solution
-    int_inhom_m(:) = int_P_dA(inhomog, b)
-    aipmod(1) = int_inhom_m(1) + c_bt*hom_cyc%int_sol_bt
-    do m=2,b%nl
-       aipmod(m) = int_inhom_m(m) + ( c_bc1(m) + c_bc2(m) )*hom_cyc%int_sol_bc(m)
-    enddo
-    ! Integrals of layer pressures
-    do k=1,b%nl
-       compute_layer_pressure(k) = sum(mod%ctm2l(:,k)*aipmod(:))
-    enddo
-
-  end function compute_layer_pressure
-
-  pure subroutine check_continuity(con, gp, b, tdt, int_p, ent_xn)
-    ! Check continuity is satisfied at each interface
-    ! Update continuity measures at each interface
-    type(core_constr_type), intent(inout) :: con
-    type(box_type), intent(in) :: b
-    double precision, intent(in) :: gp(b%nl-1)
-    double precision, intent(in) :: tdt
-    double precision, intent(in) :: int_p(b%nl)
-    double precision, intent(in) :: ent_xn(b%nl-1)
-
-    integer :: k
-    double precision :: est1, est2, edif, esum
-
-    double precision ecrit
-    parameter ( ecrit=1.0d-13 )
-
-    do k=1,b%nl-1
-       ! Choose sign of dpioc so that +ve dpioc -> +ve eta
-       ! Check continuity is satisfied at each interface
-       ! MONITORING - extra section for ermaso, emfroc
-       ! Compute alternative estimates of new dpioc
-       est1 = b%dz_sign*(int_p(k) - int_p(k+1))
-       est2 = con%dpip(k) - tdt*gp(k)*ent_xn(k)
-       edif = est1 - est2
-       esum = abs(est1) + abs(est2)
-       con%ermas(k) = edif
-       ! Compute fractional error if entrainment is significant;
-       ! fraction is meaningless if est1, est2 just noisy zeros
-       if (esum > (ecrit*b%xl*b%yl*tdt*gp(k))) then
-          con%emfr(k) = 2.0d0*edif/esum
-       else
-          con%emfr(k) = 0.0d0
-       endif
-       ! Update continuity constants
-       con%dpip(k) = con%dpi(k)
-       con%dpi(k) = b%dz_sign*(int_p(k) - int_p(k+1))
-    enddo
-
-  end subroutine check_continuity
-
-  pure function homogeneous_correction(hom_cyc, c_bc1, c_bc2, c_bt, nyp, nl)
-
-    type(homog_cyclic_type), intent(in) :: hom_cyc
-    double precision, intent(in) :: c_bc1(2:nl)
-    double precision, intent(in) :: c_bc2(2:nl)
-    double precision, intent(in) :: c_bt
-    integer, intent(in) :: nyp, nl
-    double precision :: homogeneous_correction(nyp,nl)
-
-    integer :: m
-
-    ! Compute homogeneous corrections (indep. of i)
-    ! Barotropic mode
-    homogeneous_correction(:,1) = c_bt*hom_cyc%hom_sol_bt(:)
-    ! Baroclinic modes
-    do m=2,nl
-       homogeneous_correction(:,m) = c_bc1(m)*hom_cyc%hom_sol_bc1(:,m) + c_bc2(m)*hom_cyc%hom_sol_bc2(:,m)
-    enddo
-
-  end function homogeneous_correction
-
-  subroutine box_homog(b, tdt, inhomog, hom_box, con, gp, ent_xn, mod, homcor)
-
-    type(box_type), intent(in) :: b
-    double precision, intent(in) :: tdt
     double precision, intent(in) :: inhomog(b%nxp,b%nyp,b%nl)
+    type(mass_constr_type), intent(in) :: con
     type(homog_box_type), intent(in) :: hom_box
-    type(core_constr_type), intent(inout) :: con
-    double precision, intent(in) :: gp(b%nl-1)
-    double precision, intent(in) :: ent_xn(b%nl-1)
     type(modes_type), intent(in) :: mod
     double precision, intent(out) :: homcor(b%nxp,b%nyp,b%nl)
 
     double precision :: int_inhom_m(b%nl), int_inhom_k(b%nl), rhs(b%nl-1)
-    double precision :: hclco(b%nl-1), aitmp(b%nl-1)
+    double precision :: alpha(b%nl-1)
 
-    integer :: k, m
-
-    ! Get multiples of homogeneous solutions to conserve thickness
-    ! ent_xn(k) = Area integral of oceanic entrainment e(k)
-    aitmp(:) = con%dpi(:)
-    con%dpi(:) = con%dpip(:) - tdt*gp(:)*ent_xn(:)
-    con%dpip(:) = aitmp(:)
+    integer :: k, m, l
 
     ! Area integral of d(eta(k))/dt = - Area integral of entrainment e(k)
     ! Compute area integral of new inhomogeneous solution
@@ -494,20 +354,18 @@ contains
        int_inhom_k(k) = sum(mod%ctm2l(:,k)*int_inhom_m(:))
     enddo
 
-    do k=1,b%nl-1
-       rhs(k) = con%dpi(k) - (int_inhom_k(k+1) - int_inhom_k(k))
+    do l=1,b%nl-1
+       rhs(l) = con%dpi(l) - (int_inhom_k(l+1) - int_inhom_k(l))
     enddo
 
-    ! Matrix equation is cdhoc*hclco = rhs
+    ! Matrix equation is cdhoc*alpha = rhs
     ! Solve equation for homogeneous solution coeffts using LAPACK
     ! Solve the linear system using the LU factorised matrix
-    call solve_Ax_b(hom_box%cdhoc, hom_box%LU, hom_box%ipiv, rhs, hclco)
-         
-    ! Barotropic mode               
-    homcor(:,:,1) = 0.0d0
-    ! Baroclinic modes including homogeneous contribution
-    do m=2,b%nl
-       homcor(:,:,m) = hclco(m-1)*hom_box%hom_sol_bc(:,:,m)
+    call solve_Ax_b(hom_box%cdhoc, hom_box%LU, hom_box%ipiv, rhs, alpha)
+             
+    homcor(:,:,1) = 0.0d0 ! Barotropic mode               
+    do m=2,b%nl ! Baroclinic modes
+       homcor(:,:,m) = alpha(m-1)*hom_box%hom_sol_bc(:,:,m)
     enddo
 
   end subroutine box_homog

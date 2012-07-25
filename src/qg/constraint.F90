@@ -3,6 +3,7 @@ module constraint
   use box, only: box_type
   use modes, only: modes_type
   use intsubs, only: trapin
+  use numerics, only: int_P_dA
 
   implicit none
 
@@ -60,7 +61,7 @@ module constraint
      ! of the pressure differences across the internal interfaces in
      ! the ocean, used in applying the mass conservation constraints
 
-  type core_constr_type
+  type mass_constr_type
 
      double precision, allocatable :: dpi(:), dpip(:)
 
@@ -71,14 +72,16 @@ module constraint
      ! mass errors at each atmospheric interface
      ! Computed in atinvq
 
-  end type core_constr_type
+  end type mass_constr_type
 
   public constraint_type
-  public core_constr_type
+  public mass_constr_type
 
   public init_constraint
-  public init_core_constr
   public step_constraints
+
+  public init_mass_constr
+  public update_mass_constr
 
 contains
 
@@ -147,20 +150,47 @@ contains
 
   end function init_constraint
 
-  type(core_constr_type) function init_core_constr(nl)
+  type(mass_constr_type) function init_mass_constr(b, p, pm)
 
-    integer, intent(in) :: nl
+    type(box_type), intent(in) :: b
+    double precision, intent(in) :: p(b%nxp,b%nyp,b%nl)
+    double precision, intent(in) :: pm(b%nxp,b%nyp,b%nl)
 
-    allocate(init_core_constr%dpi(nl-1))
-    allocate(init_core_constr%dpip(nl-1))
+    double precision :: int_p(b%nl), int_pm(b%nl)
+    integer :: k
 
-    allocate(init_core_constr%emfr(nl-1))
-    allocate(init_core_constr%ermas(nl-1))
+    allocate(init_mass_constr%dpi(b%nl-1))
+    allocate(init_mass_constr%dpip(b%nl-1))
 
-    init_core_constr%emfr = 0.0d0
-    init_core_constr%ermas = 0.0d0
+    int_pm(:) = int_P_dA(pm, b)
+    int_p(:) = int_P_dA(p, b)
+    do k=1,b%nl-1
+       ! Choose sign of dpioc so that +ve dpioc -> +ve eta
+       init_mass_constr%dpip(k) = b%dz_sign*(int_pm(k) - int_pm(k+1) )
+       init_mass_constr%dpi(k) = b%dz_sign*(int_p(k) - int_p(k+1))
+    enddo
 
-  end function init_core_constr
+    allocate(init_mass_constr%emfr(b%nl-1))
+    allocate(init_mass_constr%ermas(b%nl-1))
+
+    init_mass_constr%emfr = 0.0d0
+    init_mass_constr%ermas = 0.0d0
+
+  end function init_mass_constr
+
+  pure subroutine update_mass_constr(con, tdt, gp, ent_xn)
+    type(mass_constr_type), intent(inout) :: con
+    double precision, intent(in) :: tdt
+    double precision, intent(in) :: gp(:)
+    double precision, intent(in) :: ent_xn(:)
+
+    double precision :: aitmp(size(gp))
+
+    aitmp(:) = con%dpi(:)
+    con%dpi(:) = con%dpip(:) - tdt*gp(:)*ent_xn(:)
+    con%dpip(:) = aitmp(:)
+
+  end subroutine update_mass_constr
 
 
   pure subroutine step_constraints(b, tau_sign, tdt, constr)

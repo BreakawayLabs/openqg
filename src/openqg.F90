@@ -35,8 +35,7 @@ program openqg
   use amlsubs, only: atmos_mixed_type, init_atmos_ml
   use forcing, only: compute_forcing
   use radsubs, only: radiat  
-  use constraint, only: init_constraint
-  use qg, only: init_foo_constr
+  use constraint, only: init_constraint, init_mass_constr
   use driver, only: dynamic_step, diagnostic_step, diagnose_final
 
   ! Diagnostics
@@ -241,7 +240,7 @@ contains
        if (ocn%qg%b%cyclic) then
           ocn%qg%constr = init_constraint(ocn%qg%b, ocn%qg%mod, ocn%qg%p, ocn%qg%pm)
        endif
-       call init_foo_constr(ocn%qg%b, ocn%qg%p, ocn%qg%pm, ocn%qg%con)
+       ocn%qg%con = init_mass_constr(ocn%qg%b, ocn%qg%p, ocn%qg%pm)
     endif
     if (atm%qg%active) then
        if (streq(atm_config%qg_state, 'zero')) then
@@ -272,7 +271,7 @@ contains
        if (atm%qg%b%cyclic) then
           atm%qg%constr = init_constraint(atm%qg%b, atm%qg%mod, atm%qg%p, atm%qg%pm)
        endif
-       call init_foo_constr(atm%qg%b, atm%qg%p, atm%qg%pm, atm%qg%con)
+       atm%qg%con = init_mass_constr(atm%qg%b, atm%qg%p, atm%qg%pm)
     endif
 
     if(ocn%ml%active) then

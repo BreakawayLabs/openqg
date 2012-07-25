@@ -3,10 +3,9 @@ module qg
   use util, only: strlen
   use ncutils, only: nc_open, nc_get_double, nc_get_dim, nc_close
   use box, only: box_type
-  use numerics, only: int_P_dA
   use intsubs, only: trapin
   use topog, only: topog_type
-  use constraint, only: constraint_type, core_constr_type, init_core_constr
+  use constraint, only: constraint_type, mass_constr_type, init_mass_constr
 
   use modes, only: modes_type, init_modes, eigmod
   use homog, only: homog_type, init_homog, homsol
@@ -50,12 +49,11 @@ module qg
      double precision, allocatable :: q(:,:,:), qm(:,:,:)
      double precision, allocatable :: p(:,:,:), pm(:,:,:)
      type(constraint_type) :: constr
-     type(core_constr_type) :: con
+     type(mass_constr_type) :: con
 
   end type qg_type
 
   public qg_type
-  public init_foo_constr
   public init_qg
 
 contains
@@ -101,31 +99,9 @@ contains
     init_qg%inhom = init_inhomog(init_qg%b, init_qg%mod%rdm2)
     call homsol(init_qg%b, init_qg%mod, init_qg%hom, init_qg%inhom)
 
-    init_qg%con = init_core_constr(init_qg%b%nl)
-
     init_qg%active = .true.
 
   end function init_qg
-
-  subroutine init_foo_constr(b, p, pm, con)
-    type(box_type), intent(in) :: b
-    double precision, intent(in) :: p(b%nxp,b%nyp,b%nl)
-    double precision, intent(in) :: pm(b%nxp,b%nyp,b%nl)
-    type(core_constr_type), intent(inout) :: con
-
-
-    double precision :: int_p(b%nl), int_pm(b%nl)
-    integer :: k
-    int_pm(:) = int_P_dA(pm, b)
-    int_p(:) = int_P_dA(p, b)
-
-    do k=1,b%nl-1
-       ! Choose sign of dpioc so that +ve dpioc -> +ve eta
-       con%dpip(k) = b%dz_sign*(int_pm(k) - int_pm(k+1) )
-       con%dpi(k) = b%dz_sign*(int_p(k) - int_p(k+1))
-    enddo
-    
-  end subroutine init_foo_constr
 
 end module qg
 
