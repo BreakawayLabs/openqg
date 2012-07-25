@@ -995,36 +995,6 @@ Here we use a higher order (9-point) Arakawa Jacobian \citep{arakawa:81} with su
 The timestepping of the evolution equations uses a leapfrog scheme, which is second order in time.
 Occasional averaging of the two time levels carried by the program is performed, to suppress the computational mode which is inevitable with this scheme.
 
-\subsection{Effect of the Laplacian operator on a Fourier component}\label{sub:four}
-This section considers the effect of the $\ps{}{x}$ operator on a single Fourier component; the results will prove useful in a couple of later sections.
-Consider a one-dimensional Fourier expansion (the extension to two dimensions is straightforward):
-\begin{equation}\label{eq:four}p(x) = \sum_k \tilde{p}_k e^{2\pi i k x}.
-\end{equation}
-In the continuous case, applying the second derivative operator gives
-\begin{equation}\label{eq:four2}
-\ns{p}{x} = \sum_k - \tilde{p}_k  (2\pi k)^2 e^{2\pi i k x}.
-\end{equation}
-In the finite difference case, $\ns{p}{x}$ at $x$ is given by the centred-difference approximation
-\begin{equation}\label{eq:four3}
-\ns{p}{x} = \frac{p(x+dx) - 2 p(x) + p(x-dx)}{dx^2}.
-\end{equation}where $dx$ is the gridspacing.
-Substituting (\ref{eq:four}) and simplifying somewhat gives\begin{equation}
-\ns{p}{x} =\sum_k \tilde{p}_k  \left(\frac{e^{2\pi i k dx} + e^{-2\pi i k dx} -2}{dx^2}\right) e^{2\pi i k x},
-\end{equation}
-i.e.
-\begin{equation}
-\ns{p}{x} =\sum_k \tilde{p}_k  \left(\frac{2 cos(2\pi k dx) -2 } {dx^2}\right)e^{2\pi i k x},
-\end{equation}
-which, using some familiar trigonometric identities, reduces to:
-\begin{equation}\label{eq:four4}
-\ns{p}{x} =  \sum_k -\tilde{p}_k  \left(\frac{2 sin(\pi k dx) }{dx}\right)^2e^{2\pi i k x}.
-\end{equation}
-So the finite difference result (\ref{eq:four4}) is similar to the continuous result (\ref{eq:four2}), but with the replacement
-\begin{equation}\label{eq:to}
-\pi k \Rightarrow \frac{sin(\pi k dx)}{dx},
-\end{equation}
-in the Fourier coefficient.
-For small $k$ (well-resolved wavelengths) these are equivalent.
 
 \subsection{Numerical decomposition into modes}\label{sub:modes}
 For both ocean and atmosphere the relationship between pressure and vorticity can be written in vector form as in (\ref{eq:matr2b}), where $\mtx{A}$ is the tridiagonal matrix given by (\ref{eq:mata}).
@@ -1083,96 +1053,6 @@ Premultiplying by $\vc{L}^T_k$, summing over the layers ($k$), and dividing by t
 \end{equation}
 So we need to solve a two-dimensional modified Helmholtz equation with a known RHS for each modal amplitude $\hat{p}_m$, using the method given in section \ref{sub:helm}, and convert these to layer amplitudes using (\ref{eq:deco1}).
 
-\subsection{Solution of the modified Helmholtz equation}\label{sub:helm}
-Most of the equations which constitute the model define one variable explicitly in terms of other variables or their derivatives.
-The exceptions are the modified Helmholtz equations (\ref{eq:matr2e}) which define pressures \emph{implicitly} in terms of vorticities, subject to suitable boundary conditions.
-We require a computationally efficient solution method for such equations.
-Write the general inhomogeneous Helmholtz equation as
-\begin{equation}\label{eq:helm}
-\left(\nabla_H^2 - \frac{1}{\rdm^2}\right) p = Q
-\end{equation}
-where the right hand side $ Q(x,y)$ is a known function and $\rdm$ is the Rossby radius for a given mode.
-The barotropic mode is a special case for which $\rdm$ is infinite, and (\ref{eq:helm}) reduces to Poisson's equation.
-
-We will consider the solution to (\ref{eq:helm}) in a channel periodic in $x$ (the atmospheric and cyclic ocean cases).
-The method carries over to the finite box ocean with simple modifications to be discussed later.
-Assume the pressure $p(x,y)$ and the right hand side $ Q(x,y)$ are tabulated on a regular grid at positions $x_i = (i-1)dx$  ($M$ points),  $y_j = y_s + (j-1)dy$ ($N$ points), so that $ Q$ is an $M \times N$ matrix $ Q_{ij}$.
-Expand $p$ and $ Q$ as one-dimensional Fourier series in the $x$-direction at each of the ($N-2$) values $y_j$ within the domain (i.e. not including the zonal boundaries $j=1$ and $j=N$):
-\begin{equation}\label{eq:four6}
-p_{ij} = \sum_k \tilde{p}_{k,j} e^{2\pi i k x_i}.
-\end{equation}
-We can use a Fast Fourier Transform (FFT) routine to efficiently compute the array of coefficients $\tilde{ Q}_{k,j}$ from the known $ Q_{ij}$.
-The particular ordering of the values of $k$ in the transform vector depends on the FFT package used, so we ignore such details in this general account.
-
-Then from (\ref{eq:four4})
-\begin{equation}
-\ps{p_{ij}}{x} = \sum_k -\tilde{p}_{k,j}  \left(\frac{2 sin(\pi k dx)}{dx}\right)^2e^{2\pi i k x_i}.
-\end{equation}
-$\ps{p_{ij}}{y}$ at $y = y_j$ is given by the usual centred difference approximation (\ref{eq:four3})
-\begin{equation}
-\ps{p_{ij}}{y} = \sum_k \left( \frac{\tilde{p}_{k,j+1} - 2\tilde{p}_{k,j} + \tilde{p}_{k,j-1}}{dy^2}\right) e^{2\pi i k x_i}
-\end{equation}
-so at each internal point $i,j$ we have an equation of the form
-\begin{multline}
-\sum_k -\tilde{p}_{k,j} \left( \left(\frac{2 sin(\pi k dx)}{dx}\right)^2 + \frac{1}{\rdm^2} \right)e^{2\pi i k x_i}  + \sum_k \left( \frac{\tilde{p}_{k,j+1} - 2\tilde{p}_{k,j} + \tilde{p}_{k,j-1}}{dy^2}\right) e^{2\pi i k x_i}  \\
-= \sum_k \tilde{ Q}_{k,j} e^{2\pi i k x_i} .
-\end{multline}
-But for this to be true at all the points $x = x_i$, it must be true for each Fourier component $e^{2\pi i k x} $ separately, i.e. for all $k$ and $j$, we must have
-\begin{equation}\label{eq:four5}
--\tilde{p}_{k,j} \left( \left(\frac{2 sin(\pi k dx)}{dx}\right)^2 + \frac{1}{\rdm^2} \right) + \frac{ \left( \tilde{p}_{k,j+1} - 2\tilde{p}_{k,j} + \tilde{p}_{k,j-1}\right)}{dy^2} = \tilde{ Q}_{k,j}.
-\end{equation}
-For each value of the $M$ values of $k$, we can thus write the set of ($N-2$) equations (\ref{eq:four5}) for the range of internal $j$ values as a single tridiagonal matrix equation of size $(N-2) \times (N-2)$ relating the unknown vector $\tilde{p}_{k,j}$ and the known vector $\tilde{ Q}_{k,j}$:
-\begin{equation}
-\left[ \begin{array}{ccccccccccccc}
-\cdot & \cdot& & &\\
-\cdot & \cdot& \cdot& &\\
- & \cdot & \cdot& \cdot& &\\
- &  & \cdot & \cdot& \cdot& &\\
-\\
- &  & & & a & b_k & a & \\
- & &  & & & a & b_k & a & \\
- & & & & & & a & b_k & a & \\
-\\
-& & & & & & & & \cdot & \cdot& \cdot& &\\
-& & & & & & & & & \cdot & \cdot& \cdot&\\
-& & & & & & & & &  & \cdot & \cdot& \cdot\\
-& & & & & & & & &  & & \cdot & \cdot
-\end{array}\right] \tilde{p}_{k,j} = \tilde{ Q}_{k,j}
-\end{equation}
-where dots denote non-zero coefficients, and the $a$ and $b$ coefficients are known:
-\begin{equation}\label{eq:dy2}
-a = \frac{1}{dy^2},
-\end{equation}
-\begin{equation}\label{eq:bk}
- b_k = - \left( \left( \frac{2 sin(\pi k dx)}{dx} \right)^2 + \frac{1}{\rdm^2}\right) - 2a
-\end{equation}
-Note that to maintain strictly tridiagonal form, only two entries appear on the top and bottom rows of the matrix.
-This is equivalent to asserting that $\tilde{p}$ vanishes on the zonal boundaries $j=1$ and $j=N$ for all $k$, and thus $p=0$ also.
-
-Such a tridiagonal system can be efficiently solved for the unknown vector without a full matrix inversion; see any good numerical linear algebra textbook, such as \citet{press:92}.
-For the modified Helmholtz operator, it is clear from (\ref{eq:dy2}) and (\ref{eq:bk}) that $|b_k| \ge 2|a| > 0$ for all $k$, so the matrix is ``diagonally dominant'', and no problems of zero pivots can occur.
-The tridiagonal method is accurate to about machine precision, without any need for further iterative improvement. 
-This method is built into the subroutines \verb=hscyat=, \verb=hsbxoc= and \verb=hscyoc=.
-Having solved the system for $\tilde{p}_{k,j}$ at all $M$ wavenumbers $k$, we can then use (\ref{eq:four6}) at each latitude to get the pressure $p_{ij}$ at all gridpoints.
-Thus we have solved the inhomogeneous Helmholtz equation (\ref{eq:helm}) in a zonally periodic channel, subject to the condition $p = 0$ on the zonal boundaries.
-
-In the case of a finite length (box) ocean, where we require $p$ to be constant around the entire boundary, we use Fourier sine transforms instead of the periodic Fourier transforms, to ensure that $p = 0$ on the meridional boundaries too.
-
-Note that the various Fourier transform routines use a significant fraction of the total CPU time.
-It is therefore important that the parameters determining the transform lengths (\verb=nxta=, \verb=ndxr= and \verb=nxaooc=, all set in \verb=parameter.src=) should be chosen to have numerous small prime factors, so as to maximise the efficiency of the transform routines.
-
-We can also use this scheme to solve the homogeneous Helmholtz equation for baroclinic modes.
-The homogeneous equation is:
-\begin{equation}\label{eq:helm1}
-\left(\nabla_H^2- \frac{1}{\rdm^2} \right) p = 0.
-\end{equation}
-Write $p = \mathcal{L} + \frac{s}{\rdm^2}$, where $\mathcal{L}$ is a known solution of Laplace's equation $\nabla_H^2 \mathcal{L} = 0$ which is non-zero on the boundaries; then $s$ satisfies
-\begin{equation}\label{eq:helm2}
-\left(\nabla_H^2- \frac{1}{\rdm^2} \right) s = \mathcal{L},
-\end{equation}
-which is of the same form as (\ref{eq:helm}).
-$s$ satisfies the usual condition $s = 0$ on the solid boundaries of the domain, so $p = \mathcal{L}$ on these boundaries.
-We can add any multiple of these homogeneous solutions to the inhomogeneous solution to obtain any required value of $p$ on the solid boundaries.
 
 \subsection{Integration routines}
 Several of the radiative flux coefficients introduced in section \ref{sub:rad} involve vertical integrals over the appropriate layers.
@@ -1273,6 +1153,135 @@ Subroutine \verb=diffts= evaluates these timescales for two special cases:
 \subsubsection*{Acknowledgements}
 Neil Stringfellow of Manchester Computing assisted with optimisation and parallelisation of the code.
 Peter Challenor assisted us to implement the statistics packages which are built into the code.
+
+\section{Helmholtz Solver}
+
+Most of the equations which constitute the model define one variable explicitly in terms of other variables or their derivatives.
+The exceptions are the modified Helmholtz equations (\ref{eq:matr2e}) which define pressures \emph{implicitly} in terms of vorticities, subject to suitable boundary conditions.
+We require a computationally efficient solution method for such equations.
+Write the general inhomogeneous Helmholtz equation as
+\begin{equation}\label{eq:helm}
+\left(\nabla_H^2 - \frac{1}{\rdm^2}\right) p = Q
+\end{equation}
+where the right hand side $ Q(x,y)$ is a known function and $\rdm$ is the Rossby radius for a given mode.
+The barotropic mode is a special case for which $\rdm$ is infinite, and (\ref{eq:helm}) reduces to Poisson's equation.
+
+We will consider the solution to (\ref{eq:helm}) in a channel periodic in $x$ (the atmospheric and cyclic ocean cases).
+The method carries over to the finite box ocean with simple modifications to be discussed later.
+Assume the pressure $p(x,y)$ and the right hand side $ Q(x,y)$ are tabulated on a regular grid at positions $x_i = (i-1)dx$  ($M$ points),  $y_j = y_s + (j-1)dy$ ($N$ points), so that $ Q$ is an $M \times N$ matrix $ Q_{ij}$.
+Expand $p$ and $ Q$ as one-dimensional Fourier series in the $x$-direction at each of the ($N-2$) values $y_j$ within the domain (i.e. not including the zonal boundaries $j=1$ and $j=N$):
+\begin{equation}\label{eq:four6}
+p_{ij} = \sum_k \tilde{p}_{k,j} e^{2\pi i k x_i}.
+\end{equation}
+We can use a Fast Fourier Transform (FFT) routine to efficiently compute the array of coefficients $\tilde{ Q}_{k,j}$ from the known $ Q_{ij}$.
+The particular ordering of the values of $k$ in the transform vector depends on the FFT package used, so we ignore such details in this general account.
+
+
+\subsection{Effect of the Laplacian operator on a Fourier component}\label{sub:four}
+This section considers the effect of the $\ps{}{x}$ operator on a single Fourier component.
+Consider a one-dimensional Fourier expansion (the extension to two dimensions is straightforward):
+\begin{equation}\label{eq:four}p(x) = \sum_k \tilde{p}_k e^{2\pi i k x}.
+\end{equation}
+In the continuous case, applying the second derivative operator gives
+\begin{equation}\label{eq:four2}
+\ns{p}{x} = \sum_k - \tilde{p}_k  (2\pi k)^2 e^{2\pi i k x}.
+\end{equation}
+In the finite difference case, $\ns{p}{x}$ at $x$ is given by the centred-difference approximation
+\begin{equation}\label{eq:four3}
+\ns{p}{x} = \frac{p(x+dx) - 2 p(x) + p(x-dx)}{dx^2}.
+\end{equation}where $dx$ is the gridspacing.
+Substituting (\ref{eq:four}) and simplifying somewhat gives\begin{equation}
+\ns{p}{x} =\sum_k \tilde{p}_k  \left(\frac{e^{2\pi i k dx} + e^{-2\pi i k dx} -2}{dx^2}\right) e^{2\pi i k x},
+\end{equation}
+i.e.
+\begin{equation}
+\ns{p}{x} =\sum_k \tilde{p}_k  \left(\frac{2 cos(2\pi k dx) -2 } {dx^2}\right)e^{2\pi i k x},
+\end{equation}
+which, using some familiar trigonometric identities, reduces to:
+\begin{equation}\label{eq:four4}
+\ns{p}{x} =  \sum_k -\tilde{p}_k  \left(\frac{2 sin(\pi k dx) }{dx}\right)^2e^{2\pi i k x}.
+\end{equation}
+So the finite difference result (\ref{eq:four4}) is similar to the continuous result (\ref{eq:four2}), but with the replacement
+\begin{equation}\label{eq:to}
+\pi k \Rightarrow \frac{sin(\pi k dx)}{dx},
+\end{equation}
+in the Fourier coefficient.
+For small $k$ (well-resolved wavelengths) these are equivalent.
+
+
+\subsection{Solution of the modified Helmholtz equation}\label{sub:helm}
+
+Then from (\ref{eq:four4})
+\begin{equation}
+\ps{p_{ij}}{x} = \sum_k -\tilde{p}_{k,j}  \left(\frac{2 sin(\pi k dx)}{dx}\right)^2e^{2\pi i k x_i}.
+\end{equation}
+$\ps{p_{ij}}{y}$ at $y = y_j$ is given by the usual centred difference approximation (\ref{eq:four3})
+\begin{equation}
+\ps{p_{ij}}{y} = \sum_k \left( \frac{\tilde{p}_{k,j+1} - 2\tilde{p}_{k,j} + \tilde{p}_{k,j-1}}{dy^2}\right) e^{2\pi i k x_i}
+\end{equation}
+so at each internal point $i,j$ we have an equation of the form
+\begin{multline}
+\sum_k -\tilde{p}_{k,j} \left( \left(\frac{2 sin(\pi k dx)}{dx}\right)^2 + \frac{1}{\rdm^2} \right)e^{2\pi i k x_i}  + \sum_k \left( \frac{\tilde{p}_{k,j+1} - 2\tilde{p}_{k,j} + \tilde{p}_{k,j-1}}{dy^2}\right) e^{2\pi i k x_i}  \\
+= \sum_k \tilde{ Q}_{k,j} e^{2\pi i k x_i} .
+\end{multline}
+But for this to be true at all the points $x = x_i$, it must be true for each Fourier component $e^{2\pi i k x} $ separately, i.e. for all $k$ and $j$, we must have
+\begin{equation}\label{eq:four5}
+-\tilde{p}_{k,j} \left( \left(\frac{2 sin(\pi k dx)}{dx}\right)^2 + \frac{1}{\rdm^2} \right) + \frac{ \left( \tilde{p}_{k,j+1} - 2\tilde{p}_{k,j} + \tilde{p}_{k,j-1}\right)}{dy^2} = \tilde{ Q}_{k,j}.
+\end{equation}
+For each value of the $M$ values of $k$, we can thus write the set of ($N-2$) equations (\ref{eq:four5}) for the range of internal $j$ values as a single tridiagonal matrix equation of size $(N-2) \times (N-2)$ relating the unknown vector $\tilde{p}_{k,j}$ and the known vector $\tilde{ Q}_{k,j}$:
+\begin{equation}
+\left[ \begin{array}{ccccccccccccc}
+\cdot & \cdot& & &\\
+\cdot & \cdot& \cdot& &\\
+ & \cdot & \cdot& \cdot& &\\
+ &  & \cdot & \cdot& \cdot& &\\
+\\
+ &  & & & a & b_k & a & \\
+ & &  & & & a & b_k & a & \\
+ & & & & & & a & b_k & a & \\
+\\
+& & & & & & & & \cdot & \cdot& \cdot& &\\
+& & & & & & & & & \cdot & \cdot& \cdot&\\
+& & & & & & & & &  & \cdot & \cdot& \cdot\\
+& & & & & & & & &  & & \cdot & \cdot
+\end{array}\right] \tilde{p}_{k,j} = \tilde{ Q}_{k,j}
+\end{equation}
+where dots denote non-zero coefficients, and the $a$ and $b$ coefficients are known:
+\begin{equation}\label{eq:dy2}
+a = \frac{1}{dy^2},
+\end{equation}
+\begin{equation}\label{eq:bk}
+ b_k = - \left( \left( \frac{2 sin(\pi k dx)}{dx} \right)^2 + \frac{1}{\rdm^2}\right) - 2a
+\end{equation}
+Note that to maintain strictly tridiagonal form, only two entries appear on the top and bottom rows of the matrix.
+This is equivalent to asserting that $\tilde{p}$ vanishes on the zonal boundaries $j=1$ and $j=N$ for all $k$, and thus $p=0$ also.
+
+Such a tridiagonal system can be efficiently solved for the unknown vector without a full matrix inversion; see any good numerical linear algebra textbook, such as \citet{press:92}.
+For the modified Helmholtz operator, it is clear from (\ref{eq:dy2}) and (\ref{eq:bk}) that $|b_k| \ge 2|a| > 0$ for all $k$, so the matrix is ``diagonally dominant'', and no problems of zero pivots can occur.
+The tridiagonal method is accurate to about machine precision, without any need for further iterative improvement. 
+Having solved the system for $\tilde{p}_{k,j}$ at all $M$ wavenumbers $k$, we can then use (\ref{eq:four6}) at each latitude to get the pressure $p_{ij}$ at all gridpoints.
+Thus we have solved the inhomogeneous Helmholtz equation (\ref{eq:helm}) in a zonally periodic channel, subject to the condition $p = 0$ on the zonal boundaries.
+
+In the case of a finite length (box) ocean, where we require $p$ to be constant around the entire boundary, we use Fourier sine transforms instead of the periodic Fourier transforms, to ensure that $p = 0$ on the meridional boundaries too.
+
+Note that the various Fourier transform routines use a significant fraction of the total CPU time.
+It is therefore important that the parameters determining the transform lengths should be chosen to have numerous small prime factors, so as to maximise the efficiency of the transform routines.
+
+\subsection{Generating homogeneous solutions}
+
+We can also use this scheme to solve the homogeneous Helmholtz equation for baroclinic modes.
+The homogeneous equation is:
+\begin{equation}\label{eq:helm1}
+\left(\nabla_H^2- \frac{1}{\rdm^2} \right) p = 0.
+\end{equation}
+Write $p = \mathcal{L} + \frac{s}{\rdm^2}$, where $\mathcal{L}$ is a known solution of Laplace's equation $\nabla_H^2 \mathcal{L} = 0$ which is non-zero on the boundaries; then $s$ satisfies
+\begin{equation}\label{eq:helm2}
+\left(\nabla_H^2- \frac{1}{\rdm^2} \right) s = \mathcal{L},
+\end{equation}
+which is of the same form as (\ref{eq:helm}).
+$s$ satisfies the usual condition $s = 0$ on the solid boundaries of the domain, so $p = \mathcal{L}$ on these boundaries.
+We can add any multiple of these homogeneous solutions to the inhomogeneous solution to obtain any required value of $p$ on the solid boundaries.
+
 
 \newpage
 
