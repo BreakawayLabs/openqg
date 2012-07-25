@@ -158,21 +158,26 @@ contains
 
   end function avg_T
 
-  double precision pure function int_P_dA(p_data, b)
+  pure function int_P_dA(p_data, b)
     
     type(box_type), intent(in) :: b
-    double precision, intent(in) :: p_data(b%nxp, b%nyp)
+    double precision, intent(in) :: p_data(b%nxp, b%nyp, b%nl)
+    double precision :: int_P_dA(b%nl)
 
-    ! All points
-    int_P_dA = sum(p_data(:,:))
-    ! Remove N/S overhang
-    int_P_dA = int_P_dA - 0.5d0*(sum(p_data(:,1)) + sum(p_data(:,b%nyp)))
-    ! Remove E/W overhang
-    int_P_dA = int_P_dA - 0.5d0*(sum(p_data(1,:)) + sum(p_data(b%nxp,:)))
-    ! Add back in corners
-    int_P_dA = int_P_dA + 0.25d0*(p_data(1,1) + p_data(1,b%nyp) + p_data(b%nxp,1) + p_data(b%nxp,b%nyp))
-    ! Multiply by grid size
-    int_P_dA = int_P_dA*b%dx*b%dy
+    integer :: k
+
+    do k=1,b%nl
+       ! All points
+       int_P_dA(k) = sum(p_data(:,:,k))
+       ! Remove N/S overhang
+       int_P_dA(k) = int_P_dA(k) - 0.5d0*(sum(p_data(:,1,k)) + sum(p_data(:,b%nyp,k)))
+       ! Remove E/W overhang
+       int_P_dA(k) = int_P_dA(k) - 0.5d0*(sum(p_data(1,:,k)) + sum(p_data(b%nxp,:,k)))
+       ! Add back in corners
+       int_P_dA(k) = int_P_dA(k) + 0.25d0*(p_data(1,1,k) + p_data(1,b%nyp,k) + p_data(b%nxp,1,k) + p_data(b%nxp,b%nyp,k))
+       ! Multiply by grid size
+       int_P_dA(k) = int_P_dA(k)*b%dx*b%dy
+    enddo
 
   end function int_P_dA
 

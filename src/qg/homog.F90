@@ -179,15 +179,12 @@ contains
     ! Specify RHSs
     do j=1,b%nyp
        Ly1(j) = ( b%yp(b%nyp)-b%yp(j) )/b%yl
-       Ly2(j) = ( b%yp(  j )-b%yp(1) )/b%yl
+       Ly2(j) = ( b%yp(  j ) -b%yp(1) )/b%yl
        rhs1(:,j) = Ly1(j)
        rhs2(:,j) = Ly2(j)
     enddo
 
     do m=2,b%nl
-       print *
-       print '(a,i2)', '  Mode: ',m
-
        ! Invert these RHSs for baroclinic homog. solutions (sol0 above)
        sol01(:,:) = solve_inhomog_eqn(inhom, b, m, rhs1)
        sol02(:,:) = solve_inhomog_eqn(inhom, b, m, rhs2)
@@ -203,25 +200,27 @@ contains
        aipch2 = trapin(hom_cyc%hom_sol_bc2(:,m), b%nyp, b%dy)*b%xl
        ! Both solutions should have the same area integral
        hom_cyc%int_sol_bc(m) = 0.5d0*(aipch1+aipch2)
-       
+       print *
+       print 240, '  aipch1, aipch2 = ',aipch1,aipch2
+       print 240, '  int_sol_bc     = ',hom_cyc%int_sol_bc(m)
+    enddo
+    do m=2,b%nl
+       print *
+       print '(a,i2)', '  Mode: ',m
+
        ! Compute dp/dy half a gridpoint in from the north
        ! and south boundaries, and "integrate" in x
        ! Since these solutions are independent of x,
        ! x integration means just multiply by xla
-       pch1ys = ( hom_cyc%hom_sol_bc1(  2 ,m) - hom_cyc%hom_sol_bc1(   1  ,m) )/b%dy
-       pch2ys = ( hom_cyc%hom_sol_bc2(  2 ,m) - hom_cyc%hom_sol_bc2(   1  ,m) )/b%dy
-       pch1yn = ( hom_cyc%hom_sol_bc1(b%nyp,m) - hom_cyc%hom_sol_bc1(b%nyp-1,m) )/b%dy
-       pch2yn = ( hom_cyc%hom_sol_bc2(b%nyp,m) - hom_cyc%hom_sol_bc2(b%nyp-1,m) )/b%dy
+       pch1ys = -b%xl*( hom_cyc%hom_sol_bc1(  2  ,m) - hom_cyc%hom_sol_bc1(   1   ,m) )/b%dy
+       pch2ys = -b%xl*( hom_cyc%hom_sol_bc2(  2  ,m) - hom_cyc%hom_sol_bc2(   1   ,m) )/b%dy
+       pch1yn =  b%xl*( hom_cyc%hom_sol_bc1(b%nyp,m) - hom_cyc%hom_sol_bc1(b%nyp-1,m) )/b%dy
+       pch2yn =  b%xl*( hom_cyc%hom_sol_bc2(b%nyp,m) - hom_cyc%hom_sol_bc2(b%nyp-1,m) )/b%dy
        ! Correction for baroclinic modes
-       pch1ys = -pch1ys + 0.5d0*b%dy*inhom%rdm2(m)*hom_cyc%hom_sol_bc1(  1 ,m)
-       pch2ys = -pch2ys + 0.5d0*b%dy*inhom%rdm2(m)*hom_cyc%hom_sol_bc2(  1 ,m)
-       pch1yn =  pch1yn + 0.5d0*b%dy*inhom%rdm2(m)*hom_cyc%hom_sol_bc1(b%nyp,m)
-       pch2yn =  pch2yn + 0.5d0*b%dy*inhom%rdm2(m)*hom_cyc%hom_sol_bc2(b%nyp,m)
-       ! Convert to line integrals
-       pch1ys = b%xl*pch1ys
-       pch2ys = b%xl*pch2ys
-       pch1yn = b%xl*pch1yn
-       pch2yn = b%xl*pch2yn
+       pch1ys = pch1ys + 0.5d0*b%dy*inhom%rdm2(m)*hom_cyc%hom_sol_bc1(  1 ,m)*b%xl
+       pch2ys = pch2ys + 0.5d0*b%dy*inhom%rdm2(m)*hom_cyc%hom_sol_bc2(  1 ,m)*b%xl
+       pch1yn = pch1yn + 0.5d0*b%dy*inhom%rdm2(m)*hom_cyc%hom_sol_bc1(b%nyp,m)*b%xl
+       pch2yn = pch2yn + 0.5d0*b%dy*inhom%rdm2(m)*hom_cyc%hom_sol_bc2(b%nyp,m)*b%xl
        ! The above are (for each mode m) the quantities in square
        ! brackets on the RHS of (B.14) and (B.15)
        pchdet = pch1ys*pch2yn - pch2ys*pch1yn
@@ -230,8 +229,6 @@ contains
        hom_cyc%hc1n(m) = pch1yn/pchdet
        hom_cyc%hc2n(m) = pch2yn/pchdet
        print *
-       print 240, '  aipch1, aipch2 = ',aipch1,aipch2
-       print 240, '  int_sol_bc     = ',hom_cyc%int_sol_bc(m)
        print 240, '  pch1ys, pch1yn = ',pch1ys,pch1yn
        print 240, '  pch2ys, pch2yn = ',pch2ys,pch2yn
        print 240, '  pchdet         = ',pchdet
@@ -258,13 +255,14 @@ contains
 
     print *
     print *, ' Homogeneous (baroclinic) solutions:'
+
+    ! Setup RHS.
+    rhs(:,:) = 1.0d0
     do m=2,b%nl
        ! Compute new homogeneous solution = (1 + rdm2*sol0)
        ! sol0 satisfies Del-sqd(sol0) - rdm2*sol0 = 1
        ! with the usual boundary condition p = 0
        ! These are baroclinic solutions for use in ocinvq
-       ! Setup RHS.
-       rhs(:,:) = 1.0d0
 
        ! Solve for sol0 in ochom.
        hom_box%hom_sol_bc(:,:,m) = solve_inhomog_eqn(inhom, b, m, rhs(:,:))
@@ -288,10 +286,11 @@ contains
     ! cdhoc(k,m) is  coefficient which multiplies a homogeneous
     ! baroclinic mode coefficient to give its contribution to dpioc(k)
     do k=1,b%nl-1
-       do m=1,b%nl-1
-          hom_box%cdhoc(k,m) = ( mod%ctm2l(m+1,k+1) - mod%ctm2l(m+1,k) )*aipohs(m+1)
+       do m=2,b%nl          
+          hom_box%cdhoc(k,m-1) = ( mod%ctm2l(m,k+1) - mod%ctm2l(m,k) )*aipohs(m)
        enddo
     enddo
+    stop 1
     ! Compute the LU factorization of cdhoc
     call LU_factor(hom_box%cdhoc, hom_box%LU, hom_box%ipiv)
 
@@ -407,11 +406,8 @@ contains
     ! Compute area integrals of pressures
     ! -----------------------------------
     ! Integrals of modal pressures
-    do m=1,b%nl
-       ! Compute area integral of new inhomogeneous solution
-       int_inhom_m(m) = int_P_dA(inhomog(:,:,m), b)
-    enddo
-
+    ! Compute area integral of new inhomogeneous solution
+    int_inhom_m(:) = int_P_dA(inhomog, b)
     aipmod(1) = int_inhom_m(1) + c_bt*hom_cyc%int_sol_bt
     do m=2,b%nl
        aipmod(m) = int_inhom_m(m) + ( c_bc1(m) + c_bc2(m) )*hom_cyc%int_sol_bc(m)
@@ -508,13 +504,12 @@ contains
     con%dpip(:) = aitmp(:)
 
     ! Area integral of d(eta(k))/dt = - Area integral of entrainment e(k)
-    do m=1,b%nl
-       ! Compute area integral of new inhomogeneous solution
-       int_inhom_m(m) = int_P_dA(inhomog(:,:,m), b)
-    enddo
+    ! Compute area integral of new inhomogeneous solution
+    int_inhom_m(:) = int_P_dA(inhomog, b)
     do k=1,b%nl
        int_inhom_k(k) = sum(mod%ctm2l(:,k)*int_inhom_m(:))
     enddo
+
     do k=1,b%nl-1
        rhs(k) = con%dpi(k) - (int_inhom_k(k+1) - int_inhom_k(k))
     enddo

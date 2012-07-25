@@ -113,16 +113,16 @@ contains
     double precision, intent(in) :: pm(b%nxp,b%nyp,b%nl)
     type(core_constr_type), intent(inout) :: con
 
-    double precision wk(b%nxp,b%nyp,b%nl)
 
+    double precision :: int_p(b%nl), int_pm(b%nl)
     integer :: k
+    int_pm(:) = int_P_dA(pm, b)
+    int_p(:) = int_P_dA(p, b)
 
     do k=1,b%nl-1
        ! Choose sign of dpioc so that +ve dpioc -> +ve eta
-       wk(:,:,1) = b%dz_sign*(pm(:,:,k) - pm(:,:,k+1))
-       wk(:,:,2) = b%dz_sign*(p(:,:,k)  - p(:,:,k+1))
-       con%dpip(k) = int_P_dA(wk(:,:,1), b)
-       con%dpi(k) = int_P_dA(wk(:,:,2), b)
+       con%dpip(k) = b%dz_sign*(int_pm(k) - int_pm(k+1) )
+       con%dpi(k) = b%dz_sign*(int_p(k) - int_p(k+1))
     enddo
     
   end subroutine init_foo_constr
