@@ -1,7 +1,7 @@
 module inhomog
 
   use box, only: box_type
-  use constants, only: PI, TWOPI
+  use constants, only: TWOPI
 
   use, intrinsic :: iso_c_binding
 
@@ -13,9 +13,11 @@ module inhomog
 
   type inhomog_type
 
+     ! Solver input configuration 
      double precision, allocatable :: rdm2(:)
+     type(box_type) :: b
 
-     double precision :: a
+     ! FFTW parameters
      type(C_PTR) :: ocn_plan_f
      type(C_PTR) :: ocn_plan_b
      real(C_DOUBLE), pointer :: fftw_ocn_in(:,:)
@@ -23,12 +25,12 @@ module inhomog
      complex(C_DOUBLE), pointer :: fftw_ocn_out_c(:,:)
      type(C_PTR) :: in_p
      type(C_PTR) :: out_p
-
-     integer :: nx
      double precision :: ftnorm
-     double precision, allocatable :: bb(:,:)
 
-     type(box_type) :: b
+     ! Matrix parameters
+     integer :: nx
+     double precision :: a
+     double precision, allocatable :: bb(:,:)
 
   end type inhomog_type
 
@@ -44,68 +46,74 @@ contains
     type(box_type), intent(in) :: b
     double precision, intent(in) :: rdm2(b%nl)
 
-    integer :: i, m, nx
+    integer :: i, m, N, n_in, n_out
     double precision, allocatable :: bd2(:)
 
+    ! Input parameters
     init_inhomog%b = b
-
-    init_inhomog%a = 1.0d0/( b%dy*b%dy )
-
     allocate(init_inhomog%rdm2(b%nl))
     init_inhomog%rdm2(:) = rdm2(:)
 
+    ! Compute the logical and physical size of the transform arrays
     if (b%cyclic) then
-       nx = b%nxt/2 + 1
-       allocate(bd2(nx))
-       do i=1,nx
-          bd2(i) = -2.0d0*init_inhomog%a + 2.0d0*b%dxm2*(cos((i-1)*TWOPI/b%nxt)  - 1.0d0)
-       enddo
-       init_inhomog%ftnorm = 1.0d0/b%nxt
+       n_in = b%nxp - 1   ! Physical number of transform input points
+       n_out = n_in/2 + 1 ! Physical number of transform output points
+       N = n_in           ! The logical size of the transform
     else
-       nx = b%nxt - 1
-       allocate(bd2(nx))
-       do i=1,nx
-          bd2(i) = -2.0d0*init_inhomog%a + 2.0d0*b%dxm2*( cos( i*PI/b%nxt ) - 1.0d0 ) ! FIXME: nxt-1
-       enddo
-       init_inhomog%ftnorm = 0.5d0/b%nxt! FIXME: nxt -1
+       n_in = b%nxp - 2
+       n_out = n_in
+       N = 2*(n_in + 1)
     endif
-    init_inhomog%nx = nx
+    init_inhomog%nx = n_out
 
-    allocate(init_inhomog%bb(nx,b%nl))
+    ! Setup FFTW inputs/output/plans
+    if (b%cyclic) then
+       init_inhomog%in_p = fftw_alloc_real(int(n_in*(b%nyp-2), C_SIZE_T)) ! Real input array
+       call c_f_pointer(init_inhomog%in_p, init_inhomog%fftw_ocn_in, [n_in, b%nyp-2])
+
+       init_inhomog%out_p = fftw_alloc_complex(int(n_out*(b%nyp-2), C_SIZE_T)) ! Complex output array
+       call c_f_pointer(init_inhomog%out_p, init_inhomog%fftw_ocn_out_c, [n_out, b%nyp-2])
+
+       init_inhomog%ocn_plan_f = fftw_plan_many_dft_r2c(1, (/N/), b%nyp-2, & ! Forward transform
+            init_inhomog%fftw_ocn_in,    (/n_in/),  1, n_in,  &  ! Takes n_in real elements as input
+            init_inhomog%fftw_ocn_out_c, (/n_out/), 1, n_out, &  ! Makes n_out complex elements as output
+            ior(FFTW_PATIENT,FFTW_DESTROY_INPUT))
+       
+       init_inhomog%ocn_plan_b = fftw_plan_many_dft_c2r(1, (/N/), b%nyp-2, & ! Backwards transform
+            init_inhomog%fftw_ocn_out_c, (/n_out/), 1, n_out, & ! Takes n_out complex elements as input
+            init_inhomog%fftw_ocn_in,    (/n_in/),  1, n_in,  & ! Makes n_in real elements as input
+            ior(FFTW_PATIENT,FFTW_DESTROY_INPUT))
+    else
+       init_inhomog%in_p = fftw_alloc_real(int(n_in*(b%nyp-2), C_SIZE_T)) ! real input array
+       call c_f_pointer(init_inhomog%in_p, init_inhomog%fftw_ocn_in, [n_in, b%nyp-2])
+
+       init_inhomog%out_p = fftw_alloc_real(int(n_out*(b%nyp-2), C_SIZE_T)) ! real output array
+       call c_f_pointer(init_inhomog%out_p, init_inhomog%fftw_ocn_out_r, [n_out, b%nyp-2])
+
+       init_inhomog%ocn_plan_f = fftw_plan_many_r2r(1, (/n_in/), b%nyp-2, &
+            init_inhomog%fftw_ocn_in,    (/n_in/),  1, n_in,  & ! Takes n_in real elements as input
+            init_inhomog%fftw_ocn_out_r, (/n_out/), 1, n_out, & ! Makes n_out real elements as output
+            (/FFTW_RODFT00/), ior(FFTW_EXHAUSTIVE,FFTW_DESTROY_INPUT))
+    endif
+    init_inhomog%ftnorm = 1.0d0/N ! Normalisation factor
+
+    ! Tridiagonal matrix parameters
+    init_inhomog%a = 1.0d0/( b%dy*b%dy )
+    allocate(bd2(init_inhomog%nx))
+    if (b%cyclic) then
+       do i=1,init_inhomog%nx
+          bd2(i) = -2.0d0*init_inhomog%a + 2.0d0*b%dxm2*(cos((i-1)*TWOPI/N)  - 1.0d0)
+       enddo
+    else
+       do i=1,init_inhomog%nx
+          bd2(i) = -2.0d0*init_inhomog%a + 2.0d0*b%dxm2*( cos( i*TWOPI/N ) - 1.0d0 )
+       enddo
+    endif
+    allocate(init_inhomog%bb(init_inhomog%nx,b%nl))
     do m=1,b%nl
        init_inhomog%bb(:,m) = bd2(:) - rdm2(m)
     enddo
     deallocate(bd2)
-
-    if (b%cyclic) then
-       init_inhomog%in_p = fftw_alloc_real(int(b%nxt*(b%nyp-2), C_SIZE_T))
-       call c_f_pointer(init_inhomog%in_p, init_inhomog%fftw_ocn_in, [b%nxt, b%nyp-2])
-
-       init_inhomog%out_p = fftw_alloc_complex(int(nx*(b%nyp-2), C_SIZE_T))
-       call c_f_pointer(init_inhomog%out_p, init_inhomog%fftw_ocn_out_c, [nx, b%nyp-2])
-
-       init_inhomog%ocn_plan_f = fftw_plan_many_dft_r2c(1, (/b%nxt/), b%nyp-2, &
-            init_inhomog%fftw_ocn_in, (/b%nxt/), 1, b%nxt, &
-            init_inhomog%fftw_ocn_out_c, (/nx/), 1, nx, &
-            ior(FFTW_PATIENT,FFTW_DESTROY_INPUT))
-       
-       init_inhomog%ocn_plan_b = fftw_plan_many_dft_c2r(1, (/b%nxt/), b%nyp-2, &
-            init_inhomog%fftw_ocn_out_c, (/nx/), 1, nx, &
-            init_inhomog%fftw_ocn_in, (/b%nxt/), 1, b%nxt, &
-            ior(FFTW_PATIENT,FFTW_DESTROY_INPUT))
-    else
-       init_inhomog%in_p = fftw_alloc_real(int(nx*(b%nyp-2), C_SIZE_T))
-       call c_f_pointer(init_inhomog%in_p, init_inhomog%fftw_ocn_in, [nx, b%nyp-2])
-
-       init_inhomog%out_p = fftw_alloc_real(int(nx*(b%nyp-2), C_SIZE_T))
-       call c_f_pointer(init_inhomog%out_p, init_inhomog%fftw_ocn_out_r, [nx, b%nyp-2])
-       print *, "PLAN"
-       init_inhomog%ocn_plan_f = fftw_plan_many_r2r(1, (/nx/), b%nyp-2, &
-            init_inhomog%fftw_ocn_in, (/nx/), 1, nx, &
-            init_inhomog%fftw_ocn_out_r, (/nx/), 1, nx, &
-            (/FFTW_RODFT00/), ior(FFTW_EXHAUSTIVE,FFTW_DESTROY_INPUT))
-       print *, "DONE"
-    endif
 
   end function init_inhomog
 
@@ -143,8 +151,7 @@ contains
     integer, intent(in) :: m
     double precision, intent(inout) :: inhomog(b%nxp,b%nyp)
 
-    integer :: j
-   
+    integer :: j   
     double precision :: gam(inhom%nx,b%nyp-2),betinv(inhom%nx),uvec(inhom%nx,b%nyp-2)
  
     ! Compute sine transform of rhs along latitude lines
