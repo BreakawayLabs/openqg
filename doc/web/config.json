@@ -1,6 +1,6 @@
 {
     "project_title": "OpenQG",
-    "tags": [],
+    "tags": [{"tag": "0.9.0-beta0", "commit": "21df98847f9c736065e0d9333309a782ba9571ad"}],
     "project_desc": "OpenQG is an intermediate complexity mid-latitude coupled climate model. The model uses quasi-geostrophic (QG) dynamics in both ocean and atmosphere so that the momentum equations can be solved quickly, while non-linear dynamics and high resolution in the ocean can be retained.",
     "google_groups": "openqg-users",
     "docs": [{"file": "quickstart", "title": "Quickstart"}, 
