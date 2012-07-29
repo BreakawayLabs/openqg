@@ -1,4 +1,31 @@
 module inhomog
+  ! This module provides a solver for the inhomogeneous Helmholtz equation.
+  !
+  ! The inhomogenenous Helmholtz equation is given by
+  !
+  ! (\Delta^2_H - 1/r_m^2)p_m = Q_m.
+  !
+  ! A solver of type(inhomog_type) can be created for 
+  ! a given vector 1/r_m^2 over a domain of type(box_type).
+  !
+  ! This solver can then be used to compute p_m given Q_m.
+  ! Furthermore, given a function L with the property
+  ! \Delta^2_H L = 0, a solution to the homogeneous equation
+  !
+  ! (\Delta^2_H - 1/r_m^2)p_m = 0
+  ! 
+  ! can be generated.
+  !
+  ! The general technique for solving the inhomogeneous equation
+  ! for a given Q_m is
+  ! 1. Fourier transform Q_m
+  ! 2. Solve a tridiagonal matrix equation
+  ! 3. Inverse fourier transform the result to get the solution p_m.
+  !
+  ! The library FFTW (fftw.org) is used for FFT computations. The 
+  ! tridagonal matrix algorithm is taken from Numerical Recipes (Press et. al. 1992).
+  ! 
+  ! Full documentation can be found in doc/openqg-guide.
 
   use box, only: box_type
   use constants, only: TWOPI
@@ -42,7 +69,6 @@ module inhomog
 contains
 
   type(inhomog_type) function init_inhomog(b, rdm2)
-
     type(box_type), intent(in) :: b
     double precision, intent(in) :: rdm2(b%nl)
 
@@ -134,14 +160,14 @@ contains
     double precision :: solve_inhomog_eqn(inhom%b%nxp,inhom%b%nyp)
 
     if (inhom%b%cyclic) then
-       call hscy(inhom, inhom%b, rhs, m, solve_inhomog_eqn)
+       call solve_inhomog_cyclic(inhom, inhom%b, rhs, m, solve_inhomog_eqn)
     else
-       call hsbx(inhom, inhom%b, rhs, m, solve_inhomog_eqn)
+       call solve_inhomog_box(inhom, inhom%b, rhs, m, solve_inhomog_eqn)
     endif
 
   end function solve_inhomog_eqn
 
-  subroutine hsbx (inhom, b, rhs, m, inhomog)
+  subroutine solve_inhomog_box(inhom, b, rhs, m, inhomog)
 
     ! Solves the inhomogeneous Helmholtz equation for given rhs in a domain with meridional boundaries
     type(inhomog_type), intent(inout) :: inhom
@@ -183,9 +209,9 @@ contains
     inhomog(:,1) = 0.0d0
     inhomog(:,b%nyp) = 0.0d0
 
-  end subroutine hsbx
+  end subroutine solve_inhomog_box
 
-  subroutine hscy (inhom, b, rhs, m, inhomog)
+  subroutine solve_inhomog_cyclic(inhom, b, rhs, m, inhomog)
 
     ! Solves the inhomogeneous Helmholtz equation for given rhs in a zonally periodic domain.
     type(inhomog_type), intent(inout) :: inhom
@@ -226,6 +252,6 @@ contains
     inhomog(:,b%nyp) = 0.0d0
     inhomog(b%nxp,:) = inhomog(1,:)
 
-  end subroutine hscy
+  end subroutine solve_inhomog_cyclic
 
 end module inhomog
