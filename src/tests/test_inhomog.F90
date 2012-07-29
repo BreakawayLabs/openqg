@@ -37,6 +37,10 @@ contains
     call test_sine(b, rdm2, inhom)
     call test_random(b, rdm2, inhom)
 
+    call test_constant_homog(b, rdm2, inhom)
+    call test_sine_homog(b, rdm2, inhom)
+    call test_random_homog(b, rdm2, inhom)
+
     print *, "##teamcity[testSuiteFinished name='inhomog.cyclic']"
     
     ! 100x100 10km non-cyclic mesh at 55 degrees north
@@ -54,6 +58,10 @@ contains
     call test_sine(b, rdm2, inhom)
     call test_random(b, rdm2, inhom)
 
+    call test_constant_homog(b, rdm2, inhom)
+    call test_sine_homog(b, rdm2, inhom)
+    call test_random_homog(b, rdm2, inhom)
+
     print *, "##teamcity[testSuiteFinished name='inhomog.box']"
 
   end subroutine main
@@ -67,7 +75,7 @@ contains
     
     rhs_in(:,:) = 1.0d0
     
-    call test_rhs(b, rdm2, inhom, rhs_in, 'constant')
+    call test_rhs(b, rdm2, inhom, rhs_in, 'solve_homog_constant')
     
   end subroutine test_constant
 
@@ -85,7 +93,7 @@ contains
        enddo
     enddo
     
-    call test_rhs(b, rdm2, inhom, rhs_in, 'sine')
+    call test_rhs(b, rdm2, inhom, rhs_in, 'solve_homog_sine')
     
   end subroutine test_sine
 
@@ -101,7 +109,7 @@ contains
     if (b%cyclic) then
        rhs_in(b%nxp,:) = rhs_in(1,:) ! ensure cyclic
     endif
-    call test_rhs(b, rdm2, inhom, rhs_in, 'random')
+    call test_rhs(b, rdm2, inhom, rhs_in, 'solve_homog_random')
     
   end subroutine test_random
 
@@ -131,15 +139,99 @@ contains
           result = maxval(abs(rhs_out(2:b%nxp-1,2:b%nyp-1) - rhs_in(2:b%nxp-1,2:b%nyp-1))) / &
                maxval(abs(rhs_in(2:b%nxp-1,2:b%nyp-1)))
        end if
+       if (result > 1.0d-11) then
+          print *, "##teamcity[testFailed type='comparisonFailure' name='", test_name, &
+               "' message='solution error > 1.0d-12' expected='", 1.0d-11 , &
+               "' actual='", result , "']]"
+       end if
     enddo
-    if (result > 1.0d-12) then
-       print *, "##teamcity[testFailed type='comparisonFailure' name='", test_name, &
-            "' message='solution error > 1.0d-12' expected='", 1.0d-12 , &
-            "' actual='", result , "']]"
-    end if
 
     print *, "##teamcity[testFinished name='", test_name, "']"
 
   end subroutine test_rhs
+
+  subroutine test_constant_homog(b, rdm2, inhom)
+    type(box_type), intent(in) :: b
+    double precision, intent(in) :: rdm2(b%nl)
+    type(inhomog_type), intent(inout) :: inhom
+
+    double precision :: L(b%nxp,b%nyp)
+
+    L(:,:) = 1.0d0
+
+    call test_L(b, rdm2, inhom, L, 'generate_homog_constant')
+
+  end subroutine test_constant_homog
+
+  subroutine test_sine_homog(b, rdm2, inhom)
+    type(box_type), intent(in) :: b
+    double precision, intent(in) :: rdm2(b%nl)
+    type(inhomog_type), intent(inout) :: inhom
+
+    double precision :: L(b%nxp,b%nyp)
+    integer :: i, j
+
+    do i=1,b%nxp
+       do j=1,b%nyp
+          L(i,j) = 2.0d0*sin(5.0d0*i/b%nxp) + 3.0*sin(2.0d0*j/b%nyp)
+       enddo
+    enddo
+    if (b%cyclic) then
+       L(b%nxp,:) = L(1,:) ! ensure cyclic
+    endif
+    call test_L(b, rdm2, inhom, L, 'generate_homog_sine')
+
+  end subroutine test_sine_homog
+
+  subroutine test_random_homog(b, rdm2, inhom)
+    type(box_type), intent(in) :: b
+    double precision, intent(in) :: rdm2(b%nl)
+    type(inhomog_type), intent(inout) :: inhom
+
+    double precision :: L(b%nxp,b%nyp)
+
+    call random_seed()
+    call random_number(L)
+    if (b%cyclic) then
+       L(b%nxp,:) = L(1,:) ! ensure cyclic
+    endif
+    call test_L(b, rdm2, inhom, L, 'generate_homog_random')
+
+  end subroutine test_random_homog
+
+  subroutine test_L(b, rdm2, inhom, L, test_name)
+    type(box_type), intent(in) :: b
+    double precision, intent(in) :: rdm2(b%nl)
+    type(inhomog_type), intent(inout) :: inhom
+    double precision, intent(in) :: L(b%nxp,b%nyp)
+    character (len=*), intent(in) :: test_name
+
+    double precision :: soln(b%nxp,b%nyp)
+    double precision :: rhs_out1(b%nxp,b%nyp), rhs_out2(b%nxp,b%nyp)
+    integer :: m
+    double precision :: alpha, result
+
+    print *, "##teamcity[testStarted name='", test_name, "' captureStandardOutput='true']"
+
+    do m=1,3
+       soln(:,:) = generate_homog_soln(inhom, m, L)
+       alpha = 0.0d0
+       rhs_out1(:,:) = dP2dx2_bc(soln(:,:), b, alpha) + dP2dy2_bc(soln(:,:), b, alpha) - rdm2(m)*soln(:,:)       
+       rhs_out2(:,:) = dP2dx2_bc(L(:,:), b, alpha) + dP2dy2_bc(L(:,:), b, alpha)
+       if (b%cyclic) then
+          result = maxval(abs(rhs_out1(:,2:b%nyp-1) - rhs_out2(:,2:b%nyp-1)))/maxval(abs(L(:,2:b%nyp-1)))
+       else
+          result = maxval(abs(rhs_out1(2:b%nxp-1,2:b%nyp-1) - rhs_out2(2:b%nxp-1,2:b%nyp-1)))/maxval(abs(L(2:b%nxp-1,2:b%nyp-1)))
+       end if
+       if (result > 1.0d-22) then
+          print *, "##teamcity[testFailed type='comparisonFailure' name='", test_name, &
+               "' message='solution error > 1.0d-22' expected='", 1.0d-22 , &
+               "' actual='", result , "']]"
+       end if
+    enddo
+
+    print *, "##teamcity[testFinished name='", test_name, "']"
+
+  end subroutine test_L
 
 end program openqg
