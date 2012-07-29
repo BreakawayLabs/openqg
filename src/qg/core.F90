@@ -28,7 +28,7 @@ contains
     call solve_pressure(qg, qg%b, qg%topo, tdt, ent)
 
     ! Compute pv on boundaries (mixed condition)
-    call ocqbdy (qg%b, qg%bcco, qg%mod, qg%p, qg%topo, qg%q)
+    call ocqbdy (qg%p, qg%mod%amat, qg%b, qg%bcco, qg%topo, qg%q)
 
   end subroutine step_qg
 
