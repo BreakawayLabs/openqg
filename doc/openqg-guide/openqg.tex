@@ -560,7 +560,7 @@ The variable mixed layer thickness is needed in the atmosphere because of an obs
 
 To find the evolution of mixed layer thickness, we again integrate the continuity equation, this time from $0$ to $\h{a}{m}$,
 \begin{equation}\ww{a}{m}(\h{a}{m}) = - \h{a}{m}\uu{a}{mx} - \h{a}{m}\vv{a}{my}.\end{equation}
-Now we write an equation for the mixed layer thickness, analogous to (\ref{eq:w1}),
+Now we write an equation for the mixed layer thickness, analogous to (\ref{eq:w2}),
 \begin{equation}\label{eq:w0a}
 \ww{a}{m}(\h{a}{m}) = \h{a}{m}_t + \uu{a}{m}\h{a}{mx} + \vv{a}{m} \h{a}{my}  + \e{a}{m}.
 \end{equation}
@@ -785,7 +785,7 @@ where total oceanic mixed layer forcing is given by
 \F{o}{0}{} = - F_{\lambda} - \Fup{0} - \Fdown{m} - F_s,
 \end{equation}
 and we have retained the entrainment flux as a separate term in (\ref{eq:tempda}).
-Note that the advective terms here use the mixed layer velocity which is modified by stress, rather than the geostrophic velocity used in (\ref{eq:matr1a}).
+Note that the advective terms here use the mixed layer velocity which is modified by stress, rather than the geostrophic velocity used in (\ref{eq:qt}).
 
 \subsection{Atmosphere mixed layer}
 From (\ref{eq:hevmat})  we get
@@ -1011,7 +1011,7 @@ The dimensions of    $\lambda_m $   are $1/c_m^2$, where $c_m$  is a phasespeed 
 One of the eigenmodes will have    $\lambda_m $   = 0; we call this the barotropic mode.
 We order the remaining $N-1$ modes with $\lambda_m$ increasing ($c_m$ decreasing); these are the baroclinic modes.
 
-The eigenvalues and eigenvectors of $\mtx{A}$ can be computed using standard linear algebra methods \citep[see e.g.][]{golub:83}, and this is done in subroutine \verb=eigmod=.
+The eigenvalues and eigenvectors of $\mtx{A}$ can be computed using standard linear algebra methods \citep[see e.g.][]{golub:83}, and this is done in subroutine \verb=solve_eigenproblem=.
 We choose to use routines from the package LAPACK for portability.
 We can then use the eigenmodes of $\mtx{A}$ to separate the set of equations (\ref{eq:matr2b})
 into an easily soluble set, as follows:
@@ -1856,7 +1856,7 @@ In addition we define the (positive definite) dissipations in layer $k$ due to t
 \[\eps{}{4k} \equiv \ah{} \rhb{} \HH{}{k}  \iint (\uu{}{k} \nabla_H^4 \uu{}{k} + \vv{}{k} \nabla_H^4 \vv{}{k} )\,dA.\]
 
 We start by considering the kinetic energy in atmosphere layer 1.
-Starting with (\ref{eq:matr1}) we multiply the atmospheric layer 1 component by $\p{a}{1}$ and integrate over the entire domain,
+Starting with (\ref{eq:qt}) we multiply the atmospheric layer 1 component by $\p{a}{1}$ and integrate over the entire domain,
 \begin{equation}
 \iint \p{a}{1}\left(\nabla_H^2\p{a}{1}_t - \frac{f_0^2}{\HH{a}{1}}\etb{a}{1}_t \right)\, dA =  \frac{f_0^2}{\HH{a}{1}}\iint \p{a}{1}(\e{a}{1} - \ek{a}) \, dA - \ah{a} \iint \p{a}{1}\nabla_H^6 \p{a}{1} \,dA.
 \end{equation}
