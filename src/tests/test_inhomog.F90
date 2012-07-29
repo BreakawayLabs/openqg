@@ -35,6 +35,7 @@ contains
 
     call test_constant(b, rdm2, inhom)
     call test_sine(b, rdm2, inhom)
+    call test_random(b, rdm2, inhom)
 
     print *, "##teamcity[testSuiteFinished name='inhomog.cyclic']"
     
@@ -51,6 +52,7 @@ contains
     
     call test_constant(b, rdm2, inhom)
     call test_sine(b, rdm2, inhom)
+    call test_random(b, rdm2, inhom)
 
     print *, "##teamcity[testSuiteFinished name='inhomog.box']"
 
@@ -86,6 +88,22 @@ contains
     call test_rhs(b, rdm2, inhom, rhs_in, 'sine')
     
   end subroutine test_sine
+
+  subroutine test_random(b, rdm2, inhom)
+    type(box_type), intent(in) :: b
+    type(inhomog_type), intent(inout) :: inhom
+    double precision, intent(in) :: rdm2(b%nl) ! 1/r_m^2 for 3 modes
+
+    double precision :: rhs_in(b%nxp,b%nyp)    
+
+    call random_seed()
+    call random_number(rhs_in)
+    if (b%cyclic) then
+       rhs_in(b%nxp,:) = rhs_in(1,:) ! ensure cyclic
+    endif
+    call test_rhs(b, rdm2, inhom, rhs_in, 'random')
+    
+  end subroutine test_random
 
 
   subroutine test_rhs(b, rdm2, inhom, rhs_in, test_name)
