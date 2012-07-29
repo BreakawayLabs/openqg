@@ -61,29 +61,28 @@ contains
     logical :: prtval
     parameter ( prtval = .true. )
 
-    double precision :: wre(b%nl),elder(b%nl,b%nl)
     double precision :: evecl(b%nl,b%nl),evecr(b%nl,b%nl)
+    double precision :: wre(b%nl)
 
     call compute_A(b, gpr, mod)
 
-    call compute_eigs(mod%amat, b%nl, wre, evecl, evecr, elder)
+    call compute_eigs(mod%amat, b%nl, wre, evecl, evecr)
 
-    call derive_qg_modes(b, wre, evecl, evecr, elder, mod)
+    call derive_qg_modes(b, wre, evecl, evecr, mod)
 
   end subroutine eigmod
 
-  subroutine compute_eigs(amat, nl, eigval_real, eigvec_left, eigvec_right, elder)
+  subroutine compute_eigs(amat, nl, eigval_real, eigvec_left, eigvec_right)
     double precision, intent(in) :: amat(nl,nl)
     integer, intent(in) :: nl
     double precision, intent(out) :: eigval_real(nl)
     double precision, intent(out) :: eigvec_left(nl,nl), eigvec_right(nl,nl)
-    double precision, intent(out) :: elder(nl,nl)
 
     double precision :: A(nl,nl)
     double precision :: eigval_imag(nl)
     double precision :: work(20*nl), scale(nl), abnrm, rconde(nl), rcondv(nl)
     integer :: info, iwork(20*nl - 2)
-    integer :: n, m, ihi, ilo
+    integer :: ihi, ilo
 
     A(:,:) = amat(:,:)
     call DGEEVX('B', 'V', 'V', 'B', nl, A, nl, eigval_real, eigval_imag, &
@@ -95,29 +94,23 @@ contains
        stop 1
     endif
 
-    do n=1,nl
-       do m=1,nl
-          elder(m,n) = sum(eigvec_left(:,m)*eigvec_right(:,n))
-       enddo
-    enddo
-
   end subroutine compute_eigs
 
-  subroutine derive_qg_modes(b, wre, evecl, evecr, elder, mod)
+  subroutine derive_qg_modes(b, wre, evecl, evecr, mod)
     
     type(box_type), intent(in) :: b
     double precision, intent(in) :: wre(:)
     double precision, intent(in) :: evecl(:,:)
     double precision, intent(in) :: evecr(:,:)
-    double precision, intent(in) :: elder(:,:)
     type(modes_type), intent(inout) :: mod
 
     double precision :: c2rabs(b%nl), eig_val(b%nl), c2temp, cl2m(b%nl,b%nl), cm2l(b%nl,b%nl),&
          ccprod(b%nl,b%nl)
     double precision :: aevec(b%nl),eevec(b%nl)
     integer :: index(b%nl)
+    double precision :: elder(b%nl,b%nl)
 
-    integer :: i, j, k, l, m, inm, indtmp
+    integer :: i, j, k, l, n, m, inm, indtmp
 
     logical :: eigchk
     parameter ( eigchk=.true. )
@@ -158,6 +151,12 @@ contains
     do m=2,b%nl
        mod%rdef(m) = 1.0d0/sqrt( c2rabs(index(m)) )/abs(b%fnot)
        mod%rdm2(m) = b%fnot*b%fnot*c2rabs(index(m))
+    enddo
+
+    do n=1,b%nl
+       do m=1,b%nl
+          elder(m,n) = sum(evecl(:,m)*evecr(:,n))
+       enddo
     enddo
     ! Mode/layer conversion coefficients
     ! m = mode number; k = layer number
