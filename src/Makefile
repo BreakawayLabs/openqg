@@ -121,7 +121,7 @@ numerics.o: glam/numerics.F90 intsubs.o box.o constants.o
 
 ## QG 
 
-modes.o: qg/modes.F90 box.o topog.o
+modes.o: qg/modes.F90 box.o topog.o linalg.o
 	${FC} ${FFLAGS} -c qg/modes.F90
 
 inhomog.o: qg/inhomog.F90 box.o constants.o modes.o

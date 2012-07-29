@@ -2,6 +2,7 @@ module modes
 
   use box, only: box_type
   use topog, only: topog_type
+  use linalg, only: solve_eigenproblem
 
   implicit none
 
@@ -66,35 +67,11 @@ contains
 
     call compute_A(b, gpr, mod)
 
-    call compute_eigs(mod%amat, b%nl, wre, evecl, evecr)
+    call solve_eigenproblem(mod%amat, b%nl, wre, evecl, evecr)
 
     call derive_qg_modes(b, wre, evecl, evecr, mod)
 
   end subroutine eigmod
-
-  subroutine compute_eigs(amat, nl, eigval_real, eigvec_left, eigvec_right)
-    double precision, intent(in) :: amat(nl,nl)
-    integer, intent(in) :: nl
-    double precision, intent(out) :: eigval_real(nl)
-    double precision, intent(out) :: eigvec_left(nl,nl), eigvec_right(nl,nl)
-
-    double precision :: A(nl,nl)
-    double precision :: eigval_imag(nl)
-    double precision :: work(20*nl), scale(nl), abnrm, rconde(nl), rcondv(nl)
-    integer :: info, iwork(20*nl - 2)
-    integer :: ihi, ilo
-
-    A(:,:) = amat(:,:)
-    call DGEEVX('B', 'V', 'V', 'B', nl, A, nl, eigval_real, eigval_imag, &
-         eigvec_left, nl, eigvec_right, nl, ilo, ihi, scale, abnrm, &
-         rconde, rcondv, work, size(work), iwork, info )
-    if (info /= 0) then
-       print *,' Problem in DGEEVX, INFO = ', info
-       print *,' program terminates in compute_eigs'
-       stop 1
-    endif
-
-  end subroutine compute_eigs
 
   subroutine derive_qg_modes(b, wre, evecl, evecr, mod)
     

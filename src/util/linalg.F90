@@ -6,6 +6,7 @@ module linalg
 
   public solve_AX_b
   public LU_factor
+  public solve_eigenproblem
 
 contains
 
@@ -59,5 +60,29 @@ contains
          ferr, berr, work, iwork, info)
     
   end subroutine solve_Ax_b
+
+  subroutine solve_eigenproblem(A_in, n, eigval_real, eigvec_left, eigvec_right)
+    double precision, intent(in) :: A_in(n,n)
+    integer, intent(in) :: n
+    double precision, intent(out) :: eigval_real(n)
+    double precision, intent(out) :: eigvec_left(n,n), eigvec_right(n,n)
+
+    double precision :: A(n,n)
+    double precision :: eigval_imag(n)
+    double precision :: work(20*n), scale(n), abnrm, rconde(n), rcondv(n)
+    integer :: info, iwork(2*n - 2)
+    integer :: ihi, ilo
+
+    A(:,:) = A_in(:,:)
+    call DGEEVX('B', 'V', 'V', 'B', n, A, n, eigval_real, eigval_imag, &
+         eigvec_left, n, eigvec_right, n, ilo, ihi, scale, abnrm, &
+         rconde, rcondv, work, size(work), iwork, info )
+    if (info /= 0) then
+       print *,' Problem in DGEEVX, INFO = ', info
+       print *,' program terminates in compute_eigs'
+       stop 1
+    endif
+
+  end subroutine solve_eigenproblem
 
 end module linalg
