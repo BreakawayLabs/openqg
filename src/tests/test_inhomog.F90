@@ -33,10 +33,12 @@ contains
 
     print *, "##teamcity[testSuiteStarted name='inhomog.cyclic']"
 
+    ! Test solving the inhomogeneous equation
     call test_constant(b, rdm2, inhom)
     call test_sine(b, rdm2, inhom)
     call test_random(b, rdm2, inhom)
 
+    ! Test generating homogeneous solutions
     call test_constant_homog(b, rdm2, inhom)
     call test_sine_homog(b, rdm2, inhom)
     call test_random_homog(b, rdm2, inhom)
@@ -54,10 +56,12 @@ contains
 
     print *, "##teamcity[testSuiteStarted name='inhomog.box']"
     
+    ! Test solving the inhomogeneous equation
     call test_constant(b, rdm2, inhom)
     call test_sine(b, rdm2, inhom)
     call test_random(b, rdm2, inhom)
 
+    ! Test generating homogeneous solutions
     call test_constant_homog(b, rdm2, inhom)
     call test_sine_homog(b, rdm2, inhom)
     call test_random_homog(b, rdm2, inhom)
@@ -133,6 +137,7 @@ contains
        soln(:,:) = solve_inhomog_eqn(inhom, m, rhs_in)
        alpha = 0.0d0
        rhs_out(:,:) = dP2dx2_bc(soln(:,:), b, alpha) + dP2dy2_bc(soln(:,:), b, alpha) - rdm2(m)*soln(:,:)
+       ! Check that (\Delta^2 - 1/r_m^2)soln = rhs_in
        if (b%cyclic) then
           result = maxval(abs(rhs_out(:,2:b%nyp-1) - rhs_in(:,2:b%nyp-1))) / maxval(abs(rhs_in(:,2:b%nyp-1)))
        else
@@ -216,9 +221,12 @@ contains
     do m=1,3
        soln(:,:) = generate_homog_soln(inhom, m, L)
        alpha = 0.0d0
+       ! (\Delta^2 - 1/r_m^2)soln
        rhs_out1(:,:) = dP2dx2_bc(soln(:,:), b, alpha) + dP2dy2_bc(soln(:,:), b, alpha) - rdm2(m)*soln(:,:)       
+       ! \Delta^2 L
        rhs_out2(:,:) = dP2dx2_bc(L(:,:), b, alpha) + dP2dy2_bc(L(:,:), b, alpha)
-       if (b%cyclic) then
+       ! Check that (\Delta^2 - 1/r_m^2)soln = \Delta^2 L
+       if (b%cyclic) then          
           result = maxval(abs(rhs_out1(:,2:b%nyp-1) - rhs_out2(:,2:b%nyp-1)))/maxval(abs(L(:,2:b%nyp-1)))
        else
           result = maxval(abs(rhs_out1(2:b%nxp-1,2:b%nyp-1) - rhs_out2(2:b%nxp-1,2:b%nyp-1)))/maxval(abs(L(2:b%nxp-1,2:b%nyp-1)))
