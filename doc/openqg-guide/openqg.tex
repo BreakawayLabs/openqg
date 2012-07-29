@@ -1034,7 +1034,6 @@ We also require a matrix $\cml$ for converting from modal to layer
 amplitudes.
 Clearly from (\ref{eq:deco1}) $\cml (k,m) =  \vc{R}_m(k)$.
 It follows that the product of the matrices $\cml$ and $\clm$  is the identity matrix, as required for consistency.
-This can be confirmed (to machine precision) by subroutine \verb=eigmod=.
 Note that  for reasons of runtime efficiency the program carries the transposes of  $\clm$ and $\cml$.
 
 Substitute the expansion (\ref{eq:deco1}) into the vector equation (\ref{eq:matr2b}):
@@ -1789,7 +1788,7 @@ In either case, we can write the full constraints as
 - \frac{f_0^2}{\HH{o}{1}}\int w^{(n)} \, dx  + \at{o} \int \p{o}{1}_{3y}^{(n-0.5)}\, dx- \ah{o} \int \p{o}{1}_{5y}^{(n-0.5)}\, dx.
 \end{multline}
 With the exceptions of the $\ek{o}$ term and the additional Laplacian diffusion term, this generalises to the same vector form as (\ref{eq:south2}) and (\ref{eq:north2}) (note that an additional bottom drag term also appears in the lowest layer).
-The solution is found in the same way, with errors in mass conservation stored as monitoring variables \verb=ermaso= and \verb=emfroc=.
+The solution is found in the same way, with errors in mass conservation stored as monitoring variables \verb=ermas= and \verb=emfr=.
 
 
 \section{Application of pressure derivative boundary conditions}\label{app:bcs}
