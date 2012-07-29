@@ -31,12 +31,28 @@ contains
     ! Create a solver for this system
     inhom = init_inhomog(b, rdm2)
 
-    print *, "##teamcity[testSuiteStarted name='inhomog']"
+    print *, "##teamcity[testSuiteStarted name='inhomog.cyclic']"
 
     call test_constant(b, rdm2, inhom)
     call test_sine(b, rdm2, inhom)
 
-    print *, "##teamcity[testSuiteFinished name='inhomog']"
+    print *, "##teamcity[testSuiteFinished name='inhomog.cyclic']"
+    
+    ! 100x100 10km non-cyclic mesh at 55 degrees north
+    mesh = init_mesh(100, 100, 10000.0d0, 10000.0d0, 0.0d0, 0.0d0, .false., 0.0d0, 55.0d0)
+
+    ! Create a 3 layer box over the a subset of the domain (80x100)
+    b = init_box_from_mesh(mesh, 80, 100, 1, 1, 1, 1, 3, (/1000.0d0, 2000.0d0, 3000.0d0/), 100.0d0, 1)
+
+    ! Create a solver for this system
+    inhom = init_inhomog(b, rdm2)
+
+    print *, "##teamcity[testSuiteStarted name='inhomog.box']"
+    
+    call test_constant(b, rdm2, inhom)
+    call test_sine(b, rdm2, inhom)
+
+    print *, "##teamcity[testSuiteFinished name='inhomog.box']"
 
   end subroutine main
 
@@ -84,7 +100,6 @@ contains
     double precision :: alpha, result
     integer :: m
 
-
     print *, "##teamcity[testStarted name='", test_name, "' captureStandardOutput='true']"
 
     ! Solve the system for each mode
@@ -92,7 +107,12 @@ contains
        soln(:,:) = solve_inhomog_eqn(inhom, m, rhs_in)
        alpha = 0.0d0
        rhs_out(:,:) = dP2dx2_bc(soln(:,:), b, alpha) + dP2dy2_bc(soln(:,:), b, alpha) - rdm2(m)*soln(:,:)
-       result = maxval(abs(rhs_out(:,2:b%nyp-1) - rhs_in(:,2:b%nyp-1))) / maxval(abs(rhs_in(:,2:b%nyp-1)))
+       if (b%cyclic) then
+          result = maxval(abs(rhs_out(:,2:b%nyp-1) - rhs_in(:,2:b%nyp-1))) / maxval(abs(rhs_in(:,2:b%nyp-1)))
+       else
+          result = maxval(abs(rhs_out(2:b%nxp-1,2:b%nyp-1) - rhs_in(2:b%nxp-1,2:b%nyp-1))) / &
+               maxval(abs(rhs_in(2:b%nxp-1,2:b%nyp-1)))
+       end if
     enddo
     if (result > 1.0d-12) then
        print *, "##teamcity[testFailed type='comparisonFailure' name='", test_name, &
