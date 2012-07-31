@@ -2,7 +2,7 @@ module homog
 
   use box, only: box_type
   use modes, only: modes_type
-  use intsubs, only: xintp, trapin
+  use intsubs, only: trapin
   use numerics, only: int_P_dA
   use constraint, only: mass_constr_type, constraint_type
   use constraint, only: step_constraints
@@ -238,8 +238,7 @@ contains
 
     do m=2,b%nl
        ! Area integral of full homogeneous solution
-       aipohs(m) = xintp(hom_box%hom_sol_bc(:,:,m), b%nxp, b%nyp)
-       aipohs(m) = aipohs(m)*b%dx*b%dy
+       aipohs(m) = int_P_dA(hom_box%hom_sol_bc(:,:,m), b)
 
        print *
        print '(a,i2)', '  Mode: ',m

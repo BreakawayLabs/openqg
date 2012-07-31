@@ -5,47 +5,9 @@ module intsubs
   private
 
   public trapin
-  public xintp
   public genint
 
 contains
-
-  double precision function xintp(valp, nxp, nyp)
-
-    ! Computes area integral of a field valp tabulated at p points
-    ! Includes weighted contribution from boundary points
-    ! Modified version with reduced accumulator error
-    
-    double precision, intent(in) :: valp(nxp,nyp)
-    integer, intent(in) :: nxp, nyp
-
-    integer i,j
-    double precision sump,xxs,xxn
-
-    sump = 0.0d0
-    xxs = 0.5d0*valp(1, 1 )
-    xxn = 0.5d0*valp(1,nyp)
-
-    ! Inner points + 0.5d0*( W & E boundaries)
-    do j=2,nyp-1
-       sump = sump + 0.5d0*valp(1,j) + sum(valp(2:nxp-1,j)) + 0.5d0*valp(nxp,j)
-    enddo
-
-    ! N & S boundary contributions from inner
-    ! points (do corners separately because
-    ! they need an additional factor of 0.5)
-    do i=2,nxp-1
-       xxs = xxs + valp(i, 1 )
-       xxn = xxn + valp(i,nyp)
-    enddo
-
-    xxs = xxs + 0.5d0*valp(nxp, 1 )
-    xxn = xxn + 0.5d0*valp(nxp,nyp)
-
-    xintp = sump + 0.5d0*( xxs + xxn )
-
-  end function xintp
-
 
   pure double precision function trapin(fofz, nz, delz)
 

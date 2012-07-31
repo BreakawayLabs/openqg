@@ -4,7 +4,7 @@ module topog
   use units, only: m_to_km
   use ncutils, only: nc_open, nc_get_dim, nc_create, nc_def_dim, handle_err, nc_get_text
   use ncutils, only: nc_close, nc_enddef, nc_def_double, nc_get_double, nc_put_double
-  use intsubs, only: xintp
+  use numerics, only: int_P_dA
 
   use box, only: box_type
   use grid, only: grid_type
@@ -42,7 +42,6 @@ contains
     character (len=*), intent(in) :: indir
 
     integer :: tempid, idim, jdim
-    double precision :: davg
     integer :: j
 
     character subnam*(*)
@@ -102,8 +101,7 @@ contains
        enddo
     endif
 
-    davg = xintp(topo%dtop, b%nxp, b%nyp)
-    topo%davg = davg*b%norm
+    topo%davg = int_P_dA(topo%dtop, b)/(b%xl*b%yl)
     topo%ddyn(:,:) = (b%fnot/b%h(topo%k_topo))*topo%dtop(:,:)
 
   end subroutine load_topog

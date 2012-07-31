@@ -6,7 +6,7 @@ module qg_monitor
   use constraint, only: mass_constr_type
   use ncutils, only: nc_open_w, nc_create, nc_close, nc_def_dim, nc_def_float
   use ncutils, only: nc_def_int, nc_put_double, nc_enddef, nc_put_int
-  use intsubs, only: xintp, trapin
+  use intsubs, only: trapin
   use ekman, only: ekman_type
   use numerics, only: map_P_to_x_face, map_P_to_y_face, dPdx, dPdy, int_P_dA
 
@@ -188,8 +188,7 @@ contains
     do k=1,b%nl-1
        ! Compute eta^2 integral for energy diagnostics
        wko(:,:) = ( qg%p(:,:,k+1) - qg%p(:,:,k) )**2
-       init_qg_monitor%et2m(k) = xintp(wko(:,:), b%nxp, b%nyp)
-       init_qg_monitor%et2m(k) = init_qg_monitor%et2m(k)*b%norm/qg%gp(k)**2
+       init_qg_monitor%et2m(k) = int_P_dA(wko, b)/(b%xl*b%yl)/qg%gp(k)**2
     enddo
     init_qg_monitor%ermas = 0.0d0
     init_qg_monitor%emfr = 0.0d0

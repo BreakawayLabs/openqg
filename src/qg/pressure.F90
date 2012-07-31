@@ -1,9 +1,9 @@
 module pressure
 
-  use intsubs, only: xintp
   use qg, only: qg_type
   use box, only: box_type
   use topog, only: topog_type
+  use numerics, only: int_P_dA
 
   use modes, only: p_modes_rhs, modes_to_layers
   use inhomog, only: solve_inhomog_eqn
@@ -49,7 +49,7 @@ contains
 
     ! Compute area integral of entrainment between
     ! layers 1 and 2 to get net diabatic effect
-    ent_xn(1) = xintp(ent(:,:,1), b%nxp, b%nyp)*b%dx*b%dy
+    ent_xn(1) = int_P_dA(ent(:,:,1), b)
     ent_xn(2:) = 0.0d0
     call update_mass_constr(qg%con, tdt, qg%gp, ent_xn)
 

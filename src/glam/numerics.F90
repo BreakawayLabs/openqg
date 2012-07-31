@@ -18,9 +18,14 @@ module numerics
 
   public avg_T
   public avg_P
-  public int_P_dA
   public int_P_x_face_dA
   public int_P_y_face_dA
+
+  interface int_P_dA
+     module procedure int_P_dA_3d
+     module procedure int_P_dA_2d
+  end interface int_P_dA
+  public int_P_dA
 
   public jacobian ! Second order (no boundary conditions)
   public c_grid_advection
@@ -158,28 +163,46 @@ contains
 
   end function avg_T
 
-  pure function int_P_dA(p_data, b)
+  pure function int_P_dA_3d(p_data, b)
     
     type(box_type), intent(in) :: b
     double precision, intent(in) :: p_data(b%nxp, b%nyp, b%nl)
-    double precision :: int_P_dA(b%nl)
+    double precision :: int_P_dA_3d(b%nl)
 
     integer :: k
 
     do k=1,b%nl
        ! All points
-       int_P_dA(k) = sum(p_data(:,:,k))
+       int_P_dA_3d(k) = sum(p_data(:,:,k))
        ! Remove N/S overhang
-       int_P_dA(k) = int_P_dA(k) - 0.5d0*(sum(p_data(:,1,k)) + sum(p_data(:,b%nyp,k)))
+       int_P_dA_3d(k) = int_P_dA_3d(k) - 0.5d0*(sum(p_data(:,1,k)) + sum(p_data(:,b%nyp,k)))
        ! Remove E/W overhang
-       int_P_dA(k) = int_P_dA(k) - 0.5d0*(sum(p_data(1,:,k)) + sum(p_data(b%nxp,:,k)))
+       int_P_dA_3d(k) = int_P_dA_3d(k) - 0.5d0*(sum(p_data(1,:,k)) + sum(p_data(b%nxp,:,k)))
        ! Add back in corners
-       int_P_dA(k) = int_P_dA(k) + 0.25d0*(p_data(1,1,k) + p_data(1,b%nyp,k) + p_data(b%nxp,1,k) + p_data(b%nxp,b%nyp,k))
+       int_P_dA_3d(k) = int_P_dA_3d(k) + 0.25d0*(p_data(1,1,k) + p_data(1,b%nyp,k) + p_data(b%nxp,1,k) + p_data(b%nxp,b%nyp,k))
        ! Multiply by grid size
-       int_P_dA(k) = int_P_dA(k)*b%dx*b%dy
+       int_P_dA_3d(k) = int_P_dA_3d(k)*b%dx*b%dy
     enddo
 
-  end function int_P_dA
+  end function int_P_dA_3d
+
+  pure double precision function int_P_dA_2d(p_data, b)
+    
+    type(box_type), intent(in) :: b
+    double precision, intent(in) :: p_data(b%nxp, b%nyp)
+
+    ! All points
+    int_P_dA_2d = sum(p_data(:,:))
+    ! Remove N/S overhang
+    int_P_dA_2d = int_P_dA_2d - 0.5d0*(sum(p_data(:,1)) + sum(p_data(:,b%nyp)))
+    ! Remove E/W overhang
+    int_P_dA_2d = int_P_dA_2d - 0.5d0*(sum(p_data(1,:)) + sum(p_data(b%nxp,:)))
+    ! Add back in corners
+    int_P_dA_2d = int_P_dA_2d + 0.25d0*(p_data(1,1) + p_data(1,b%nyp) + p_data(b%nxp,1) + p_data(b%nxp,b%nyp))
+    ! Multiply by grid size
+    int_P_dA_2d = int_P_dA_2d*b%dx*b%dy
+
+  end function int_P_dA_2d
 
   double precision function int_P_y_face_dA(y_face_data, b)
     
