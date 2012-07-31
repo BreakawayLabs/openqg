@@ -37,14 +37,14 @@ contains
     inhom = init_inhomog(b, rdm2)
 
     ! Test solving the inhomogeneous equation
-    call test_constant(b, rdm2, inhom)
-    call test_sine(b, rdm2, inhom)
-    call test_random(b, rdm2, inhom)
+    call test_constant(b, rdm2, inhom, 'cyclic')
+    call test_sine(b, rdm2, inhom, 'cyclic')
+    call test_random(b, rdm2, inhom, 'cyclic')
 
     ! Test generating homogeneous solutions
-    call test_constant_homog(b, rdm2, inhom)
-    call test_sine_homog(b, rdm2, inhom)
-    call test_random_homog(b, rdm2, inhom)
+    call test_constant_homog(b, rdm2, inhom, 'cyclic')
+    call test_sine_homog(b, rdm2, inhom, 'cyclic')
+    call test_random_homog(b, rdm2, inhom, 'cyclic')
 
     ! 100x100 10km non-cyclic mesh at 55 degrees north
     mesh = init_mesh(100, 100, 10000.0d0, 10000.0d0, 0.0d0, 0.0d0, .false., 0.0d0, 55.0d0)
@@ -56,36 +56,38 @@ contains
     inhom = init_inhomog(b, rdm2)
 
     ! Test solving the inhomogeneous equation
-    call test_constant(b, rdm2, inhom)
-    call test_sine(b, rdm2, inhom)
-    call test_random(b, rdm2, inhom)
+    call test_constant(b, rdm2, inhom, 'box')
+    call test_sine(b, rdm2, inhom, 'box')
+    call test_random(b, rdm2, inhom, 'box')
 
     ! Test generating homogeneous solutions
-    call test_constant_homog(b, rdm2, inhom)
-    call test_sine_homog(b, rdm2, inhom)
-    call test_random_homog(b, rdm2, inhom)
+    call test_constant_homog(b, rdm2, inhom, 'box')
+    call test_sine_homog(b, rdm2, inhom, 'box')
+    call test_random_homog(b, rdm2, inhom, 'box')
 
     call end_suite('inhomog')
 
   end subroutine test_inhomog
 
-  subroutine test_constant(b, rdm2, inhom)
+  subroutine test_constant(b, rdm2, inhom, test_name)
     type(box_type), intent(in) :: b
     type(inhomog_type), intent(inout) :: inhom
     double precision, intent(in) :: rdm2(b%nl) ! 1/r_m^2 for 3 modes
+    character (len=*), intent(in) :: test_name
 
     double precision :: rhs_in(b%nxp,b%nyp)
     
     rhs_in(:,:) = 1.0d0
     
-    call test_rhs(b, rdm2, inhom, rhs_in, 'solve_homog_constant')
+    call test_rhs(b, rdm2, inhom, rhs_in, 'constant.'//test_name)
     
   end subroutine test_constant
 
-  subroutine test_sine(b, rdm2, inhom)
+  subroutine test_sine(b, rdm2, inhom, test_name)
     type(box_type), intent(in) :: b
     type(inhomog_type), intent(inout) :: inhom
     double precision, intent(in) :: rdm2(b%nl) ! 1/r_m^2 for 3 modes
+    character (len=*), intent(in) :: test_name
 
     double precision :: rhs_in(b%nxp,b%nyp)    
     integer :: i, j
@@ -96,14 +98,15 @@ contains
        enddo
     enddo
     
-    call test_rhs(b, rdm2, inhom, rhs_in, 'solve_homog_sine')
+    call test_rhs(b, rdm2, inhom, rhs_in, 'sine.'//test_name)
     
   end subroutine test_sine
 
-  subroutine test_random(b, rdm2, inhom)
+  subroutine test_random(b, rdm2, inhom, test_name)
     type(box_type), intent(in) :: b
     type(inhomog_type), intent(inout) :: inhom
     double precision, intent(in) :: rdm2(b%nl) ! 1/r_m^2 for 3 modes
+    character (len=*), intent(in) :: test_name
 
     double precision :: rhs_in(b%nxp,b%nyp)    
 
@@ -112,7 +115,7 @@ contains
     if (b%cyclic) then
        rhs_in(b%nxp,:) = rhs_in(1,:) ! ensure cyclic
     endif
-    call test_rhs(b, rdm2, inhom, rhs_in, 'solve_homog_random')
+    call test_rhs(b, rdm2, inhom, rhs_in, 'random.'//test_name)
     
   end subroutine test_random
 
@@ -129,7 +132,7 @@ contains
     double precision :: alpha, result
     integer :: m
 
-    call start_test(test_name)
+    call start_test('test_solve_inhomog_eqn.'//test_name)
 
     ! Solve the system for each mode
     do m=1,3
@@ -146,27 +149,29 @@ contains
        call check_threshold(result, 1.0d-11, test_name)
     enddo
 
-    call end_test(test_name)
+    call end_test('test_solve_inhomog_eqn.'//test_name)
 
   end subroutine test_rhs
 
-  subroutine test_constant_homog(b, rdm2, inhom)
+  subroutine test_constant_homog(b, rdm2, inhom, test_name)
     type(box_type), intent(in) :: b
     double precision, intent(in) :: rdm2(b%nl)
     type(inhomog_type), intent(inout) :: inhom
+    character (len=*), intent(in) :: test_name
 
     double precision :: L(b%nxp,b%nyp)
 
     L(:,:) = 1.0d0
 
-    call test_L(b, rdm2, inhom, L, 'generate_homog_constant')
+    call test_L(b, rdm2, inhom, L, 'constant.'//test_name)
 
   end subroutine test_constant_homog
 
-  subroutine test_sine_homog(b, rdm2, inhom)
+  subroutine test_sine_homog(b, rdm2, inhom, test_name)
     type(box_type), intent(in) :: b
     double precision, intent(in) :: rdm2(b%nl)
     type(inhomog_type), intent(inout) :: inhom
+    character (len=*), intent(in) :: test_name
 
     double precision :: L(b%nxp,b%nyp)
     integer :: i, j
@@ -179,14 +184,15 @@ contains
     if (b%cyclic) then
        L(b%nxp,:) = L(1,:) ! ensure cyclic
     endif
-    call test_L(b, rdm2, inhom, L, 'generate_homog_sine')
+    call test_L(b, rdm2, inhom, L, 'sine.'//test_name)
 
   end subroutine test_sine_homog
 
-  subroutine test_random_homog(b, rdm2, inhom)
+  subroutine test_random_homog(b, rdm2, inhom, test_name)
     type(box_type), intent(in) :: b
     double precision, intent(in) :: rdm2(b%nl)
     type(inhomog_type), intent(inout) :: inhom
+    character (len=*), intent(in) :: test_name
 
     double precision :: L(b%nxp,b%nyp)
 
@@ -195,7 +201,7 @@ contains
     if (b%cyclic) then
        L(b%nxp,:) = L(1,:) ! ensure cyclic
     endif
-    call test_L(b, rdm2, inhom, L, 'generate_homog_random')
+    call test_L(b, rdm2, inhom, L, 'random.'//test_name)
 
   end subroutine test_random_homog
 
