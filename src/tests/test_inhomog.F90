@@ -4,7 +4,7 @@ program test_inhomog
   use box, only: box_type, init_box_from_mesh
   use inhomog, only: inhomog_type, init_inhomog, solve_inhomog_eqn, generate_homog_soln
   use numerics, only: dP2dx2_bc, dP2dy2_bc
-  use linalg, only: LU_factor
+  use linalg, only: LU_factor, solve_Ax_b
 
   implicit none
 
@@ -285,9 +285,33 @@ contains
     A10 = matmul(L10, U10)
     call test_LU_factor(A10, 10, 'test_LU_factor.10x10')
 
+    call test_solve_Ax_b(A3, (/1.0d0, 2.0d0, 3.0d0/), 3, 'test_solve_AX_b.3x3')
+
     call end_suite('linalg')
 
   end subroutine test_linalg
+
+  subroutine test_solve_Ax_b(A, b, n, test_name)
+    double precision, intent(in) :: A(n,n)
+    double precision, intent(in) :: b(n)
+    integer, intent(in) :: n
+    character (len=*), intent(in) :: test_name
+
+    double precision :: LU(n,n), x(n), b_out(n), result
+    integer :: ipiv(n)
+
+    call start_test(test_name)
+    
+    call LU_factor(A, LU, ipiv)
+    call solve_Ax_b(A, LU, ipiv, b, x)
+
+    b_out = matmul(A, x)
+    result = sum(abs(b - b_out))
+    call check_threshold(result, 1.0d-14, test_name)
+
+    call end_test(test_name)    
+
+  end subroutine test_solve_Ax_b
 
   subroutine test_LU_factor(A, n, test_name)
 
