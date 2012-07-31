@@ -249,7 +249,7 @@ contains
     type(box_type), intent(in) :: b
     double precision, intent(in) :: p_data(b%nxp, b%nyp)
 
-    avg_P = sum(p_data(:,:))/(b%nxp*b%nyp)
+    avg_P = int_P_dA(p_data, b)/(b%xl*b%yl)
 
   end function avg_P
 
