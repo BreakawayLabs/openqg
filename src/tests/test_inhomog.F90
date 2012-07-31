@@ -249,11 +249,13 @@ contains
 
     double precision :: A3(3,3)
     double precision :: L3(3,3), U3(3,3)
+    double precision :: A10(10,10)
+    double precision :: L10(10,10), U10(10,10)
     integer :: d, i, j
 
     print *, "##teamcity[testSuiteStarted name='linalg']"
 
-    print *, "##teamcity[testStarted name='test_LU_factor' captureStandardOutput='true']"
+    print *, "##teamcity[testStarted name='test_LU_factor.3x3' captureStandardOutput='true']"
 
     ! Create a matrix with a non-singular U to ensure successful factorisation
     L3 = 0.0d0
@@ -272,9 +274,32 @@ contains
        enddo
     enddo
     A3 = matmul(L3, U3)
-    call test_LU_factor(A3, 3, 'test_LU_factor')
+    call test_LU_factor(A3, 3, 'test_LU_factor.3x3')
 
-    print *, "##teamcity[testFinished name='test_LU_factor']"
+    print *, "##teamcity[testFinished name='test_LU_factor.3x3']"
+
+    print *, "##teamcity[testStarted name='test_LU_factor.10x10' captureStandardOutput='true']"
+
+    ! Create a matrix with a non-singular U to ensure successful factorisation
+    L10 = 0.0d0
+    do d=1,10
+       L10(d,d) = 1.0d0
+    enddo
+    do i=2,10
+       do j=1,i-1
+          L10(i,j) = 1.0d0*(i + j)
+       enddo
+    enddo
+    U10 = 0.0d0
+    do i=1,10
+       do j=i,10
+          U10(i,j) = 1.0d0*(i + j)
+       enddo
+    enddo
+    A10 = matmul(L10, U10)
+    call test_LU_factor(A10, 10, 'test_LU_factor.10x10')
+
+    print *, "##teamcity[testFinished name='test_LU_factor.10x10']"
 
     print *, "##teamcity[testSuiteFinished name='linalg']"
 
@@ -316,9 +341,9 @@ contains
     enddo
 
     result = abs(sum(A_out - A))
-    if (result /= 0.0d0) then
+    if (result > 1.0d-12) then
        print *, "##teamcity[testFailed type='comparisonFailure' name='", test_name, &
-            "' message='solution error > 0' expected='", 0.0d0 , &
+            "' message='solution error > 1.0d-12' expected='", 1.0d-12 , &
             "' actual='", result , "']]"
     endif
 
