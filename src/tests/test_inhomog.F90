@@ -4,6 +4,7 @@ program openqg
   use box, only: box_type, init_box_from_mesh
   use inhomog, only: inhomog_type, init_inhomog, solve_inhomog_eqn, generate_homog_soln
   use numerics, only: dP2dx2_bc, dP2dy2_bc
+  use linalg, only: LU_factor
 
   implicit none
 
@@ -67,6 +68,8 @@ contains
     call test_random_homog(b, rdm2, inhom)
 
     print *, "##teamcity[testSuiteFinished name='inhomog.box']"
+
+    call test_linalg()
 
   end subroutine main
 
@@ -241,5 +244,84 @@ contains
     print *, "##teamcity[testFinished name='", test_name, "']"
 
   end subroutine test_L
+
+  subroutine test_linalg()
+
+    double precision :: A3(3,3)
+    double precision :: L3(3,3), U3(3,3)
+    integer :: d, i, j
+
+    print *, "##teamcity[testSuiteStarted name='linalg']"
+
+    print *, "##teamcity[testStarted name='test_LU_factor' captureStandardOutput='true']"
+
+    ! Create a matrix with a non-singular U to ensure successful factorisation
+    L3 = 0.0d0
+    do d=1,3
+       L3(d,d) = 1.0d0
+    enddo
+    do i=2,3
+       do j=1,i-1
+          L3(i,j) = 1.0d0*(i + j)
+       enddo
+    enddo
+    U3 = 0.0d0
+    do i=1,3
+       do j=i,3
+          U3(i,j) = 1.0d0*(i + j)
+       enddo
+    enddo
+    A3 = matmul(L3, U3)
+    call test_LU_factor(A3, 3, 'test_LU_factor')
+
+    print *, "##teamcity[testFinished name='test_LU_factor']"
+
+    print *, "##teamcity[testSuiteFinished name='linalg']"
+
+  end subroutine test_linalg
+
+  subroutine test_LU_factor(A, n, test_name)
+
+    double precision, intent(in) :: A(n,n)
+    integer, intent(in) :: n
+    character (len=*), intent(in) :: test_name
+
+    double precision :: LU(n,n), L(n,n), U(n,n), A_out(n,n), tmp_row(n)
+    integer :: ipiv(n)
+    integer :: d, i, j
+    double precision :: result
+
+    call LU_factor(A, LU, ipiv)
+
+    L = 0.0d0
+    do d=1,n
+       L(d,d) = 1.0d0
+    enddo
+    do i=2,n
+       do j=1,i-1
+          L(i,j) = LU(i,j)
+       enddo
+    enddo
+    U = 0.0d0
+    do i=1,n
+       do j=i,n
+          U(i,j) = LU(i,j)
+       enddo
+    enddo
+    A_out = matmul(L, U)
+    do i=1,n
+       tmp_row = A_out(i,:)
+       A_out(i,:) = A_out(ipiv(i),:)
+       A_out(ipiv(i),:) = tmp_row
+    enddo
+
+    result = abs(sum(A_out - A))
+    if (result /= 0.0d0) then
+       print *, "##teamcity[testFailed type='comparisonFailure' name='", test_name, &
+            "' message='solution error > 0' expected='", 0.0d0 , &
+            "' actual='", result , "']]"
+    endif
+
+  end subroutine test_LU_factor
 
 end program openqg

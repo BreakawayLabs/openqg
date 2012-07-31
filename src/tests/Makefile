@@ -9,13 +9,13 @@ FFTW = -L/usr/local/lib -lfftw3
 
 MAKEFILE = Makefile
 
-OBJS = ncutils.o intsubs.o constants.o units.o mesh.o box.o numerics.o inhomog.o test_inhomog.o
+OBJS = ncutils.o intsubs.o constants.o units.o linalg.o mesh.o box.o numerics.o inhomog.o test_inhomog.o
 
 default: test_inhomog
 EXEC = test_inhomog
 
 test_inhomog: ${OBJS}
-	${FC} ${FFLAGS} -o ${EXEC} ${OBJS} ${NCLINK} ${FFTW}
+	${FC} ${FFLAGS} -o ${EXEC} ${OBJS} ${LAPACK} ${NCLINK} ${FFTW}
 
 
 ncutils.o: ../util/ncutils.F90 ${MAKEFILE}
@@ -29,6 +29,9 @@ constants.o: ../util/constants.F90
 
 units.o: ../util/units.F90
 	${FC} ${FFLAGS} -c ../util/units.F90
+
+linalg.o: ../util/linalg.F90
+	${FC} ${FFLAGS} -c ../util/linalg.F90
 
 mesh.o: ../glam/mesh.F90 ncutils.o constants.o units.o
 	${FC} ${FFLAGS} -c ../glam/mesh.F90
