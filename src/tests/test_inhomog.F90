@@ -79,7 +79,7 @@ contains
     
     rhs_in(:,:) = 1.0d0
     
-    call test_rhs(b, rdm2, inhom, rhs_in, 'constant.'//test_name)
+    call test_rhs(b, rdm2, inhom, rhs_in, 'constant_'//test_name)
     
   end subroutine test_constant
 
@@ -98,7 +98,7 @@ contains
        enddo
     enddo
     
-    call test_rhs(b, rdm2, inhom, rhs_in, 'sine.'//test_name)
+    call test_rhs(b, rdm2, inhom, rhs_in, 'sine_'//test_name)
     
   end subroutine test_sine
 
@@ -115,7 +115,7 @@ contains
     if (b%cyclic) then
        rhs_in(b%nxp,:) = rhs_in(1,:) ! ensure cyclic
     endif
-    call test_rhs(b, rdm2, inhom, rhs_in, 'random.'//test_name)
+    call test_rhs(b, rdm2, inhom, rhs_in, 'random_'//test_name)
     
   end subroutine test_random
 
@@ -163,7 +163,7 @@ contains
 
     L(:,:) = 1.0d0
 
-    call test_L(b, rdm2, inhom, L, 'constant.'//test_name)
+    call test_L(b, rdm2, inhom, L, 'constant_'//test_name)
 
   end subroutine test_constant_homog
 
@@ -184,7 +184,7 @@ contains
     if (b%cyclic) then
        L(b%nxp,:) = L(1,:) ! ensure cyclic
     endif
-    call test_L(b, rdm2, inhom, L, 'sine.'//test_name)
+    call test_L(b, rdm2, inhom, L, 'sine_'//test_name)
 
   end subroutine test_sine_homog
 
@@ -201,7 +201,7 @@ contains
     if (b%cyclic) then
        L(b%nxp,:) = L(1,:) ! ensure cyclic
     endif
-    call test_L(b, rdm2, inhom, L, 'random.'//test_name)
+    call test_L(b, rdm2, inhom, L, 'random_'//test_name)
 
   end subroutine test_random_homog
 
@@ -217,7 +217,7 @@ contains
     integer :: m
     double precision :: alpha, result
 
-    call start_test(test_name)
+    call start_test('test_generate_homog_soln.'//test_name)
 
     do m=1,3
        soln(:,:) = generate_homog_soln(inhom, m, L)
@@ -235,7 +235,7 @@ contains
        call check_threshold(result, 1.0d-22, test_name)
     enddo
 
-    call end_test(test_name)
+    call end_test('test_generate_homog_soln.'//test_name)
 
   end subroutine test_L
  
