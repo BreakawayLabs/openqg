@@ -8,7 +8,7 @@ module qg_monitor
   use ncutils, only: nc_def_int, nc_put_double, nc_enddef, nc_put_int
   use intsubs, only: trapin
   use ekman, only: ekman_type
-  use numerics, only: map_P_to_x_face, map_P_to_y_face, dPdx, dPdy, int_P_dA
+  use numerics, only: map_P_to_x_face, map_P_to_y_face, dPdx, dPdy, int_P_dA, avg_P
 
   use intsubs, only: genint
 
@@ -188,7 +188,7 @@ contains
     do k=1,b%nl-1
        ! Compute eta^2 integral for energy diagnostics
        wko(:,:) = ( qg%p(:,:,k+1) - qg%p(:,:,k) )**2
-       init_qg_monitor%et2m(k) = int_P_dA(wko, b)/(b%xl*b%yl)/qg%gp(k)**2
+       init_qg_monitor%et2m(k) = avg_P(wko, b)/qg%gp(k)**2
     enddo
     init_qg_monitor%ermas = 0.0d0
     init_qg_monitor%emfr = 0.0d0
@@ -237,9 +237,8 @@ contains
     double precision :: eta(qg%b%nxp,qg%b%nyp)
 
     integer :: j,k
-    double precision :: et2now, etaint, pkeint
+    double precision :: et2now
     double precision :: ugeos(qg%b%nxp,qg%b%nyp-1), vgeos(qg%b%nxp-1,qg%b%nyp), utaux, vtauy
-    double precision :: pint, qint
     double precision :: ujet, ujeto(qg%b%nyt)
     double precision :: uke, u2diss, u4diss
     double precision :: vke, v2diss, v4diss
@@ -252,35 +251,29 @@ contains
     type(box_type) :: b
     double precision pomin,pomax,poref(qg%b%nl),psiext
 
-    double precision :: int_p2(qg%b%nl)
+    double precision :: int_p(qg%b%nl)
 
     b = qg%b
 
     ! Ekman velocity diagnostics
     ! Mean value of Wekman at p points
-    mon%wepm = genint(ek%wekp, b%nxp, b%nyp, 0.5d0, 0.5d0)
-    mon%wepm = mon%wepm*b%norm
+    mon%wepm = avg_P(ek%wekp, b)
     ! Mean value of abs( Wekman ) at p points
-    mon%wapm = genint(abs(ek%wekp(:,:)), b%nxp, b%nyp, 0.5d0, 0.5d0)
-    mon%wapm = mon%wapm*b%norm
+    mon%wapm = avg_P(abs(ek%wekp(:,:)), b)
     
     ! Entrainment diagnostics
     ! We are assuming all entrainment is across interface 1.
-    mon%entm = genint(ent(:,:,1),b%nxp,b%nyp,0.5d0,0.5d0)
-    mon%entm = mon%entm*b%norm
-    mon%enam = genint(abs(ent(:,:,1)), b%nxp, b%nyp, 0.5d0, 0.5d0)
-    mon%enam = mon%enam*b%norm
+    mon%entm = avg_P(ent(:,:,1), b)
+    mon%enam = avg_P(abs(ent(:,:,1)), b)
 
     ! Interface displacement eta diagnostics
     ! Infer eta at p points
     do k=1,b%nl-1
        eta(:,:) = b%dz_sign*( qg%p(:,:,k) - qg%p(:,:,k+1) )/qg%gp(k)
        ! Compute integral of eta
-       etaint = genint(eta, b%nxp, b%nyp, 0.5d0, 0.5d0)
-       mon%etam(k) = etaint*b%norm    
+       mon%etam(k) = avg_P(eta, b)
        ! Compute integral of eta^2
-       et2now = genint(eta(:,:)*eta(:,:), b%nxp, b%nyp, 0.5d0, 0.5d0)
-       et2now = et2now*b%norm
+       et2now = avg_P(eta(:,:)*eta(:,:), b)
        if( tsec > mon%tsec) then
           mon%pket(k) = 0.5d0*qg%rho*qg%gp(k)*( et2now - mon%et2m(k) )/(tsec - mon%tsec)
        else
@@ -291,8 +284,7 @@ contains
        ! Compute integral of eta*e
        ! We are assuming all entrainment is across interface 1.
        if (k == 1) then
-          pkeint = genint(eta(:,:)*ent(:,:,1), b%nxp, b%nyp, 0.5d0, 0.5d0)
-          mon%pken = qg%rho*qg%gp(1)*pkeint*b%norm
+          mon%pken = qg%rho*qg%gp(1)*avg_P(eta(:,:)*ent(:,:,1), b)
        endif
     enddo
 
@@ -315,10 +307,8 @@ contains
     mon%utau = qg%rho*( vtauy + utaux )*b%norm
        
     do k=1,b%nl
-       pint = genint(qg%p(:,:,k), b%nxp, b%nyp, 0.5d0, 0.5d0)
-       qint = genint(qg%q(:,:,k), b%nxp, b%nyp, 0.5d0, 0.5d0)
-       mon%pavg(k) = pint*b%norm
-       mon%qavg(k) = qint*b%norm
+       mon%pavg(k) = avg_P(qg%p(:,:,k), b)
+       mon%qavg(k) = avg_P(qg%q(:,:,k), b)
     enddo
 
     ! Layer kinetic energy and its time derivative, also stream function
@@ -409,8 +399,8 @@ contains
     enddo
 
     if (qg%b%cyclic) then
-       int_p2(:) = int_P_dA(qg%p, qg%b)
-       call check_continuity(qg%con, qg%gp, qg%b, tdt, int_p2, mon)
+       int_p(:) = int_P_dA(qg%p, qg%b)
+       call check_continuity(qg%con, qg%gp, qg%b, tdt, int_p, mon)
     endif
 
   end subroutine qg_diagno

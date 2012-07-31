@@ -4,7 +4,7 @@ module topog
   use units, only: m_to_km
   use ncutils, only: nc_open, nc_get_dim, nc_create, nc_def_dim, handle_err, nc_get_text
   use ncutils, only: nc_close, nc_enddef, nc_def_double, nc_get_double, nc_put_double
-  use numerics, only: int_P_dA
+  use numerics, only: avg_P
 
   use box, only: box_type
   use grid, only: grid_type
@@ -101,7 +101,7 @@ contains
        enddo
     endif
 
-    topo%davg = int_P_dA(topo%dtop, b)/(b%xl*b%yl)
+    topo%davg = avg_P(topo%dtop, b)
     topo%ddyn(:,:) = (b%fnot/b%h(topo%k_topo))*topo%dtop(:,:)
 
   end subroutine load_topog
