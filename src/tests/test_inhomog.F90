@@ -4,7 +4,7 @@ program test_inhomog
   use box, only: box_type, init_box_from_mesh
   use inhomog, only: inhomog_type, init_inhomog, solve_inhomog_eqn, generate_homog_soln
   use numerics, only: dP2dx2_bc, dP2dy2_bc
-  use linalg, only: LU_factor, solve_Ax_b
+  use linalg, only: LU_factor, solve_Ax_b, solve_eigenproblem
 
   implicit none
 
@@ -287,6 +287,8 @@ contains
 
     call test_solve_Ax_b(A3, (/1.0d0, 2.0d0, 3.0d0/), 3, 'test_solve_AX_b.3x3')
 
+    call test_solve_eigenproblem(A3, 3, 'test_solve_eigenproblem.3x3')
+
     call end_suite('linalg')
 
   end subroutine test_linalg
@@ -357,6 +359,34 @@ contains
 
   end subroutine test_LU_factor
 
+  subroutine test_solve_eigenproblem(A, n, test_name)
+    double precision, intent(in) :: A(n,n)
+    integer, intent(in):: n
+    character (len=*), intent(in) :: test_name
+
+    double precision :: eigval_real(n), eigvec_left(n,n), eigvec_right(n,n)
+    double precision :: AR(n), eR(n), LA(n), eL(n)
+    integer :: i
+
+    call start_test(test_name)
+    
+    call solve_eigenproblem(A, n, eigval_real, eigvec_left, eigvec_right)
+
+    do i=1,n
+       AR = matmul(A, eigvec_right(:,i))
+       eR = eigvec_right(:,i)*eigval_real(i)
+
+       LA = matmul(eigvec_left(:,i), A)
+       eL = eigvec_left(:,i)*eigval_real(i)
+
+       call check_threshold(sum(AR - eR), 1.0d-13, test_name)
+       call check_threshold(sum(LA - eL), 1.0d-13, test_name)
+    enddo
+
+    call end_test(test_name)
+
+  end subroutine test_solve_eigenproblem
+
   subroutine start_suite(suite_name)
     character (len=*), intent(in) :: suite_name
     print *, "##teamcity[testSuiteStarted name='", suite_name, "']"
@@ -389,4 +419,5 @@ contains
     end if
   end subroutine check_threshold
 
+ 
 end program test_inhomog
