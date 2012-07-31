@@ -1,4 +1,4 @@
-program openqg
+program test_inhomog
 
   use mesh, only: mesh_type, init_mesh
   use box, only: box_type, init_box_from_mesh
@@ -32,7 +32,7 @@ contains
     ! Create a solver for this system
     inhom = init_inhomog(b, rdm2)
 
-    print *, "##teamcity[testSuiteStarted name='inhomog.cyclic']"
+    call start_suite('inhomog.cyclic')
 
     ! Test solving the inhomogeneous equation
     call test_constant(b, rdm2, inhom)
@@ -44,7 +44,7 @@ contains
     call test_sine_homog(b, rdm2, inhom)
     call test_random_homog(b, rdm2, inhom)
 
-    print *, "##teamcity[testSuiteFinished name='inhomog.cyclic']"
+    call end_suite('inhomog.cyclic')
     
     ! 100x100 10km non-cyclic mesh at 55 degrees north
     mesh = init_mesh(100, 100, 10000.0d0, 10000.0d0, 0.0d0, 0.0d0, .false., 0.0d0, 55.0d0)
@@ -55,8 +55,8 @@ contains
     ! Create a solver for this system
     inhom = init_inhomog(b, rdm2)
 
-    print *, "##teamcity[testSuiteStarted name='inhomog.box']"
-    
+    call start_suite('inhomog.box')    
+
     ! Test solving the inhomogeneous equation
     call test_constant(b, rdm2, inhom)
     call test_sine(b, rdm2, inhom)
@@ -67,7 +67,7 @@ contains
     call test_sine_homog(b, rdm2, inhom)
     call test_random_homog(b, rdm2, inhom)
 
-    print *, "##teamcity[testSuiteFinished name='inhomog.box']"
+    call end_suite('inhomog.box')
 
     call test_linalg()
 
@@ -133,7 +133,7 @@ contains
     double precision :: alpha, result
     integer :: m
 
-    print *, "##teamcity[testStarted name='", test_name, "' captureStandardOutput='true']"
+    call start_test(test_name)
 
     ! Solve the system for each mode
     do m=1,3
@@ -147,14 +147,10 @@ contains
           result = maxval(abs(rhs_out(2:b%nxp-1,2:b%nyp-1) - rhs_in(2:b%nxp-1,2:b%nyp-1))) / &
                maxval(abs(rhs_in(2:b%nxp-1,2:b%nyp-1)))
        end if
-       if (result > 1.0d-11) then
-          print *, "##teamcity[testFailed type='comparisonFailure' name='", test_name, &
-               "' message='solution error > 1.0d-12' expected='", 1.0d-11 , &
-               "' actual='", result , "']]"
-       end if
+       call check_threshold(result, 1.0d-11, test_name)
     enddo
 
-    print *, "##teamcity[testFinished name='", test_name, "']"
+    call end_test(test_name)
 
   end subroutine test_rhs
 
@@ -219,7 +215,7 @@ contains
     integer :: m
     double precision :: alpha, result
 
-    print *, "##teamcity[testStarted name='", test_name, "' captureStandardOutput='true']"
+    call start_test(test_name)
 
     do m=1,3
        soln(:,:) = generate_homog_soln(inhom, m, L)
@@ -234,14 +230,10 @@ contains
        else
           result = maxval(abs(rhs_out1(2:b%nxp-1,2:b%nyp-1) - rhs_out2(2:b%nxp-1,2:b%nyp-1)))/maxval(abs(L(2:b%nxp-1,2:b%nyp-1)))
        end if
-       if (result > 1.0d-22) then
-          print *, "##teamcity[testFailed type='comparisonFailure' name='", test_name, &
-               "' message='solution error > 1.0d-22' expected='", 1.0d-22 , &
-               "' actual='", result , "']]"
-       end if
+       call check_threshold(result, 1.0d-22, test_name)
     enddo
 
-    print *, "##teamcity[testFinished name='", test_name, "']"
+    call end_test(test_name)
 
   end subroutine test_L
 
@@ -253,9 +245,7 @@ contains
     double precision :: L10(10,10), U10(10,10)
     integer :: d, i, j
 
-    print *, "##teamcity[testSuiteStarted name='linalg']"
-
-    print *, "##teamcity[testStarted name='test_LU_factor.3x3' captureStandardOutput='true']"
+    call start_suite('linalg')
 
     ! Create a matrix with a non-singular U to ensure successful factorisation
     L3 = 0.0d0
@@ -276,10 +266,6 @@ contains
     A3 = matmul(L3, U3)
     call test_LU_factor(A3, 3, 'test_LU_factor.3x3')
 
-    print *, "##teamcity[testFinished name='test_LU_factor.3x3']"
-
-    print *, "##teamcity[testStarted name='test_LU_factor.10x10' captureStandardOutput='true']"
-
     ! Create a matrix with a non-singular U to ensure successful factorisation
     L10 = 0.0d0
     do d=1,10
@@ -299,9 +285,7 @@ contains
     A10 = matmul(L10, U10)
     call test_LU_factor(A10, 10, 'test_LU_factor.10x10')
 
-    print *, "##teamcity[testFinished name='test_LU_factor.10x10']"
-
-    print *, "##teamcity[testSuiteFinished name='linalg']"
+    call end_suite('linalg')
 
   end subroutine test_linalg
 
@@ -315,6 +299,8 @@ contains
     integer :: ipiv(n)
     integer :: d, i, j
     double precision :: result
+
+    call start_test(test_name)
 
     call LU_factor(A, LU, ipiv)
 
@@ -341,12 +327,42 @@ contains
     enddo
 
     result = abs(sum(A_out - A))
-    if (result > 1.0d-12) then
-       print *, "##teamcity[testFailed type='comparisonFailure' name='", test_name, &
-            "' message='solution error > 1.0d-12' expected='", 1.0d-12 , &
-            "' actual='", result , "']]"
-    endif
+    call check_threshold(result, 1.0d-12, test_name)
+
+    call end_test(test_name)
 
   end subroutine test_LU_factor
 
-end program openqg
+  subroutine start_suite(suite_name)
+    character (len=*), intent(in) :: suite_name
+    print *, "##teamcity[testSuiteStarted name='", suite_name, "']"
+  end subroutine start_suite
+
+  subroutine end_suite(suite_name)
+    character (len=*), intent(in) :: suite_name
+    print *, "##teamcity[testSuiteFinished name='", suite_name, "']"
+  end subroutine end_suite
+
+  subroutine start_test(test_name)
+    character (len=*), intent(in) :: test_name
+    print *, "##teamcity[testStarted name='", test_name, "' captureStandardOutput='true']"
+  end subroutine start_test
+
+  subroutine end_test(test_name)
+    character (len=*), intent(in) :: test_name
+    print *, "##teamcity[testFinished name='", test_name, "']"
+  end subroutine end_test
+
+  subroutine check_threshold(result, threshold, test_name)
+    double precision, intent(in) :: result
+    double precision, intent(in) :: threshold
+    character (len=*), intent(in) :: test_name
+
+    if (result > threshold) then
+       print *, "##teamcity[testFailed type='comparisonFailure' name='", test_name, &
+            "' message='result > threshold' expected='", threshold , &
+            "' actual='", result , "']]"
+    end if
+  end subroutine check_threshold
+
+end program test_inhomog
