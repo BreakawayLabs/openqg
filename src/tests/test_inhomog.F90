@@ -1,23 +1,27 @@
-program test_inhomog
+module test_inhomog_mod
 
   use mesh, only: mesh_type, init_mesh
   use box, only: box_type, init_box_from_mesh
   use inhomog, only: inhomog_type, init_inhomog, solve_inhomog_eqn, generate_homog_soln
   use numerics, only: dP2dx2_bc, dP2dy2_bc
-  use linalg, only: LU_factor, solve_Ax_b, solve_eigenproblem
+
+  use testlib, only: start_suite, end_suite, start_test, end_test, check_threshold
 
   implicit none
 
-  call main()
+  private
+
+  public test_inhomog
 
 contains
 
-  subroutine main()
-
+  subroutine test_inhomog()
     type(mesh_type) :: mesh
     type(box_type) :: b
     type(inhomog_type) :: inhom
     double precision :: rdm2(3) ! 1/r_m^2 for 3 modes
+
+    call start_suite('inhomog')
 
     ! 100x100 10km cyclic mesh at 55 degrees north
     mesh = init_mesh(100, 100, 10000.0d0, 10000.0d0, 0.0d0, 0.0d0, .true., 0.0d0, 55.0d0)
@@ -32,8 +36,6 @@ contains
     ! Create a solver for this system
     inhom = init_inhomog(b, rdm2)
 
-    call start_suite('inhomog.cyclic')
-
     ! Test solving the inhomogeneous equation
     call test_constant(b, rdm2, inhom)
     call test_sine(b, rdm2, inhom)
@@ -44,8 +46,6 @@ contains
     call test_sine_homog(b, rdm2, inhom)
     call test_random_homog(b, rdm2, inhom)
 
-    call end_suite('inhomog.cyclic')
-    
     ! 100x100 10km non-cyclic mesh at 55 degrees north
     mesh = init_mesh(100, 100, 10000.0d0, 10000.0d0, 0.0d0, 0.0d0, .false., 0.0d0, 55.0d0)
 
@@ -55,8 +55,6 @@ contains
     ! Create a solver for this system
     inhom = init_inhomog(b, rdm2)
 
-    call start_suite('inhomog.box')    
-
     ! Test solving the inhomogeneous equation
     call test_constant(b, rdm2, inhom)
     call test_sine(b, rdm2, inhom)
@@ -67,11 +65,9 @@ contains
     call test_sine_homog(b, rdm2, inhom)
     call test_random_homog(b, rdm2, inhom)
 
-    call end_suite('inhomog.box')
+    call end_suite('inhomog')
 
-    call test_linalg()
-
-  end subroutine main
+  end subroutine test_inhomog
 
   subroutine test_constant(b, rdm2, inhom)
     type(box_type), intent(in) :: b
@@ -236,188 +232,5 @@ contains
     call end_test(test_name)
 
   end subroutine test_L
-
-  subroutine test_linalg()
-
-    double precision :: A3(3,3)
-    double precision :: L3(3,3), U3(3,3)
-    double precision :: A10(10,10)
-    double precision :: L10(10,10), U10(10,10)
-    integer :: d, i, j
-
-    call start_suite('linalg')
-
-    ! Create a matrix with a non-singular U to ensure successful factorisation
-    L3 = 0.0d0
-    do d=1,3
-       L3(d,d) = 1.0d0
-    enddo
-    do i=2,3
-       do j=1,i-1
-          L3(i,j) = 1.0d0*(i + j)
-       enddo
-    enddo
-    U3 = 0.0d0
-    do i=1,3
-       do j=i,3
-          U3(i,j) = 1.0d0*(i + j)
-       enddo
-    enddo
-    A3 = matmul(L3, U3)
-    call test_LU_factor(A3, 3, 'test_LU_factor.3x3')
-
-    ! Create a matrix with a non-singular U to ensure successful factorisation
-    L10 = 0.0d0
-    do d=1,10
-       L10(d,d) = 1.0d0
-    enddo
-    do i=2,10
-       do j=1,i-1
-          L10(i,j) = 1.0d0*(i + j)
-       enddo
-    enddo
-    U10 = 0.0d0
-    do i=1,10
-       do j=i,10
-          U10(i,j) = 1.0d0*(i + j)
-       enddo
-    enddo
-    A10 = matmul(L10, U10)
-    call test_LU_factor(A10, 10, 'test_LU_factor.10x10')
-
-    call test_solve_Ax_b(A3, (/1.0d0, 2.0d0, 3.0d0/), 3, 'test_solve_AX_b.3x3')
-
-    call test_solve_eigenproblem(A3, 3, 'test_solve_eigenproblem.3x3')
-
-    call end_suite('linalg')
-
-  end subroutine test_linalg
-
-  subroutine test_solve_Ax_b(A, b, n, test_name)
-    double precision, intent(in) :: A(n,n)
-    double precision, intent(in) :: b(n)
-    integer, intent(in) :: n
-    character (len=*), intent(in) :: test_name
-
-    double precision :: LU(n,n), x(n), b_out(n), result
-    integer :: ipiv(n)
-
-    call start_test(test_name)
-    
-    call LU_factor(A, LU, ipiv)
-    call solve_Ax_b(A, LU, ipiv, b, x)
-
-    b_out = matmul(A, x)
-    result = sum(abs(b - b_out))
-    call check_threshold(result, 1.0d-14, test_name)
-
-    call end_test(test_name)    
-
-  end subroutine test_solve_Ax_b
-
-  subroutine test_LU_factor(A, n, test_name)
-
-    double precision, intent(in) :: A(n,n)
-    integer, intent(in) :: n
-    character (len=*), intent(in) :: test_name
-
-    double precision :: LU(n,n), L(n,n), U(n,n), A_out(n,n), tmp_row(n)
-    integer :: ipiv(n)
-    integer :: d, i, j
-    double precision :: result
-
-    call start_test(test_name)
-
-    call LU_factor(A, LU, ipiv)
-
-    L = 0.0d0
-    do d=1,n
-       L(d,d) = 1.0d0
-    enddo
-    do i=2,n
-       do j=1,i-1
-          L(i,j) = LU(i,j)
-       enddo
-    enddo
-    U = 0.0d0
-    do i=1,n
-       do j=i,n
-          U(i,j) = LU(i,j)
-       enddo
-    enddo
-    A_out = matmul(L, U)
-    do i=1,n
-       tmp_row = A_out(i,:)
-       A_out(i,:) = A_out(ipiv(i),:)
-       A_out(ipiv(i),:) = tmp_row
-    enddo
-
-    result = abs(sum(A_out - A))
-    call check_threshold(result, 1.0d-12, test_name)
-
-    call end_test(test_name)
-
-  end subroutine test_LU_factor
-
-  subroutine test_solve_eigenproblem(A, n, test_name)
-    double precision, intent(in) :: A(n,n)
-    integer, intent(in):: n
-    character (len=*), intent(in) :: test_name
-
-    double precision :: eigval_real(n), eigvec_left(n,n), eigvec_right(n,n)
-    double precision :: AR(n), eR(n), LA(n), eL(n)
-    integer :: i
-
-    call start_test(test_name)
-    
-    call solve_eigenproblem(A, n, eigval_real, eigvec_left, eigvec_right)
-
-    do i=1,n
-       AR = matmul(A, eigvec_right(:,i))
-       eR = eigvec_right(:,i)*eigval_real(i)
-
-       LA = matmul(eigvec_left(:,i), A)
-       eL = eigvec_left(:,i)*eigval_real(i)
-
-       call check_threshold(sum(AR - eR), 1.0d-13, test_name)
-       call check_threshold(sum(LA - eL), 1.0d-13, test_name)
-    enddo
-
-    call end_test(test_name)
-
-  end subroutine test_solve_eigenproblem
-
-  subroutine start_suite(suite_name)
-    character (len=*), intent(in) :: suite_name
-    print *, "##teamcity[testSuiteStarted name='", suite_name, "']"
-  end subroutine start_suite
-
-  subroutine end_suite(suite_name)
-    character (len=*), intent(in) :: suite_name
-    print *, "##teamcity[testSuiteFinished name='", suite_name, "']"
-  end subroutine end_suite
-
-  subroutine start_test(test_name)
-    character (len=*), intent(in) :: test_name
-    print *, "##teamcity[testStarted name='", test_name, "' captureStandardOutput='true']"
-  end subroutine start_test
-
-  subroutine end_test(test_name)
-    character (len=*), intent(in) :: test_name
-    print *, "##teamcity[testFinished name='", test_name, "']"
-  end subroutine end_test
-
-  subroutine check_threshold(result, threshold, test_name)
-    double precision, intent(in) :: result
-    double precision, intent(in) :: threshold
-    character (len=*), intent(in) :: test_name
-
-    if (result > threshold) then
-       print *, "##teamcity[testFailed type='comparisonFailure' name='", test_name, &
-            "' message='result > threshold' expected='", threshold , &
-            "' actual='", result , "']]"
-    end if
-  end subroutine check_threshold
-
  
-end program test_inhomog
+end module test_inhomog_mod

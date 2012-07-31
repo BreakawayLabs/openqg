@@ -9,12 +9,12 @@ FFTW = -L/usr/local/lib -lfftw3
 
 MAKEFILE = Makefile
 
-OBJS = ncutils.o intsubs.o constants.o units.o linalg.o mesh.o box.o numerics.o inhomog.o test_inhomog.o
+OBJS = ncutils.o intsubs.o constants.o units.o linalg.o mesh.o box.o numerics.o inhomog.o testlib.o unit_tests.o test_inhomog.o test_linalg.o
 
-default: test_inhomog
-EXEC = test_inhomog
+default: unit_tests
+EXEC = unit_tests
 
-test_inhomog: ${OBJS}
+unit_tests: ${OBJS}
 	${FC} ${FFLAGS} -o ${EXEC} ${OBJS} ${LAPACK} ${NCLINK} ${FFTW}
 
 
@@ -45,8 +45,17 @@ numerics.o: ../glam/numerics.F90 intsubs.o box.o constants.o
 inhomog.o: ../qg/inhomog.F90 box.o constants.o
 	${FC} ${FFLAGS} -c ../qg/inhomog.F90
 
-test_inhomog.o: test_inhomog.F90 inhomog.o
+testlib.o: testlib.F90
+	${FC} ${FFLAGS} -c testlib.F90
+
+test_linalg.o: test_linalg.F90 linalg.o testlib.o
+	${FC} ${FFLAGS} -c test_linalg.F90
+
+test_inhomog.o: test_inhomog.F90 inhomog.o test_linalg.o
 	${FC} ${FFLAGS} -c test_inhomog.F90
+
+unit_tests.o: unit_tests.F90 test_linalg.o test_inhomog.o
+	${FC} ${FFLAGS} -c unit_tests.F90
 
 clean:
 	rm -f *.o *.l *.lst *.w2f.* *.fln *.list *.chek *.mod *genmod* *opari.inc *.mod.F90 opari.rc opari.tab.c
