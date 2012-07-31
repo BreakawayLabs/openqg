@@ -5,7 +5,7 @@ module forcing
   use mixed, only: mixed_type
   use radsubs, only: fsprim
   use amlsubs, only: atmos_mixed_type
-  use numerics, only: map_P_to_T
+  use numerics, only: map_P_to_T, avg_T
 
   implicit none
   
@@ -48,15 +48,15 @@ contains
 
     ! Ocean/atmos infrared radiation
     ocn_IR_up(:,:) = aml%rad%D0up*sst_datam(:,:)
-    aml%oradav = sum(ocn_IR_up(:,:))*go%norm
+    aml%oradav = avg_T(ocn_IR_up(:,:), go)
 
     ! Sensible and latent flux
     sense_lat_flux(:,:) = aml%rad%xlamda*( sst_datam(:,:) - asto(:,:) )
-    aml%slhfav = sum(sense_lat_flux(:,:))*go%norm
+    aml%slhfav = avg_T(sense_lat_flux(:,:), go)
 
     ! Atmospheric mixed layer radiation - into ocean
     aml_IR_down(:,:) = aml%rad%Dmdown*asto(:,:)
-    aml%arocav = sum(aml_IR_down(:,:))*go%norm
+    aml%arocav = avg_T(aml_IR_down(:,:), go)
 
     ! Specify atmospheric forcing everywhere
     ! Land case of (7.9) + last term of (7.8)

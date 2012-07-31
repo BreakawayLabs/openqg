@@ -3,13 +3,13 @@ module ml_monitor
   use box, only: box_type
   use ncutils, only: nc_open_w, nc_create, nc_def_dim, nc_def_float, nc_close, nc_put_double, nc_enddef
   use grid, only: grid_type, load_grid
-  use intsubs, only: genint
   use box, only: box_type
   use qg, only: qg_type
   use grid, only: grid_type
   use ekman, only: ekman_type
   use amlsubs, only: atmos_mixed_type
   use omlsubs, only: ocean_mixed_type
+  use numerics, only: avg_T
 
   implicit none
 
@@ -184,12 +184,6 @@ contains
     ! The routine should be called after xforc; at this point
     ! in the timestepping all quantities are consistent.
     ! The results are all written to monitor.cmn
-
-    ! N.B. use included integration routine genint for all area
-    ! integrations, rather than earlier routine xintt, to enable
-    ! efficient parallelisation using "orphaned directives",
-    ! within a parallel context defined in this subroutine.
-
     type(box_type), intent(in) :: ga
     type(qg_type), intent(in) :: qga
     type(grid_type), intent(in) :: g
@@ -200,9 +194,6 @@ contains
       
     integer :: i,j
 
-    ! Define atmosphere variables
-    double precision attwk1(ga%nxt,ga%nyt)
-
     ! Atmosphere diagnostics
     ! Mixed layer temperature & thickness diagnostics
 
@@ -212,16 +203,11 @@ contains
     aml_mon%arlaav = aml%arlaav
 
     ! Compute mean atmos. mixed layer temperature and thickness
-    aml_mon%mean_st = genint(aml%ast%data, ga%nxt, ga%nyt, 1.0d0, 1.0d0)
-    aml_mon%mean_st = aml_mon%mean_st*ga%norm
-       
-    aml_mon%mean_h = genint(aml%hmixa%data, ga%nxt, ga%nyt, 1.0d0, 1.0d0)
-    aml_mon%mean_h = aml_mon%mean_h*ga%norm
+    aml_mon%mean_st = avg_T(aml%ast%data, ga)
+    aml_mon%mean_h = avg_T(aml%hmixa%data, ga)
 
     ! Compute total heat content of atmos m.l.
-    attwk1(:,:) = aml%ast%data(:,:)*aml%hmixa%data(:,:)
-    aml_mon%hcmlat = genint(attwk1, ga%nxt, ga%nyt, 1.0d0, 1.0d0)
-    aml_mon%hcmlat = aml%temp%rho_cp*aml_mon%hcmlat*ga%norm
+    aml_mon%hcmlat = aml%temp%rho_cp*avg_T(aml%ast%data(:,:)*aml%hmixa%data(:,:), ga)
 
     ! Compute mean atmos. mixed layer temperature over ocean
     aml_mon%tmaooc = 0.0d0
@@ -242,11 +228,9 @@ contains
     endif
 
     ! Mean value of Wekman at T points
-    aml_mon%wetm = genint(eka%wekt, ga%nxt, ga%nyt, 1.0d0, 1.0d0)
+    aml_mon%wetm = avg_T(eka%wekt, ga)
     ! Mean value of abs( Wekman ) at T points
-    aml_mon%watm = genint(abs(eka%wekt(:,:)), ga%nxt, ga%nyt, 1.0d0, 1.0d0)
-    aml_mon%wetm = aml_mon%wetm*ga%norm
-    aml_mon%watm = aml_mon%watm*ga%norm
+    aml_mon%watm = avg_T(abs(eka%wekt(:,:)), ga)
     
   end subroutine diagnose_aml
 
@@ -257,24 +241,16 @@ contains
     type(ekman_type), intent(in) :: eko
     type(oml_monitor_type), intent(inout) :: oml_mon
 
-    ! Define ocean variables
-    double precision Twekt(go%nxt,go%nyt)
-
-    oml_mon%mean_st = genint(oml%sst%data, go%nxt, go%nyt, 1.0d0, 1.0d0)
-    oml_mon%mean_st = oml_mon%mean_st*go%norm
+    oml_mon%mean_st = avg_T(oml%sst%data, go)
 
     ! Mixed layer temperature & thickness diagnostics       
     ! Compute flux of heat at bottom of ocean m.l.
-    Twekt(:,:) = oml%sst%data(:,:)*eko%wekt(:,:)
-    oml_mon%hfmloc = genint(Twekt, go%nxt, go%nyt, 1.0d0, 1.0d0)
-    oml_mon%hfmloc = oml%temp%rho_cp*oml_mon%hfmloc*go%norm
+    oml_mon%hfmloc = oml%temp%rho_cp*avg_T(oml%sst%data(:,:)*eko%wekt(:,:), go)
 
     ! Mean value of Wekman at T points
-    oml_mon%wetm = genint(eko%wekt, go%nxt, go%nyt, 1.0d0, 1.0d0)
+    oml_mon%wetm = avg_T(eko%wekt, go)
     ! Mean value of abs( Wekman ) at T points
-    oml_mon%watm = genint(abs(eko%wekt(:,:)), go%nxt, go%nyt, 1.0d0, 1.0d0)
-    oml_mon%wetm = oml_mon%wetm*go%norm
-    oml_mon%watm = oml_mon%watm*go%norm
+    oml_mon%watm = avg_T(abs(eko%wekt(:,:)), go)
 
   end subroutine diagnose_oml
 
