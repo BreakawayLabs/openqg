@@ -17,8 +17,6 @@ module numerics
 
   public avg_T
   public avg_P
-  public int_P_x_face_dA
-  public int_P_y_face_dA
 
   interface int_P_dA
      module procedure int_P_dA_3d
@@ -211,46 +209,6 @@ contains
     int_P_dx = (0.5d0*p_data(1) + sum(p_data(2:b%nxp-1)) + 0.5d0*p_data(b%nxp))*b%dx
 
   end function int_P_dx
-
-  double precision function int_P_y_face_dA(y_face_data, b)
-    
-    type(box_type), intent(in) :: b
-    double precision, intent(in) :: y_face_data(b%nxp,b%nyt)
-
-    double precision :: int_dx(b%nyt)
-    integer :: j
-    if (b%cyclic) then
-       do j=1,b%nyt
-          int_dx(j) = sum(y_face_data(:b%nxp-1,j))*b%dx
-       enddo
-    else
-       do j=1,b%nyt
-          int_dx(j) = (sum(y_face_data(2:b%nxp-1,j)) &
-                       + 0.5d0*y_face_data(1,j)      &
-                       + 0.5d0*y_face_data(b%nxp,j))*b%dx
-       enddo
-    endif
-
-    int_P_y_face_dA = sum(int_dx(:))*b%dy
-
-  end function int_P_y_face_dA
-
-  double precision function int_P_x_face_dA(x_face_data, b)
-
-    type(box_type), intent(in) :: b
-    double precision, intent(in) :: x_face_data(b%nxt,b%nxp)
-    
-    double precision :: int_dy(b%nxt)
-    integer :: i
-    do i=1,b%nxt
-       int_dy(i) = (sum(x_face_data(i,2:b%nyp-1)) &
-                    + 0.5d0*x_face_data(i,1)      &
-                    + 0.5d0*x_face_data(i,b%nyp))*b%dy
-    enddo
-
-    int_P_x_face_dA = sum(int_dy(:))*b%dx
-
-  end function int_P_x_face_dA
 
   double precision function avg_P(p_data, b)
 
