@@ -35,7 +35,7 @@ module box
      integer :: nxp = 0
      integer :: nyp = 0
      double precision :: xl, yl
-     double precision :: dxm2, norm
+     double precision :: dxm2
      double precision :: rdxf0
 
   end type box_type
@@ -136,7 +136,6 @@ contains
     b%yl = b%nyt*b%dy
 
     b%dxm2 = 1.0d0/(b%dx*b%dx)
-    b%norm = 1.0d0/(b%nxt*b%nyt)
 
     allocate(b%yp(b%nyp))
     allocate(b%yprel(b%nyp))
