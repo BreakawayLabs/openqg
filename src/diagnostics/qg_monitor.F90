@@ -9,8 +9,7 @@ module qg_monitor
   use intsubs, only: trapin
   use ekman, only: ekman_type
   use numerics, only: map_P_to_x_face, map_P_to_y_face, dPdx, dPdy, int_P_dA, avg_P
-
-  use intsubs, only: genint
+  use numerics, only: dPdx_2bc, dPdy_2bc, del2_P_bc
 
   implicit none
 
@@ -226,27 +225,25 @@ contains
     double precision, intent(in) :: tdt
     type(qg_monitor_type), intent(inout) :: mon
 
-    double precision :: ptwk1(qg%b%nxp,qg%b%nyt)
-    double precision :: ptwk2(qg%b%nxp,qg%b%nyt)
-    double precision :: ptwk3(qg%b%nxp,qg%b%nyt)
-    double precision :: ug(qg%b%nxp,qg%b%nyt)
-    double precision :: tpwk1(qg%b%nxt,qg%b%nyp)
-    double precision :: tpwk2(qg%b%nxt,qg%b%nyp)
-    double precision :: tpwk3(qg%b%nxt,qg%b%nyp)
-    double precision :: vg(qg%b%nxt,qg%b%nyp)
+    double precision :: ug(qg%b%nxp,qg%b%nyp,qg%b%nl)
+    double precision :: vg(qg%b%nxt,qg%b%nyp,qg%b%nl)
     double precision :: eta(qg%b%nxp,qg%b%nyp)
+    double precision :: del2_u(qg%b%nxp,qg%b%nyp,qg%b%nl)
+    double precision :: del4_u(qg%b%nxp,qg%b%nyp,qg%b%nl)
+    double precision :: del2_v(qg%b%nxp,qg%b%nyp,qg%b%nl)
+    double precision :: del4_v(qg%b%nxp,qg%b%nyp,qg%b%nl)
 
     integer :: j,k
     double precision :: et2now
-    double precision :: ugeos(qg%b%nxp,qg%b%nyp-1), vgeos(qg%b%nxp-1,qg%b%nyp), utaux, vtauy
+    double precision :: utaux, vtauy
+    double precision :: ugeos(qg%b%nxp,qg%b%nyp,qg%b%nl), vgeos(qg%b%nxp,qg%b%nyp,qg%b%nl)
     double precision :: ujet, ujeto(qg%b%nyt)
     double precision :: uke, u2diss, u4diss
     double precision :: vke, v2diss, v4diss
-    double precision :: taux_t(qg%b%nxp-1,qg%b%nyp),tauy_t(qg%b%nxp,qg%b%nyp-1)
-    double precision :: dp_dy(qg%b%nxp,qg%b%nyp-1)
-    double precision :: dp_dx(qg%b%nxp-1,qg%b%nyp)
-    double precision :: dpm_dy(qg%b%nxp,qg%b%nyp-1)
-    double precision :: dpm_dx(qg%b%nxp-1,qg%b%nyp)
+    double precision :: dp_dy(qg%b%nxp,qg%b%nyp)
+    double precision :: dp_dx(qg%b%nxp,qg%b%nyp)
+    double precision :: dpm_dy(qg%b%nxp,qg%b%nyp)
+    double precision :: dpm_dx(qg%b%nxp,qg%b%nyp)
 
     type(box_type) :: b
     double precision pomin,pomax,poref(qg%b%nl),psiext
@@ -290,68 +287,56 @@ contains
 
     ! energetics
 
-    ! KE exchange between ocean & atmosphere
-    ! Infer u1 geostrophically
-    ! Compute required integrand
+    ! Compute lagged geostropic u, v
+    do k=1,b%nl
+       call dPdx_2bc(qg%pm(:,:,k), b, qg%bcco, dpm_dx)
+       call dPdy_2bc(qg%pm(:,:,k), b, qg%bcco, dpm_dy)
+       ug(:,:,k) = -dpm_dy(:,:)/b%fnot
+       vg(:,:,k) =  dpm_dx(:,:)/b%fnot
+    enddo
+    ! Compute current geostrophic u, v
+    do k=1,b%nl
+       call dPdy_2bc(qg%p(:,:,k), b, qg%bcco, dp_dy)
+       call dPdx_2bc(qg%p(:,:,k), b, qg%bcco, dp_dx)
+       ugeos(:,:,k) = -dp_dy(:,:)/b%fnot
+       vgeos(:,:,k) =  dp_dx(:,:)/b%fnot
+    enddo
 
-    call map_P_to_x_face(ek%taux, b, taux_t)
-    call map_P_to_y_face(ek%tauy, b, tauy_t)
-    call dPdx(qg%p(:,:,1), b, dp_dx)
-    call dPdy(qg%p(:,:,1), b, dp_dy)
-    ptwk1(:,:) = -tauy_t(:,:)*dp_dy(:,:)/b%fnot
-    utaux = genint(ptwk1, b%nxp, b%nyt, 0.5d0, 1.0d0)
-    ! Infer v1 geostrophically
-    ! Compute required integrand
-    tpwk1(:,:) = taux_t(:,:)*dp_dx(:,:)/b%fnot
-    vtauy = genint(tpwk1, b%nxt, b%nyp, 1.0d0, 0.5d0)
-    mon%utau = qg%rho*( vtauy + utaux )*b%norm
+    ! KE exchange between ocean & atmosphere
+    utaux = int_P_dA(ek%taux(:,:)*ugeos(:,:,1), b)
+    vtauy = int_P_dA(ek%tauy(:,:)*vgeos(:,:,1), b)
+    mon%utau = qg%rho*( vtauy + utaux )
        
     do k=1,b%nl
        mon%pavg(k) = avg_P(qg%p(:,:,k), b)
        mon%qavg(k) = avg_P(qg%q(:,:,k), b)
     enddo
 
+    ! Lagged del^2(u,v), del^4(u,v)
+    del2_u(:,:,:) = del2_P_bc(ug, b, qg%bcco)
+    del4_u(:,:,:) = del2_P_bc(del2_u, b, qg%bcco)
+    del2_v(:,:,:) = del2_P_bc(vg, b, qg%bcco)
+    del4_v(:,:,:) = del2_P_bc(del2_v, b, qg%bcco)
+
     ! Layer kinetic energy and its time derivative, also stream function
     do k=1,b%nl
-       call dPdx(qg%pm(:,:,k), b, dpm_dx)
-       call dPdy(qg%pm(:,:,k), b, dpm_dy)
-
-       ! Infer lagged u and v geostrophically; derive Del-4th
-       ug(:,:) = -dpm_dy(:,:)/b%fnot
-       ! Differentiate contents of ug to get Del-4th(lagged u)
-       ! Return this field in array ptwk3. ptwk2 is workspace
-       ! which contains Del-sqd(lagged u)
-       call del4_ (ug, b%nxp, b%nyt, b%cyclic, b%dxm2, ptwk2, ptwk3)
-          
-       vg(:,:) = dpm_dx(:,:)/b%fnot
-       ! Differentiate contents of vg to get Del-4th(lagged v)
-       ! Return this field in array octwk3. octwk2 is workspace
-       ! which contains Del-sqd(lagged v)
-       call del4_ (vg, b%nxt, b%nyp, b%cyclic, b%dxm2, tpwk2, tpwk3)
-       ! Find extrema of po for stream function
-       ! Infer current u and v geostrophically
-       ! Compute required integrands and jet position
-       call dPdy(qg%p(:,:,k), b, dp_dy)
-       ugeos(:,:) = -dp_dy(:,:)/b%fnot
        ! Compute required integrands
-       call dPdx(qg%p(:,:,k), b, dp_dx)
-       vgeos(:,:) = dp_dx(:,:)/b%fnot
+       u2diss = int_P_dA(ugeos(:,:,k)*del2_u(:,:,k), b)
+       v2diss = int_P_dA(vgeos(:,:,k)*del2_v(:,:,k), b)
+       mon%ah2d(k) = -qg%rho*qg%ah2(k)*b%h(k)*(u2diss + v2diss)
 
-       u2diss = genint(ugeos(:,:)*ptwk2(:,:), b%nxp, b%nyt, 0.5d0, 1.0d0)
-       v2diss = genint(vgeos(:,:)*tpwk2(:,:), b%nxt, b%nyp, 1.0d0, 0.5d0)
-       mon%ah2d(k) = -qg%rho*qg%ah2(k)*b%h(k)*(u2diss + v2diss)*b%norm
+       u4diss = int_P_dA(ugeos(:,:,k)*del4_u(:,:,k), b)
+       v4diss = int_P_dA(vgeos(:,:,k)*del4_v(:,:,k), b)
+       mon%ah4d(k) = qg%rho*qg%ah4(k)*b%h(k)*(u4diss + v4diss)
 
-       u4diss = genint (ugeos(:,:)*ptwk3(:,:), b%nxp, b%nyt, 0.5d0, 1.0d0)
-       v4diss = genint (vgeos(:,:)*tpwk3(:,:), b%nxt, b%nyp, 1.0d0, 0.5d0)
-       mon%ah4d(k) =  qg%rho*qg%ah4(k)*b%h(k)*(u4diss + v4diss)*b%norm
+       uke = int_P_dA(ugeos(:,:,k)*ugeos(:,:,k), b)
+       vke = int_P_dA(vgeos(:,:,k)*vgeos(:,:,k), b)
+       mon%ekei(k) = 0.5d0*qg%rho*b%h(k)*( uke + vke )
 
-       uke = genint(ugeos(:,:)*ugeos(:,:), b%nxp, b%nyt, 0.5d0, 1.0d0)
-       vke = genint(vgeos(:,:)*vgeos(:,:), b%nxt, b%nyp, 1.0d0, 0.5d0)
-       mon%ekei(k) = 0.5d0*qg%rho*b%h(k)*( uke + vke )*b%norm
-
-       do j=1,b%nyt
-          ujet = trapin(ugeos(:,j), b%nxp, 1.0d0)
-          ujeto(j) = abs( ujet )/dble(b%nxt)
+       ! Find extrema of p for stream function
+       do j=1,b%nyp
+          ujet = trapin(ugeos(:,j,k), b%nxp, 1.0d0)
+          ujeto(j) = abs( ujet )/dble(b%nxp)
        enddo
        ! Find position and value of avged max in each layer
        mon%pos(k) = maxloc(ujeto(:), dim=1)
@@ -362,17 +347,10 @@ contains
     enddo
     mon%ctot = sum(mon%circ(:))
 
-    ! Drag in Ekman layer at ocean bottom
-    ! Infer lagged u geostrophically
-    ! Compute required integrand
-    call dPdx(qg%pm(:,:,qg%topo%k_topo), b, dpm_dx)
-    call dPdy(qg%pm(:,:,qg%topo%k_topo), b, dpm_dy)
-
-    ptwk1(:,:) = dpm_dy(:,:)**2/(b%fnot**2)
-    tpwk1(:,:) = dpm_dx(:,:)**2/(b%fnot**2)
-    u2diss = genint(ptwk1, b%nxp, b%nyt, 0.5d0, 1.0d0)
-    v2diss = genint(tpwk1, b%nxt, b%nyp, 1.0d0, 0.5d0)
-    mon%btdg = 0.5d0*qg%rho*qg%delek*abs(b%fnot)*( u2diss + v2diss )*b%norm
+    ! Drag in Ekman layer at ocean bottom, use lagged u,v
+    u2diss = int_P_dA(ug(:,:,qg%topo%k_topo)**2, b)
+    v2diss = int_P_dA(vg(:,:,qg%topo%k_topo)**2, b)
+    mon%btdg = 0.5d0*qg%rho*qg%delek*abs(b%fnot)*( u2diss + v2diss )
 
     ! Define reference pressures on equatorward side of domain
     if (b%fnot > 0.0d0) then
@@ -404,79 +382,6 @@ contains
     endif
 
   end subroutine qg_diagno
-
-  function d2dx2(arr, nx, ny, cyclic)
-
-    double precision, intent(in) :: arr(nx,ny)
-    integer, intent(in) :: nx
-    integer, intent(in) :: ny
-    logical, intent(in) :: cyclic
-    double precision :: d2dx2(nx,ny)
-
-    integer :: i
-
-    do i=2,nx-1
-       d2dx2(i,:) = arr(i-1,:) - 2.0d0*arr(i,:) + arr(i+1,:)
-    enddo
-
-    if (cyclic) then
-       d2dx2(1,:) = arr(nx,:) - 2.0d0*arr(1,:) + arr(2,:)
-       d2dx2(nx,:) = arr(nx-1,:) - 2.0d0*arr(nx,:) + arr(1,:)
-    else
-       d2dx2(1,:) = d2dx2(2,:)
-       d2dx2(nx,:) = d2dx2(nx-1,:)
-    endif
-
-  end function d2dx2
-
-  function d2dy2(arr, nx, ny)
-    double precision, intent(in) :: arr(nx,ny)
-    integer, intent(in) :: nx
-    integer, intent(in) :: ny
-    double precision :: d2dy2(nx,ny)
-
-    integer :: j
-
-    do j=2,ny-2
-       d2dy2(:,j) = arr(:,j-1) - 2.0d0*arr(:,j) + arr(:,j+1)
-    enddo
-    d2dy2(:,1) = d2dy2(:,2)
-    d2dy2(:,ny) = d2dy2(:,ny-1)
-
-  end function d2dy2
-
-  subroutine del4_ (arr, nx, ny, cyclic, dxm2, del2, del4)
-
-    ! Computes Del-4th(arr) for a field arr(nx,ny) tabulated
-    ! in a finite box or periodic box. No boundary condition is applied;
-    ! the boundary values are computed using the appropriate
-    ! forward or backward difference formulae.
-    ! del2(nx,ny) is a workspace array used for Del-sqd(arr);
-    ! Del-4th(arr) is returned in the array del4(nx,ny).
-    ! arr is returned unchanged.
-     
-    integer, intent(in) :: nx,ny
-    double precision, intent(in) :: arr(nx,ny)
-    double precision, intent(in) ::dxm2
-    logical, intent(in) :: cyclic
-    double precision, intent(out) :: del2(nx,ny),del4(nx,ny)
-
-    double precision :: d2arr_dx2(nx,ny)
-    double precision :: d2arr_dy2(nx,ny)
-    double precision :: d2del2_dx2(nx,ny)
-    double precision :: d2del2_dy2(nx,ny)
-
-    d2arr_dx2(:,:) = d2dx2(arr, nx, ny, cyclic)
-    d2arr_dy2(:,:) = d2dy2(arr, nx, ny)
-
-    del2(:,:) = dxm2*(d2arr_dx2(:,:) + d2arr_dy2(:,:))
-
-    d2del2_dx2(:,:) = d2dx2(del2, nx, ny, cyclic)
-    d2del2_dy2(:,:) = d2dy2(del2, nx, ny)
-
-    del4(:,:) = dxm2*(d2del2_dx2(:,:) + d2del2_dy2(:,:))
-
-  end subroutine del4_
 
 
   subroutine qg_monnc_init(outdir, filename, qg, numoutsteps)
@@ -700,6 +605,5 @@ contains
     enddo
 
   end subroutine check_continuity
-
 
 end module qg_monitor
