@@ -64,13 +64,6 @@ module constraint
 
      double precision, allocatable :: dpi(:), dpip(:)
 
-     ! Monitoring fields
-     double precision, allocatable :: emfr(:), ermas(:)
-
-     ! ermasa, emfrat are the absolute and fractional
-     ! mass errors at each atmospheric interface
-     ! Computed in atinvq
-
   end type mass_constr_type
 
   public constraint_type
@@ -168,12 +161,6 @@ contains
        init_mass_constr%dpip(k) = b%dz_sign*(int_pm(k) - int_pm(k+1) )
        init_mass_constr%dpi(k) = b%dz_sign*(int_p(k) - int_p(k+1))
     enddo
-
-    allocate(init_mass_constr%emfr(b%nl-1))
-    allocate(init_mass_constr%ermas(b%nl-1))
-
-    init_mass_constr%emfr = 0.0d0
-    init_mass_constr%ermas = 0.0d0
 
   end function init_mass_constr
 
