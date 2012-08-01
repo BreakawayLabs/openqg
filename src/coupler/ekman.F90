@@ -1,9 +1,7 @@
 module ekman
 
-  use intsubs, only: trapin
-
   use box, only: box_type
-  use numerics, only: map_P_to_x_face, map_P_to_y_face, map_T_to_P
+  use numerics, only: map_P_to_x_face, map_P_to_y_face, map_T_to_P, int_P_dx
   use ncutils, only: nc_open, nc_close, nc_get_double
 
   implicit none
@@ -67,8 +65,8 @@ contains
        ! Compute by applying Stokes' theorem 1/2 (atmos. res)
        ! gridlength in from the Southern & Northern boundaries,
        ! i.e. surrounding those p-cells which are timestepped.
-       ek%txis = 0.5d0*trapin(ek%taux(:,1)       + ek%taux(:,2),     b%nxp, b%dx)
-       ek%txin = 0.5d0*trapin(ek%taux(:,b%nyp-1) + ek%taux(:,b%nyp), b%nxp, b%dx)
+       ek%txis = 0.5d0*int_P_dx(ek%taux(:,1)       + ek%taux(:,2),     b)
+       ek%txin = 0.5d0*int_P_dx(ek%taux(:,b%nyp-1) + ek%taux(:,b%nyp), b)
     endif
 
     call map_P_to_x_face(ek%taux, b, taux_t)

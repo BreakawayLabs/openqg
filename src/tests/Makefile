@@ -9,7 +9,7 @@ FFTW = -L/usr/local/lib -lfftw3
 
 MAKEFILE = Makefile
 
-OBJS = ncutils.o intsubs.o constants.o units.o linalg.o mesh.o box.o numerics.o inhomog.o testlib.o unit_tests.o test_inhomog.o test_linalg.o
+OBJS = ncutils.o constants.o units.o linalg.o mesh.o box.o numerics.o inhomog.o testlib.o unit_tests.o test_inhomog.o test_linalg.o
 
 default: unit_tests
 EXEC = unit_tests
@@ -20,9 +20,6 @@ unit_tests: ${OBJS}
 
 ncutils.o: ../util/ncutils.F90 ${MAKEFILE}
 	${FC} ${FFLAGS} -c ../util/ncutils.F90
-
-intsubs.o: ../util/intsubs.F90
-	${FC} ${FFLAGS} -c ../util/intsubs.F90
 
 constants.o: ../util/constants.F90
 	${FC} ${FFLAGS} -c ../util/constants.F90
@@ -39,7 +36,7 @@ mesh.o: ../glam/mesh.F90 ncutils.o constants.o units.o
 box.o: ../glam/box.F90 ncutils.o mesh.o units.o
 	${FC} ${FFLAGS} -c ../glam/box.F90
 
-numerics.o: ../glam/numerics.F90 intsubs.o box.o constants.o
+numerics.o: ../glam/numerics.F90 box.o constants.o
 	${FC} ${FFLAGS} -c ../glam/numerics.F90
 
 inhomog.o: ../qg/inhomog.F90 box.o constants.o

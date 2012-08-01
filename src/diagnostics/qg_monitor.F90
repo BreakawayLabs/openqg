@@ -6,10 +6,9 @@ module qg_monitor
   use constraint, only: mass_constr_type
   use ncutils, only: nc_open_w, nc_create, nc_close, nc_def_dim, nc_def_float
   use ncutils, only: nc_def_int, nc_put_double, nc_enddef, nc_put_int
-  use intsubs, only: trapin
   use ekman, only: ekman_type
   use numerics, only: map_P_to_x_face, map_P_to_y_face, dPdx, dPdy, int_P_dA, avg_P
-  use numerics, only: dPdx_2bc, dPdy_2bc, del2_P_bc
+  use numerics, only: dPdx_2bc, dPdy_2bc, del2_P_bc, int_P_dx
 
   implicit none
 
@@ -335,8 +334,8 @@ contains
 
        ! Find extrema of p for stream function
        do j=1,b%nyp
-          ujet = trapin(ugeos(:,j,k), b%nxp, 1.0d0)
-          ujeto(j) = abs( ujet )/dble(b%nxp)
+          ujet = int_P_dx(ugeos(:,j,k), b)
+          ujeto(j) = abs( ujet )/b%xl
        enddo
        ! Find position and value of avged max in each layer
        mon%pos(k) = maxloc(ujeto(:), dim=1)

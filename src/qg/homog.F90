@@ -2,8 +2,7 @@ module homog
 
   use box, only: box_type
   use modes, only: modes_type
-  use intsubs, only: trapin
-  use numerics, only: int_P_dA
+  use numerics, only: int_P_dA, int_P_dx
   use constraint, only: mass_constr_type, constraint_type
   use constraint, only: step_constraints
   use linalg, only: LU_factor, solve_Ax_b
@@ -308,8 +307,8 @@ contains
        ! Compute line integrals of p_y for new modal solutions
        ! Integrate along south & north boundaries for all modes
        ! -point formulation, but values on bdy are exactly zero
-       ayis = trapin(inhomog(:,  2    ,m), b%nxp, b%dx)/b%dy
-       ayin = trapin(inhomog(:,b%nyp-1,m), b%nxp, b%dx)/b%dy
+       ayis = int_P_dx(inhomog(:,  2    ,m), b)/b%dy
+       ayin = int_P_dx(inhomog(:,b%nyp-1,m), b)/b%dy
        ! Compute LHSs for the c_bc1, c_bc2 equations
        clhss(m) = sum(mod%ctl2m(:,m)*constr%cs(:)) + ayis
        clhsn(m) = sum(mod%ctl2m(:,m)*constr%cn(:)) + ayin

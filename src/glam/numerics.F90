@@ -1,6 +1,5 @@
 module numerics
 
-  use intsubs, only: trapin
   use box, only: box_type
   use constants, only: PI
 
@@ -26,6 +25,7 @@ module numerics
      module procedure int_P_dA_2d
   end interface int_P_dA
   public int_P_dA
+  public int_P_dx
 
   public jacobian ! Second order (no boundary conditions)
   public c_grid_advection
@@ -203,6 +203,14 @@ contains
     int_P_dA_2d = int_P_dA_2d*b%dx*b%dy
 
   end function int_P_dA_2d
+
+  double precision function int_P_dx(p_data, b)
+    type(box_type), intent(in) :: b
+    double precision, intent(in) :: p_data(b%nxp)
+
+    int_P_dx = (0.5d0*p_data(1) + sum(p_data(2:b%nxp-1)) + 0.5d0*p_data(b%nxp))*b%dx
+
+  end function int_P_dx
 
   double precision function int_P_y_face_dA(y_face_data, b)
     
@@ -407,13 +415,13 @@ contains
     do k=1,b%nl
        if (b%cyclic) then
           ! Southern boundary Jacobian term
-          aj5sms = trapin(q(:,1,k)*dp_dx(:,2,k), b%nxp, b%dx)/(2.0d0*b%dx)
-          aj9sms = trapin(q(:,2,k)*dp_dx(:,2,k), b%nxp, b%dx)/(2.0d0*b%dx)
+          aj5sms = int_P_dx(q(:,1,k)*dp_dx(:,2,k), b)/(2.0d0*b%dx)
+          aj9sms = int_P_dx(q(:,2,k)*dp_dx(:,2,k), b)/(2.0d0*b%dx)
           ajis(k) = ( aj5sms + 2.0d0*aj9sms )/6.0d0
           
           ! Northern boundary Jacobian term
-          aj5smn = trapin(q(:,b%nyp,k)*dp_dx(:,b%nyp-1,k), b%nxp, b%dx)/(2.0d0*b%dx)
-          aj9smn = trapin(q(:,b%nyp-1,k)*dp_dx(:,b%nyp-1,k), b%nxp, b%dx)/(2.0d0*b%dx)
+          aj5smn = int_P_dx(q(:,b%nyp,k)*dp_dx(:,b%nyp-1,k), b)/(2.0d0*b%dx)
+          aj9smn = int_P_dx(q(:,b%nyp-1,k)*dp_dx(:,b%nyp-1,k), b)/(2.0d0*b%dx)
           ajin(k) = -( aj5smn + 2.0d0*aj9smn )/6.0d0
        endif   
     enddo

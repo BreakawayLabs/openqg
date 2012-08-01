@@ -3,7 +3,6 @@ module radsubs
   use ncutils, only: nc_open, nc_get_double
   use grid, only: grid_type
   use box, only: box_type
-  use intsubs, only: trapin
   use mixed, only: temp_type, init_temp_from_rad
   use constants, only: PI, STEFAN, SIGOV2
   use linalg, only: LU_factor, solve_Ax_b
@@ -658,5 +657,20 @@ contains
 228 format(a,i2,a,9f13.8)
 
   end subroutine compute_rad_bal_coeffs
+
+  pure double precision function trapin(fofz, nz, delz)
+
+    ! Computes the extended trapezoidal rule approximation to
+    ! the integral of a tabulated function. fofz is a vector
+    ! of length nz containing the function tabulation (including
+    ! at the end points), delz is the tabulation interval,
+    ! and vinteg is the returned value of the integral.
+
+    integer, intent(in) :: nz
+    double precision, intent(in) :: fofz(nz),delz
+
+    trapin = delz*(0.5d0*fofz(1) + sum(fofz(2:nz-1)) + 0.5d0*fofz(nz))
+
+  end function trapin
 
 end module radsubs

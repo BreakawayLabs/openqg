@@ -1,8 +1,7 @@
 module vorticity
 
   use qg, only: qg_type  
-  use intsubs, only: trapin
-  use numerics, only: del2_P_bc, jacobian
+  use numerics, only: del2_P_bc, jacobian, int_P_dx
 
   implicit none
 
@@ -57,10 +56,10 @@ contains
        ! zonal boundaries to the momentum constraint equations
        ! Only needed in the cyclic case
        if (qg%b%cyclic) then
-          ah3sms = trapin((del2p(:,2,k) - del2p(:,1,k)), qg%b%nxp, qg%b%dx)/qg%b%dy
-          ah3smn = trapin((del2p(:,qg%b%nyp,k) - del2p(:,qg%b%nyp-1,k)), qg%b%nxp, qg%b%dx)/qg%b%dy
-          ah5sms = trapin((d4p(:,2,k) - d4p(:,1,k)), qg%b%nxp, qg%b%dx)/qg%b%dy
-          ah5smn = trapin((d4p(:,qg%b%nyp,k) - d4p(:,qg%b%nyp-1,k)), qg%b%nxp, qg%b%dx)/qg%b%dy
+          ah3sms = int_P_dx(del2p(:,2,k) - del2p(:,1,k), qg%b)/qg%b%dy
+          ah3smn = int_P_dx(del2p(:,qg%b%nyp,k) - del2p(:,qg%b%nyp-1,k), qg%b)/qg%b%dy
+          ah5sms = int_P_dx(d4p(:,2,k) - d4p(:,1,k), qg%b)/qg%b%dy
+          ah5smn = int_P_dx(d4p(:,qg%b%nyp,k) - d4p(:,qg%b%nyp-1,k), qg%b)/qg%b%dy
           qg%constr%ap3s(k) = qg%ah2(k)*ah3sms
           qg%constr%ap3n(k) = qg%ah2(k)*ah3smn
           qg%constr%ap5s(k) = qg%ah4(k)*ah5sms
@@ -92,18 +91,16 @@ contains
        qg%constr%txin = txin
 
        qg%constr%int_Be_s(:) = 0.0d0
-       qg%constr%int_Be_s(1) = qg%b%dz_sign*fohfac(1)*trapin(ent(:,1,1),        qg%b%nxp, qg%b%dx)
-       qg%constr%int_Be_s(2) = qg%b%dz_sign*fohfac(1)*trapin(ent(:,1,2),        qg%b%nxp, qg%b%dx)
+       qg%constr%int_Be_s(1) = qg%b%dz_sign*fohfac(1)*int_P_dx(ent(:,1,1), qg%b)
+       qg%constr%int_Be_s(2) = qg%b%dz_sign*fohfac(1)*int_P_dx(ent(:,1,2), qg%b)
        qg%constr%int_Be_n(:) = 0.0d0
-       qg%constr%int_Be_n(1) = -qg%b%dz_sign*fohfac(2)*trapin(ent(:,qg%b%nyp,1), qg%b%nxp, qg%b%dx)
-       qg%constr%int_Be_n(2) = -qg%b%dz_sign*fohfac(2)*trapin(ent(:,qg%b%nyp,2), qg%b%nxp, qg%b%dx)
+       qg%constr%int_Be_n(1) = -qg%b%dz_sign*fohfac(2)*int_P_dx(ent(:,qg%b%nyp,1), qg%b)
+       qg%constr%int_Be_n(2) = -qg%b%dz_sign*fohfac(2)*int_P_dx(ent(:,qg%b%nyp,2), qg%b)
 
        ! Compute bottom drag first derivative contributions at
        ! zonal boundaries to the momentum constraint equations
-       bdsums = trapin((qg%pm(:,2,qg%topo%k_topo) - qg%pm(:,1,qg%topo%k_topo)), &
-            qg%b%nxp, qg%b%dx)/qg%b%dy
-       bdsumn = trapin((qg%pm(:,qg%b%nyp,qg%topo%k_topo) - qg%pm(:,qg%b%nyp-1,qg%topo%k_topo)), &
-            qg%b%nxp, qg%b%dx)/qg%b%dy
+       bdsums = int_P_dx(qg%pm(:,2,qg%topo%k_topo) - qg%pm(:,1,qg%topo%k_topo), qg%b)/qg%b%dy
+       bdsumn = int_P_dx(qg%pm(:,qg%b%nyp,qg%topo%k_topo) - qg%pm(:,qg%b%nyp-1,qg%topo%k_topo), qg%b)/qg%b%dy
        qg%constr%bdrins = qg%b%fnot*qg%delek/(2.0d0*abs(qg%b%fnot))*bdsums
        qg%constr%bdrinn = qg%b%fnot*qg%delek/(2.0d0*abs(qg%b%fnot))*bdsumn
     endif

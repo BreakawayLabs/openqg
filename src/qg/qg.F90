@@ -3,7 +3,6 @@ module qg
   use util, only: strlen
   use ncutils, only: nc_open, nc_get_double, nc_get_dim, nc_close
   use box, only: box_type
-  use intsubs, only: trapin
   use topog, only: topog_type
   use constraint, only: constraint_type, mass_constr_type, init_mass_constr
 

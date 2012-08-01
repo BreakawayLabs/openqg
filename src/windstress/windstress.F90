@@ -1,6 +1,5 @@
 module windstress
 
-  use intsubs, only: trapin
   use box, only: box_type
   use grid, only: grid_type, load_grid
   use bicubic, only: bcudata, bcuini, new_bicubic

@@ -5,7 +5,6 @@ module amlsubs
   use topog, only: topog_type
   use mixed, only: mixed_type, temp_type, zonal_temp
   use radsubs, only: radiate_type
-  use intsubs, only: trapin
   use numerics, only: dPdx, dPdy, avg_T, map_T_to_P
   use numerics, only: c_grid_advection
   use mixed_layer, only: adv_diff

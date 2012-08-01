@@ -2,8 +2,7 @@ module constraint
 
   use box, only: box_type
   use modes, only: modes_type
-  use intsubs, only: trapin
-  use numerics, only: int_P_dA
+  use numerics, only: int_P_dA, int_P_dx
 
   implicit none
 
@@ -123,15 +122,15 @@ contains
     ! layers along zonal boundaries
     do k = 1, b%nl
        ! Line integrals of p
-       pinsp(k) = trapin(pm(:,1,k), b%nxp, b%dx)
-       pins(k)  = trapin(p (:,1,k), b%nxp, b%dx)
-       pinnp(k) = trapin(pm(:,b%nyp,k), b%nxp, b%dx)
-       pinn(k)  = trapin(p (:,b%nyp,k), b%nxp, b%dx)
+       pinsp(k) = int_P_dx(pm(:,1,k), b)
+       pins(k)  = int_P_dx(p(:,1,k), b)
+       pinnp(k) = int_P_dx(pm(:,b%nyp,k), b)
+       pinn(k)  = int_P_dx(p(:,b%nyp,k), b)
        ! Line integrals of dp/dy
-       init_constraint%csp(k) = trapin((pm(:,2,k)     - pm(:,1,k))/b%dy,       b%nxp, b%dx)
-       init_constraint%cnp(k) = trapin((pm(:,b%nyp,k) - pm(:,b%nyp-1,k))/b%dy, b%nxp, b%dx)
-       init_constraint%cs(k)  = trapin((p (:,2,k)     - p (:,1,k))/b%dy,       b%nxp, b%dx)
-       init_constraint%cn(k)  = trapin((p (:,b%nyp,k) - p (:,b%nyp-1,k))/b%dy, b%nxp, b%dx)
+       init_constraint%csp(k) = int_P_dx(pm(:,2,k)     - pm(:,1,k),       b)/b%dy
+       init_constraint%cnp(k) = int_P_dx(pm(:,b%nyp,k) - pm(:,b%nyp-1,k), b)/b%dy
+       init_constraint%cs(k)  = int_P_dx(p (:,2,k)     - p (:,1,k),       b)/b%dy
+       init_constraint%cn(k)  = int_P_dx(p (:,b%nyp,k) - p (:,b%nyp-1,k), b)/b%dy
     enddo
 
     ! Add pressure integral contributions to
