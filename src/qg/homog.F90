@@ -295,7 +295,6 @@ contains
     double precision :: c_bc1(2:b%nl), c_bc2(2:b%nl), c_bt
     double precision :: homcor_2d(b%nyp,b%nl)
     double precision :: clhss(b%nl), clhsn(b%nl)
-    double precision :: ayis, ayin
 
     ! Compute homogeneous solution coefficients
     ! Accumulate RHSs for the constraint equations for each layer
@@ -306,12 +305,10 @@ contains
     do m=1,b%nl
        ! Compute line integrals of p_y for new modal solutions
        ! Integrate along south & north boundaries for all modes
-       ! -point formulation, but values on bdy are exactly zero
-       ayis = int_P_dx(inhomog(:,  2    ,m), b)/b%dy
-       ayin = int_P_dx(inhomog(:,b%nyp-1,m), b)/b%dy
+       ! 2-point formulation, but values on bdy are exactly zero
        ! Compute LHSs for the c_bc1, c_bc2 equations
-       clhss(m) = sum(mod%ctl2m(:,m)*constr%cs(:)) + ayis
-       clhsn(m) = sum(mod%ctl2m(:,m)*constr%cn(:)) + ayin
+       clhss(m) = sum(mod%ctl2m(:,m)*constr%cs(:)) + int_P_dx(inhomog(:,  2    ,m), b)/b%dy
+       clhsn(m) = sum(mod%ctl2m(:,m)*constr%cn(:)) + int_P_dx(inhomog(:,b%nyp-1,m), b)/b%dy
     enddo
 
     ! Get coefft for barotropic mode

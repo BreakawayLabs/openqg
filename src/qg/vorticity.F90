@@ -26,7 +26,6 @@ contains
     double precision :: dqdt(qg%b%nxp,qg%b%nyp,qg%b%nl)
     double precision :: del2p(qg%b%nxp,qg%b%nyp,qg%b%nl)
     double precision :: d4p(qg%b%nxp,qg%b%nyp,qg%b%nl),d6p(qg%b%nxp,qg%b%nyp,qg%b%nl)
-    double precision :: ah3sms,ah3smn,ah5sms,ah5smn
       
     double precision :: tmp_ajis(qg%b%nl), tmp_ajin(qg%b%nl)
 
@@ -56,14 +55,10 @@ contains
        ! zonal boundaries to the momentum constraint equations
        ! Only needed in the cyclic case
        if (qg%b%cyclic) then
-          ah3sms = int_P_dx(del2p(:,2,k) - del2p(:,1,k), qg%b)/qg%b%dy
-          ah3smn = int_P_dx(del2p(:,qg%b%nyp,k) - del2p(:,qg%b%nyp-1,k), qg%b)/qg%b%dy
-          ah5sms = int_P_dx(d4p(:,2,k) - d4p(:,1,k), qg%b)/qg%b%dy
-          ah5smn = int_P_dx(d4p(:,qg%b%nyp,k) - d4p(:,qg%b%nyp-1,k), qg%b)/qg%b%dy
-          qg%constr%ap3s(k) = qg%ah2(k)*ah3sms
-          qg%constr%ap3n(k) = qg%ah2(k)*ah3smn
-          qg%constr%ap5s(k) = qg%ah4(k)*ah5sms
-          qg%constr%ap5n(k) = qg%ah4(k)*ah5smn
+          qg%constr%ap3s(k) = qg%ah2(k)*int_P_dx(del2p(:,2,k) - del2p(:,1,k), qg%b)/qg%b%dy
+          qg%constr%ap3n(k) = qg%ah2(k)*int_P_dx(del2p(:,qg%b%nyp,k) - del2p(:,qg%b%nyp-1,k), qg%b)/qg%b%dy
+          qg%constr%ap5s(k) = qg%ah4(k)*int_P_dx(d4p(:,2,k) - d4p(:,1,k), qg%b)/qg%b%dy
+          qg%constr%ap5n(k) = qg%ah4(k)*int_P_dx(d4p(:,qg%b%nyp,k) - d4p(:,qg%b%nyp-1,k), qg%b)/qg%b%dy
        endif
     enddo
 
