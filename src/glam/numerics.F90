@@ -45,6 +45,8 @@ module numerics
 
   public sin_lat
 
+  public bilint
+
 contains
 
   pure function map_P_to_T(p_data, b, fac)
@@ -522,5 +524,68 @@ contains
     sin_lat = -0.50d0*sign(bar, b%fnot)*sin( (PI/2.0d0)*(y - y0)/(ymax - y0) )
 
   end function sin_lat
+
+  function bilint(atmos, ga, go)
+    ! Performs bilinear interpolation of atmos(ga%nxt,ga%nyt), which
+    ! is tabulated at coordinates ga%xt(ga%nxt), ga%yt(ga%nyt), to fill
+    ! the array ocean(go%nxt,go%nyt), tabulated at go%xt(go%nxt), go%yt(go%nyt)
+    ! Used to transfer data from atmospheric to oceanic grids
+    type(box_type), intent(in) :: ga
+    type(box_type), intent(in) :: go
+    double precision, intent(in) :: atmos(ga%nxt,ga%nyt)
+    double precision :: bilint(go%nxt,go%nyt)
+
+    double precision :: ocean(go%nxt,go%nyt)
+    integer :: io,jo,iam(go%nxp),iap(go%nxp),jam,jap
+    double precision :: dxainv,dyainv,xam,wpx(go%nxp),wmx(go%nxp),wpy,wmy
+
+    dxainv = 1.0d0/ga%dx
+    dyainv = 1.0d0/ga%dy
+
+    ! Get i-subscripts of ocean points in atmos array
+    ! Compute subscripts once only; store in vector.
+    ! Assumes fixed grid interval of dxa between xa values.
+    do io=1,go%nxt
+       iam(io) = int( 1.0d0 + dxainv*( go%xt(io) - ga%xt(1) ) )
+       iap(io) = iam(io) + 1
+       if (iam(io) >=  1) then
+          xam = ga%xt(iam(io))
+       else
+          xam = ga%xt(1) - ga%dx
+       endif
+       ! Compute x-direction weights (assumes regular grid)
+       wpx(io) = dxainv*( go%xt(io) - xam )
+       wmx(io) = 1.0d0 - wpx(io)
+       ! Mend both pointers to give correct cyclic results for T points.
+       ! Results will be inaccurate for p points, but this won't matter
+       ! because the weight of the inaccurate value will be zero
+       ! (p points never involve extrapolation, but T points can).
+       iam(io) = 1 + mod( iam(io)+ga%nxt-1, ga%nxt )
+       iap(io) = 1 + mod( iap(io)+ga%nxt-1, ga%nxt )
+    enddo
+
+    ! Compute y-direction weights and perform interpolation
+    ! Assumes fixed grid intervals.
+    do jo=1,go%nyt
+       jam = int( 1.0d0 + dyainv*( go%yt(jo) - ga%yt(1) ) )
+       jap = jam + 1
+       ! Fix values for extrapolation.
+       ! Boundary condition is no normal derivative.
+       jam = max(jam,  1 )
+       jap = min(jap,ga%nyt)
+       ! Compute y-direction weights (assumes regular grid)
+       wpy = dyainv*( go%yt(jo) - ga%yt(jam) )
+       wmy = 1.0d0 - wpy
+       do io=1,go%nxt
+          ocean(io,jo) = (  wmx(io)*wmy*atmos(iam(io),jam) &
+               + wpx(io)*wmy*atmos(iap(io),jam) &
+               + wmx(io)*wpy*atmos(iam(io),jap) &
+               + wpx(io)*wpy*atmos(iap(io),jap) )
+       enddo
+    enddo
+
+    bilint(:,:) = ocean(:,:)
+
+  end function bilint
 
 end module numerics

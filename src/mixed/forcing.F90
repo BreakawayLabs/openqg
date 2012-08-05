@@ -5,7 +5,7 @@ module forcing
   use mixed, only: mixed_type
   use radsubs, only: fsprim
   use amlsubs, only: atmos_mixed_type
-  use numerics, only: map_P_to_T, avg_T
+  use numerics, only: map_P_to_T, avg_T, bilint
 
   implicit none
   
@@ -43,8 +43,7 @@ contains
     ! Compute atmospheric forcing
 
     ! Interpolate lagged atmospheric temperature onto oceanic grid
-    call bilint (ga%xt, ga%yt, ga%nxt, ga%nyt, aml%ast%datam, &
-         go%xt, go%yt, go%nxt, go%nyt, asto, 1.0d0, ga, go)
+    asto(:,:) = bilint(aml%ast%datam, ga, go)
 
     ! Ocean/atmos infrared radiation
     ocn_IR_up(:,:) = aml%rad%D0up*sst_datam(:,:)
@@ -121,71 +120,5 @@ contains
 
   end subroutine compute_forcing
 
-  subroutine bilint (xa, ya, nxat, nyat, atmos, &
-       xo, yo, nxoc, nyoc, ocean, fmult, ga, go)
-
-    ! Performs bilinear interpolation of atmos(nxat,nyat), which
-    ! is tabulated at coordinates xa(nxat), ya(nyat), to fill
-    ! the array ocean(nxoc,nyoc), tabulated at xo(nxoc), yo(nyoc)
-    ! Also multiplies the interpolant by the factor fmult
-    ! Used to transfer data from atmospheric to oceanic grids
-
-    integer, intent(in) ::  nxat,nyat,nxoc,nyoc
-    double precision, intent(in) :: xa(nxat),ya(nyat),atmos(nxat,nyat), &
-         xo(nxoc),yo(nyoc)
-    double precision, intent(out) :: ocean(nxoc,nyoc)
-    double precision, intent(in) :: fmult
-    type(box_type), intent(in) :: ga
-    type(box_type), intent(in) :: go
-
-    integer :: io,jo,iam(go%nxp),iap(go%nxp),jam,jap
-    double precision :: dxainv,dyainv,xam,wpx(go%nxp),wmx(go%nxp),wpy,wmy
-
-    dxainv = 1.0d0/ga%dx
-    dyainv = 1.0d0/ga%dy
-
-    ! Get i-subscripts of ocean points in atmos array
-    ! Compute subscripts once only; store in vector.
-    ! Assumes fixed grid interval of dxa between xa values.
-    do io=1,nxoc
-       iam(io) = int( 1.0d0 + dxainv*( xo(io) - xa(1) ) )
-       iap(io) = iam(io) + 1
-       if (iam(io) >=  1) then
-          xam = xa(iam(io))
-       else
-          xam = xa(1) - ga%dx
-       endif
-       ! Compute x-direction weights (assumes regular grid)
-       wpx(io) = dxainv*( xo(io) - xam )
-       wmx(io) = 1.0d0 - wpx(io)
-       ! Mend both pointers to give correct cyclic results for T points.
-       ! Results will be inaccurate for p points, but this won't matter
-       ! because the weight of the inaccurate value will be zero
-       ! (p points never involve extrapolation, but T points can).
-       iam(io) = 1 + mod( iam(io)+nxat-1, nxat )
-       iap(io) = 1 + mod( iap(io)+nxat-1, nxat )
-    enddo
-
-    ! Compute y-direction weights and perform interpolation
-    ! Assumes fixed grid intervals.
-    do jo=1,nyoc
-       jam = int( 1.0d0 + dyainv*( yo(jo) - ya(1) ) )
-       jap = jam + 1
-       ! Fix values for extrapolation.
-       ! Boundary condition is no normal derivative.
-       jam = max(jam,  1 )
-       jap = min(jap,nyat)
-       ! Compute y-direction weights (assumes regular grid)
-       wpy = dyainv*( yo(jo) - ya(jam) )
-       wmy = 1.0d0 - wpy
-       do io=1,nxoc
-          ocean(io,jo) = fmult*(  wmx(io)*wmy*atmos(iam(io),jam) &
-               + wpx(io)*wmy*atmos(iap(io),jam) &
-               + wmx(io)*wpy*atmos(iam(io),jap) &
-               + wpx(io)*wpy*atmos(iap(io),jap) )
-       enddo
-    enddo
-
-  end subroutine bilint
 
 end module forcing
