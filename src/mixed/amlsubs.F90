@@ -316,7 +316,7 @@ contains
                          + (aml%xcexp/( tdta*aml%temp%dT_12 ))*aml%hmixa%data(:,:)*dT_conv(:,:)
 
     compute_atmos_entrainment(:,:,:) = 0.0d0
-    call map_T_to_P(xfa, ga, compute_atmos_entrainment(:,:,1))
+    compute_atmos_entrainment(:,:,1) = map_T_to_P(xfa, ga)
 
     ! Add eta and topography contributions
     ! which evaluate naturally at p points

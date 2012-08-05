@@ -110,7 +110,7 @@ contains
        ! Correct xfo values by subtracting mean to ensure net entrainment is zero, implying
        ! no net heat flux into the deep ocean.
        xfo(:,:) = xfo(:,:) - avg_T(xfo, oml%b)
-       call map_T_to_P(xfo, oml%b, ent(:,:,1))
+       ent(:,:,1) = map_T_to_P(xfo, oml%b)
     endif
 
     oml%sst%datam(:,:) = oml%sst%data(:,:)

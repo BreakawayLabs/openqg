@@ -78,7 +78,7 @@ contains
     ! Compute oceanic Ekman velocity at T points - equation (7.7)
     ek%wekt(:,:) = ((1.0d0/(b%dx*b%fnot))*(tauy_t(2:,:) - tauy_t(:b%nxt,:))  - &
                     (1.0d0/(b%dy*b%fnot))*(taux_t(:,2:) - taux_t(:,:b%nyt)) )
-    call map_T_to_P(ek%wekt, b, ek%wekp)
+    ek%wekp(:,:) = map_T_to_P(ek%wekt, b)
 
   end subroutine ekman_from_tau
 

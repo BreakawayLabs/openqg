@@ -59,51 +59,50 @@ contains
   end function map_P_to_T
 
 
-  subroutine map_T_to_P(t_data, b, p_data)
-
+  function map_T_to_P(t_data, b)
     type(box_type), intent(in) :: b
     double precision, intent(in) :: t_data(b%nxp-1,b%nyp-1)
-    double precision, intent(out) :: p_data(b%nxp,b%nyp)
+    double precision :: map_T_to_P(b%nxp,b%nyp)
 
     integer :: i, j
 
     ! Intenal points
-    p_data(2:b%nxp-1,2:b%nyp-1) = 0.25*(t_data(2:b%nxp-1,2:b%nyp-1) + t_data(:b%nxp-2,2:b%nyp-1) + &
+    map_T_to_P(2:b%nxp-1,2:b%nyp-1) = 0.25*(t_data(2:b%nxp-1,2:b%nyp-1) + t_data(:b%nxp-2,2:b%nyp-1) + &
                                         t_data(2:b%nxp-1,:b%nyp-2) + t_data(:b%nxp-2,:b%nyp-2))
 
     ! N/S boundaries
     do i=2,b%nxp-1
-       p_data(i,1)     = 0.5d0*(t_data(i-1,1)       + t_data(i,1))
-       p_data(i,b%nyp) = 0.5d0*(t_data(i-1,b%nyp-1) + t_data(i,b%nyp-1))
+       map_T_to_P(i,1)     = 0.5d0*(t_data(i-1,1)       + t_data(i,1))
+       map_T_to_P(i,b%nyp) = 0.5d0*(t_data(i-1,b%nyp-1) + t_data(i,b%nyp-1))
     enddo
 
     ! E/W boundaries
     if (b%cyclic) then
        do j=2,b%nyp-1
-          p_data(1,j) = 0.25d0*(t_data(1,j) + t_data(b%nxp-1,j) + t_data(1,j-1) + t_data(b%nxp-1,j-1))
-          p_data(b%nxp,j) = p_data(1,j)
+          map_T_to_P(1,j) = 0.25d0*(t_data(1,j) + t_data(b%nxp-1,j) + t_data(1,j-1) + t_data(b%nxp-1,j-1))
+          map_T_to_P(b%nxp,j) = map_T_to_P(1,j)
        enddo
     else
        do j=2,b%nyp-1
-          p_data(1,  j) = 0.5d0*(t_data(1,    j-1) + t_data(1,    j))
-          p_data(b%nxp,j) = 0.5d0*(t_data(b%nxp-1,j-1) + t_data(b%nxp-1,j))
+          map_T_to_P(1,  j) = 0.5d0*(t_data(1,    j-1) + t_data(1,    j))
+          map_T_to_P(b%nxp,j) = 0.5d0*(t_data(b%nxp-1,j-1) + t_data(b%nxp-1,j))
        enddo
     endif
 
     ! Corners
     if (b%cyclic) then
-       p_data(1,    1)     = 0.5d0*(t_data(1,1)       + t_data(b%nxp-1,1))
-       p_data(1,    b%nyp) = 0.5d0*(t_data(1,b%nyp-1) + t_data(b%nxp-1,b%nyp-1))
-       p_data(b%nxp,1)     = p_data(1,1)
-       p_data(b%nxp,b%nyp) = p_data(1,b%nyp)
+       map_T_to_P(1,    1)     = 0.5d0*(t_data(1,1)       + t_data(b%nxp-1,1))
+       map_T_to_P(1,    b%nyp) = 0.5d0*(t_data(1,b%nyp-1) + t_data(b%nxp-1,b%nyp-1))
+       map_T_to_P(b%nxp,1)     = map_T_to_P(1,1)
+       map_T_to_P(b%nxp,b%nyp) = map_T_to_P(1,b%nyp)
     else
-       p_data(1,    1)     = t_data(1,      1)
-       p_data(b%nxp,1)     = t_data(b%nxp-1,1)
-       p_data(1,    b%nyp) = t_data(1,      b%nyp-1)
-       p_data(b%nxp,b%nyp) = t_data(b%nxp-1,b%nyp-1)
+       map_T_to_P(1,    1)     = t_data(1,      1)
+       map_T_to_P(b%nxp,1)     = t_data(b%nxp-1,1)
+       map_T_to_P(1,    b%nyp) = t_data(1,      b%nyp-1)
+       map_T_to_P(b%nxp,b%nyp) = t_data(b%nxp-1,b%nyp-1)
     endif
 
-  end subroutine map_T_to_P
+  end function map_T_to_P
 
   pure function del2_T(t_data, b, north_flux, north_flux_val, south_flux, south_flux_val)
 
