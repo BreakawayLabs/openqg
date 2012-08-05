@@ -9,7 +9,7 @@ module ml_monitor
   use ekman, only: ekman_type
   use amlsubs, only: atmos_mixed_type
   use omlsubs, only: ocean_mixed_type
-  use numerics, only: avg_T
+  use numerics, only: avg_T, bilint
 
   implicit none
 
@@ -60,7 +60,6 @@ module ml_monitor
      ! hcmlat is the total heat content of the atmos. m.l. (J m^-2)
      ! = Integ (aTm'*ahm) dA / Area
      ! Computed in diagno
-
 
      double precision :: olrtop
      ! olrtop is the mean outgoing longwave radiation
@@ -145,18 +144,19 @@ contains
 
   end function aml_monitor_step
 
-  subroutine update_aml_monitor(qga, aml_mon, eka, aml, qg_mon_etam, outdir, ntdone, tyrs)
+  subroutine update_aml_monitor(qga, aml_mon, eka, sst_datam, aml, qg_mon_etam, outdir, ntdone, tyrs)
 
     type(qg_type), intent(in) :: qga
     type(aml_monitor_type), intent(inout) :: aml_mon
     type(ekman_type), intent(in) :: eka
     type(atmos_mixed_type), intent(in) :: aml
+    double precision, intent(in) :: sst_datam(aml%go%nxt,aml%go%nyt)
     double precision, intent(in) :: qg_mon_etam(qga%b%nl-1)
     character (len=*), intent(in) :: outdir
     integer, intent(in) :: ntdone
     double precision, intent(in) :: tyrs
 
-    call diagnose_aml(qga%b, qga, aml_mon%g, eka, aml, qg_mon_etam, aml_mon)
+    call diagnose_aml(qga%b, qga, aml_mon%g, eka, sst_datam, aml, qg_mon_etam, aml_mon)
     call aml_monnc_out(outdir, ntdone, aml_mon%nocmon, tyrs, aml_mon)
 
   end subroutine update_aml_monitor
@@ -174,7 +174,7 @@ contains
 
   end subroutine update_oml_monitor
 
-  subroutine diagnose_aml(ga, qga, g, eka, aml, qga_mon_etam, aml_mon)
+  subroutine diagnose_aml(ga, qga, g, eka, sst_datam, aml, qga_mon_etam, aml_mon)
 
     ! Computes as many as possible of the diagnostic quantities
     ! required for monitoring/debugging the QG climate model.
@@ -189,18 +189,38 @@ contains
     type(grid_type), intent(in) :: g
     type(ekman_type), intent(in) :: eka
     type(atmos_mixed_type), intent(in) :: aml
+    double precision, intent(in) :: sst_datam(aml%go%nxt,aml%go%nyt)
     double precision, intent(in) :: qga_mon_etam(ga%nl-1)
     type(aml_monitor_type), intent(inout) :: aml_mon
       
-    integer :: i,j
+    integer :: i,j, natocn, natlan, ia, ja
+    double precision :: asto(aml%go%nxt,aml%go%nyt), arlasm
+    
+    asto(:,:) = bilint(aml%ast%datam, ga, aml%go)
 
     ! Atmosphere diagnostics
     ! Mixed layer temperature & thickness diagnostics
 
-    aml_mon%slhfav = aml%slhfav
-    aml_mon%oradav = aml%oradav
-    aml_mon%arocav = aml%arocav
-    aml_mon%arlaav = aml%arlaav
+    aml_mon%slhfav = avg_T(aml%rad%xlamda*( sst_datam(:,:) - asto(:,:) ), aml%go)
+    aml_mon%oradav = avg_T(aml%rad%D0up*sst_datam(:,:), aml%go)
+    aml_mon%arocav = avg_T(aml%rad%Dmdown*asto(:,:), aml%go)
+
+    arlasm = sum(aml%ast%datam)
+    ! Reset atmospheric forcing to zero over ocean
+    natocn = 0
+    do ja=aml%g%ny1,aml%g%ny1+aml%g%nyaooc-1
+       do ia=aml%g%nx1,aml%g%nx1+aml%g%nxaooc-1
+          arlasm = arlasm - aml%ast%datam(ia,ja)
+          natocn = natocn + 1
+       enddo
+    enddo
+    natlan = ga%nxt*ga%nyt - natocn
+    if (natlan == 0) then
+       aml_mon%arlaav = 0.0d0
+    else
+       aml_mon%arlaav = aml%rad%Dup(0)*arlasm/dble(natlan)
+    endif
+
 
     ! Compute mean atmos. mixed layer temperature and thickness
     aml_mon%mean_st = avg_T(aml%ast%data, ga)

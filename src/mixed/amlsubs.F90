@@ -49,13 +49,6 @@ module amlsubs
 
      type(radiate_type) :: rad
 
-     double precision :: slhfav,oradav,arocav,arlaav
-     
-     ! slhfav, oradav are heat fluxes averaged over ocean (W m^-2)
-     ! arocav, arlaav are atmospheric radiative fluxes (upwards +ve)
-     ! averaged over ocean and land respectively (W m^-2)
-     ! All computed in xforc, so no duplication.
-     
   end type atmos_mixed_type
 
   public entrain_coeff_type

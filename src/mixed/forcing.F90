@@ -25,18 +25,15 @@ contains
     type(box_type), intent(in) :: go
     double precision, intent(in) :: sst_datam(go%nxt,go%nyt)
     type(box_type), intent(in) :: ga
-    type(atmos_mixed_type), intent(inout) :: aml
+    type(atmos_mixed_type), intent(in) :: aml
     double precision, intent(in) :: eta(aml%b%nxp,aml%b%nyp)
     double precision, intent(inout) :: fnetoc(go%nxt,go%nyt)
     double precision, intent(inout) :: fnetat(ga%nxt,ga%nyt)
 
-    integer :: io,jo
-
-    integer :: ia,ja
+    integer :: io, jo, ia,ja
     double precision :: asto(go%nxt,go%nyt), fsp(go%nxt, go%nyt),ocfrac,fmafac,fmatop,hmafac
-    double precision :: ocn_IR_up(go%nxt,go%nyt),sense_lat_flux(go%nxt,go%nyt),arlasm
+    double precision :: ocn_IR_up(go%nxt,go%nyt),sense_lat_flux(go%nxt,go%nyt)
     double precision :: aml_IR_down(go%nxt,go%nyt)
-    integer :: natlan,natocn
 
     if (.not. aml%active) stop 1
 
@@ -47,44 +44,25 @@ contains
 
     ! Ocean/atmos infrared radiation
     ocn_IR_up(:,:) = aml%rad%D0up*sst_datam(:,:)
-    aml%oradav = avg_T(ocn_IR_up(:,:), go)
 
     ! Sensible and latent flux
     sense_lat_flux(:,:) = aml%rad%xlamda*( sst_datam(:,:) - asto(:,:) )
-    aml%slhfav = avg_T(sense_lat_flux(:,:), go)
 
     ! Atmospheric mixed layer radiation - into ocean
     aml_IR_down(:,:) = aml%rad%Dmdown*asto(:,:)
-    aml%arocav = avg_T(aml_IR_down(:,:), go)
 
     ! Specify atmospheric forcing everywhere
     ! Land case of (7.9) + last term of (7.8)
     ! These values will only be retained over land
-    ! MONITORING - extra section for arlaav
-    ! Atmospheric radiation based on astm
-    !aml_IR_up - radiative forcing perturbation
+    ! aml_IR_up - radiative forcing perturbation
     fnetat(:,:) = -aml%rad%Dup(0)*aml%ast%datam(:,:) - spread(fsprim( ga, aml%rad%fspco, ga%ytrel(:)), 1, ga%nxt)
 
-    arlasm = sum(aml%ast%datam)
     ! Reset atmospheric forcing to zero over ocean
-    natocn = 0
     do ja=aml%g%ny1,aml%g%ny1+aml%g%nyaooc-1
        do ia=aml%g%nx1,aml%g%nx1+aml%g%nxaooc-1
           fnetat(ia,ja) = fnetat(ia,ja) + (aml%rad%Dmdown - aml%rad%Dup(0))*aml%ast%datam(ia,ja)
-          ! MONITORING - extra section for arlaav
-          ! Count no. of atmos. cells over ocean
-          arlasm = arlasm - aml%ast%datam(ia,ja)
-          natocn = natocn + 1
        enddo
     enddo
-
-    ! MONITORING - extra section for arlaav
-    natlan = ga%nxt*ga%nyt - natocn
-    if (natlan == 0) then
-       aml%arlaav = 0.0d0
-    else
-       aml%arlaav = aml%rad%Dup(0)*arlasm/dble(natlan)
-    endif
 
     ! Specify net ocean forcing (-ve of equation (7.10)),
     ! and modify the net atmospheric forcing over ocean
@@ -119,6 +97,5 @@ contains
          - map_P_to_T(aml%topat%dtop, ga, fmatop) + hmafac*(aml%hmixa%datam(:,:) - ga%hm)
 
   end subroutine compute_forcing
-
 
 end module forcing

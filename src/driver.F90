@@ -235,7 +235,7 @@ contains
        call update_oml_monitor(ocn%ml, ocn%cpl%ek, ocn%oml_mon, outdir, ntdone, tyrs)
     endif
     if (aml_monitor_step(ntdone, atm%aml_mon, force)) then
-       call update_aml_monitor(atm%qg, atm%aml_mon, atm%cpl%ek, atm%ml, atm%qg_mon%etam, outdir, ntdone, tyrs)
+       call update_aml_monitor(atm%qg, atm%aml_mon, atm%cpl%ek, atm%cpl%sst_datam, atm%ml, atm%qg_mon%etam, outdir, ntdone, tyrs)
     endif
 
 
