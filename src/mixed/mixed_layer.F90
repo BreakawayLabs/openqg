@@ -58,7 +58,6 @@ contains
   end function adv_diff
 
   subroutine adv_vel(mixed, b, dp_dx, dp_dy, uek, vek, vel_u, vel_v)
-
     type(mixed_type), intent(in) :: mixed
     type(box_type), intent(in) :: b
     double precision, intent(in) :: dp_dx(b%nxp-1,b%nyp)

@@ -204,7 +204,7 @@ contains
     double precision, intent(in) :: eta(aml%b%nxp,aml%b%nyp,aml%b%nl-1)
     logical, intent(in) :: compute_ent
     double precision, intent(in) :: tdta
-    double precision, intent(inout) :: ent(aml%b%nxp,aml%b%nyp,aml%b%nl)
+    double precision, intent(inout) :: ent(aml%b%nxp,aml%b%nyp,aml%b%nl-1)
 
     double precision :: tmrhs(aml%b%nxt,aml%b%nyt),dhdt_adv_vel(aml%b%nxt,aml%b%nyt), &
          hnew(aml%b%nxt,aml%b%nyt), astnew(aml%b%nxt,aml%b%nyt),  dT_conv(aml%b%nxt,aml%b%nyt)
@@ -298,7 +298,7 @@ contains
     double precision, intent(in) :: tdta
     double precision, intent(in) :: dT_conv(ga%nxt,ga%nyt)
     double precision, intent(in) :: eta(ga%nxp,ga%nyp,ga%nl-1)
-    double precision :: compute_atmos_entrainment(ga%nxp,ga%nyp,ga%nl)
+    double precision :: compute_atmos_entrainment(ga%nxp,ga%nyp,ga%nl-1)
 
     double precision :: xfa(ga%nxt,ga%nyt)
     integer :: k

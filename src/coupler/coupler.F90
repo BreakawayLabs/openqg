@@ -67,7 +67,7 @@ contains
 
     allocate(init_ocn_coupler%fnet(b%nxt,b%nyt))
     allocate(init_ocn_coupler%p1(b%nxp,b%nyp))
-    allocate(init_ocn_coupler%ent(b%nxp,b%nyp,b%nl))
+    allocate(init_ocn_coupler%ent(b%nxp,b%nyp,b%nl-1))
 
     init_ocn_coupler%fnet(:,:) = 0.0d0
     init_ocn_coupler%p1(:,:) = 0.0d0
@@ -127,11 +127,11 @@ contains
 
     if (streq(ent_cpl, "coupled")) then
        init_atm_coupler%ent_coupled = .true.
-       allocate(init_atm_coupler%ent(b%nxp,b%nyp,b%nl))
+       allocate(init_atm_coupler%ent(b%nxp,b%nyp,b%nl-1))
        init_atm_coupler%ent(:,:,:) = 0.0d0
     else if (streq(ent_cpl, "zero")) then
        init_atm_coupler%ent_coupled = .false.
-       allocate(init_atm_coupler%ent(b%nxp,b%nyp,b%nl))
+       allocate(init_atm_coupler%ent(b%nxp,b%nyp,b%nl-1))
        init_atm_coupler%ent(:,:,:) = 0.0d0
     else
        init_atm_coupler%ent_coupled = .false.

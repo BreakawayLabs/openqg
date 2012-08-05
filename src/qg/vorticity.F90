@@ -15,7 +15,7 @@ contains
 
     type(qg_type), intent(inout) :: qg
     double precision, intent(in) :: tdt
-    double precision, intent(in) :: ent(qg%b%nxp,qg%b%nyp,qg%b%nl)
+    double precision, intent(in) :: ent(qg%b%nxp,qg%b%nyp,qg%b%nl-1)
     double precision, intent(in) :: wekp(qg%b%nxp,qg%b%nyp)
     double precision, intent(in) :: txis, txin
 

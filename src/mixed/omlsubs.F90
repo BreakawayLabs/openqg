@@ -80,7 +80,7 @@ contains
     double precision, intent(in) :: fnetoc(oml%b%nxt,oml%b%nyt)
     logical, intent(in) :: compute_ent
     double precision, intent(in) :: tdto
-    double precision, intent(inout) :: ent(oml%b%nxp,oml%b%nyp,oml%b%nl)
+    double precision, intent(inout) :: ent(oml%b%nxp,oml%b%nyp,oml%b%nl-1)
 
     double precision :: sstnew(oml%b%nxt,oml%b%nyt)
     double precision :: dT_conv(oml%b%nxt,oml%b%nyt)
