@@ -9,5 +9,6 @@ The following Ubuntu packages are required to build the OpenQG model.
  - libnetcdf-dev
  - libfftw3-dev
  - liblapack-dev
+ - netcdf-bin
 
 Equivalent packages should be installed for non-Debian based system.
