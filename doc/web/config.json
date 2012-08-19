@@ -3,6 +3,7 @@
     "tags": [{"tag": "0.9.0", "commit": "91f120dd0b74f03dbd86ee1470f53fca099b4bf4"},
              {"tag": "0.9.0-beta0", "commit": "21df98847f9c736065e0d9333309a782ba9571ad"}],
     "project_desc": "OpenQG is an intermediate complexity mid-latitude coupled climate model. The model uses quasi-geostrophic (QG) dynamics in both ocean and atmosphere so that the momentum equations can be solved quickly, while non-linear dynamics and high resolution in the ocean can be retained.",
+    "project_about": "The OpenQG project is a fork of <a href=\"http://www.q-gcm.org\">Q-GCM</a>. OpenQG builds on Q-GCM by porting it to fortran 90, while simplifying the code to make it easier for both researchers and students to understand and work with.",
     "google_groups": "openqg-users",
     "docs": [{"file": "quickstart", "title": "Quickstart"}, 
     	     {"file": "user_guide", "title": "User Guide"},
